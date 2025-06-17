@@ -1,23 +1,45 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
-import { DownloadIcon, Upload } from "lucide-react";
+import { DownloadIcon, Upload, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import BASE_URL from "../endpoints/endpoints";
-import template from '../assets/template/users.xlsx'
+import orderTemplate from '../assets/template/order_template.xlsx'
 
-const UploadExcel = () => {
+const AgentOrderUpload = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedNetwork, setSelectedNetwork] = useState("");
+  const [uploadResult, setUploadResult] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const networks = [
+    { value: "MTN", label: "MTN" },
+    { value: "AIRTEL_TIGO", label: "Airtel Tigo" },
+    { value: "TELECEL", label: "Telecel" }
+  ];
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
     if (file) {
       setSelectedFile(file);
+      setUploadResult(null); // Reset previous results
     }
   };
 
+  const handleNetworkChange = (event) => {
+    setSelectedNetwork(event.target.value);
+  };
+
+  const resetForm = () => {
+    setSelectedFile(null);
+    setSelectedNetwork("");
+    setUploadResult(null);
+    setIsUploading(false);
+  };
+
   const handleUpload = async () => {
+    // Validation
     if (!selectedFile) {
       Swal.fire({
         icon: "warning",
@@ -27,23 +49,35 @@ const UploadExcel = () => {
       return;
     }
 
-    const userId = localStorage.getItem("userId");
-    if (!userId) {
+    if (!selectedNetwork) {
+      Swal.fire({
+        icon: "warning",
+        title: "Network Not Selected",
+        text: "Please select a network before uploading.",
+      });
+      return;
+    }
+
+    const agentId = localStorage.getItem("userId");
+    if (!agentId) {
       Swal.fire({
         icon: "error",
-        title: "User ID Not Found",
-        text: "Please log in before uploading.",
+        title: "Agent ID Not Found",
+        text: "Please log in before uploading orders.",
       });
       return;
     }
 
     const formData = new FormData();
     formData.append("file", selectedFile);
-    formData.append("userId", userId);
+    formData.append("agentId", agentId);
+    formData.append("network", selectedNetwork);
+
+    setIsUploading(true);
 
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/users/upload-excel`,
+        `${BASE_URL}/api/orders/upload-excel`,
         formData,
         {
           headers: {
@@ -52,22 +86,60 @@ const UploadExcel = () => {
         }
       );
 
-      Swal.fire({
-        icon: "success",
-        title: "Upload Successful",
-        text: "Your file has been uploaded successfully!",
-      });
+      const result = response.data;
+      setUploadResult(result);
 
-      setIsOpen(false); // Close the dialog after success
-      setSelectedFile(null); // Reset file input
-      console.log(response.data);
+      if (result.success) {
+        Swal.fire({
+          icon: "success",
+          title: "Upload Completed",
+          html: `
+            <div class="text-left">
+              <p><strong>Total Orders:</strong> ${result.summary.total}</p>
+              <p><strong>Successfully Processed:</strong> ${result.summary.successful}</p>
+              <p><strong>Failed:</strong> ${result.summary.failed}</p>
+            </div>
+          `,
+        });
+      } else {
+        Swal.fire({
+          icon: "warning",
+          title: "Upload Completed with Issues",
+          html: `
+            <div class="text-left">
+              <p><strong>Total Orders:</strong> ${result.summary.total}</p>
+              <p><strong>Successfully Processed:</strong> ${result.summary.successful}</p>
+              <p><strong>Failed:</strong> ${result.summary.failed}</p>
+              <p class="text-red-600 mt-2">Please check the detailed report below.</p>
+            </div>
+          `,
+        });
+      }
+
     } catch (error) {
+      setUploadResult(null);
       Swal.fire({
         icon: "error",
         title: "Upload Failed",
-        text: "Something went wrong. Please try again.",
+        text: error.response?.data?.message || "Something went wrong. Please try again.",
       });
       console.error("Upload Error:", error);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const downloadErrorReport = () => {
+    if (uploadResult && uploadResult.errorReport) {
+      const blob = new Blob([JSON.stringify(uploadResult.errorReport, null, 2)], {
+        type: 'application/json'
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'upload_error_report.json';
+      a.click();
+      URL.revokeObjectURL(url);
     }
   };
 
@@ -75,73 +147,179 @@ const UploadExcel = () => {
     <>
       {/* Upload Button */}
       <li
-        className="flex items-center space-x-3 p-2 rounded-md cursor-pointer bg-gray-200 hover:bg-gray-300"
+        className="flex items-center space-x-3 p-2 rounded-md cursor-pointer bg-blue-100 hover:bg-blue-200 border border-blue-300"
         onClick={() => setIsOpen(true)}
       >
-        <Upload className="w-5 h-5" />
-        <span>Upload Excel</span>
+        <Upload className="w-5 h-5 text-blue-600" />
+        <span className="text-blue-800 font-medium">Upload Orders</span>
       </li>
 
       {/* Dialog */}
       <Dialog open={isOpen} onClose={() => setIsOpen(false)} className="relative z-50">
         <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex justify-center items-center p-4">
-          <Dialog.Panel className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-md transform transition-all">
+          <Dialog.Panel className="bg-white p-6 rounded-lg shadow-2xl w-full max-w-2xl transform transition-all max-h-[90vh] overflow-y-auto">
             {/* Title */}
-            <Dialog.Title className="text-xl font-semibold text-gray-800">
-              Upload Excel File
+            <Dialog.Title className="text-xl font-semibold text-gray-800 mb-4">
+              Upload Agent Orders
             </Dialog.Title>
 
             {/* Description */}
-            <Dialog.Description className="text-sm text-gray-500 mt-2">
-              Select an Excel file (.xlsx, .xls) to upload.
+            <Dialog.Description className="text-sm text-gray-600 mb-6">
+              Upload your orders using an Excel file. Select the network and ensure your file follows the template format.
             </Dialog.Description>
 
-            {/* Template Download Button */}
-            <div className="mt-4">
+            {/* Template Download */}
+            <div className="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+              <h3 className="font-medium text-green-800 mb-2">Download Template</h3>
+              <p className="text-sm text-green-700 mb-3">
+                Use this template to format your orders correctly.
+              </p>
               <a
-                href={template} // Ensure this path matches where the file is stored
-                download="users.xlsx"
-                className="inline-flex items-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                href={orderTemplate}
+                download="order_template.xlsx"
+                className="inline-flex items-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition text-sm"
               >
-                <DownloadIcon className="h-5 w-5 mr-2" />
-                Download Template
+                <DownloadIcon className="h-4 w-4 mr-2" />
+                Download Order Template
               </a>
             </div>
 
-            {/* File Input */}
-            <div className="mt-4">
+            {/* Network Selection */}
+            <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Choose File
+                Select Network *
+              </label>
+              <select
+                value={selectedNetwork}
+                onChange={handleNetworkChange}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                disabled={isUploading}
+              >
+                <option value="">Choose a network...</option>
+                {networks.map((network) => (
+                  <option key={network.value} value={network.value}>
+                    {network.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* File Input */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Choose Excel File *
               </label>
               <input
                 type="file"
                 accept=".xlsx, .xls"
                 onChange={handleFileChange}
-                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 transition"
+                className="block w-full text-sm text-gray-900 border border-gray-300 rounded-md cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 file:mr-4 file:py-2 file:px-4 file:border-0 file:text-sm file:font-semibold file:bg-blue-500 file:text-white hover:file:bg-blue-600 transition"
+                disabled={isUploading}
               />
             </div>
 
-            {/* File Name Display */}
+            {/* Selected File Display */}
             {selectedFile && (
-              <p className="mt-2 text-sm text-green-600 font-medium">
-                Selected: {selectedFile.name}
-              </p>
+              <div className="mb-4 p-3 bg-blue-50 rounded-md border border-blue-200">
+                <p className="text-sm text-blue-800 font-medium">
+                  Selected: {selectedFile.name}
+                </p>
+                <p className="text-xs text-blue-600">
+                  Size: {(selectedFile.size / 1024).toFixed(2)} KB
+                </p>
+              </div>
+            )}
+
+            {/* Upload Result Summary */}
+            {uploadResult && (
+              <div className="mb-6 p-4 rounded-lg border">
+                <h3 className="font-medium mb-3 flex items-center">
+                  {uploadResult.success ? (
+                    <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-yellow-500 mr-2" />
+                  )}
+                  Upload Summary
+                </h3>
+                
+                <div className="grid grid-cols-3 gap-4 mb-4">
+                  <div className="text-center p-3 bg-gray-50 rounded">
+                    <div className="text-2xl font-bold text-gray-800">
+                      {uploadResult.summary.total}
+                    </div>
+                    <div className="text-sm text-gray-600">Total</div>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 rounded">
+                    <div className="text-2xl font-bold text-green-600">
+                      {uploadResult.summary.successful}
+                    </div>
+                    <div className="text-sm text-green-600">Success</div>
+                  </div>
+                  <div className="text-center p-3 bg-red-50 rounded">
+                    <div className="text-2xl font-bold text-red-600">
+                      {uploadResult.summary.failed}
+                    </div>
+                    <div className="text-sm text-red-600">Failed</div>
+                  </div>
+                </div>
+
+                {uploadResult.errors && uploadResult.errors.length > 0 && (
+                  <div className="mt-4">
+                    <h4 className="font-medium text-red-800 mb-2">Errors Found:</h4>
+                    <div className="max-h-32 overflow-y-auto bg-red-50 p-3 rounded border border-red-200">
+                      {uploadResult.errors.slice(0, 5).map((error, index) => (
+                        <div key={index} className="text-sm text-red-700 mb-1">
+                          Row {error.row}: {error.message}
+                        </div>
+                      ))}
+                      {uploadResult.errors.length > 5 && (
+                        <div className="text-sm text-red-600 font-medium">
+                          ...and {uploadResult.errors.length - 5} more errors
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      onClick={downloadErrorReport}
+                      className="mt-2 text-sm text-red-600 hover:text-red-800 underline"
+                    >
+                      Download Full Error Report
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Buttons */}
-            <div className="flex justify-end space-x-3 mt-6">
+            <div className="flex justify-end space-x-3">
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  setIsOpen(false);
+                  resetForm();
+                }}
                 className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md text-sm font-medium hover:bg-gray-400 transition"
+                disabled={isUploading}
               >
-                Cancel
+                {uploadResult ? 'Close' : 'Cancel'}
               </button>
-              <button
-                onClick={handleUpload}
-                className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 transition"
-              >
-                Upload
-              </button>
+              {!uploadResult && (
+                <button
+                  onClick={handleUpload}
+                  disabled={isUploading || !selectedFile || !selectedNetwork}
+                  className="px-4 py-2 bg-blue-500 text-white rounded-md text-sm font-medium hover:bg-blue-600 transition disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                >
+                  {isUploading ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Upload Orders
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </Dialog.Panel>
         </div>
@@ -150,4 +328,4 @@ const UploadExcel = () => {
   );
 };
 
-export default UploadExcel;
+export default AgentOrderUpload;

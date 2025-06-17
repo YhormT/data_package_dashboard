@@ -120,9 +120,11 @@ const Login = () => {
   }
 
   return (
-    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 overflow-hidden">
+    //<div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden before:absolute before:inset-0 before:bg-[conic-gradient(from_0deg_at_50%_50%,rgba(59,130,246,0.1),rgba(147,51,234,0.1),rgba(236,72,153,0.1),rgba(59,130,246,0.1))] after:absolute after:inset-0 after:bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.1),transparent_70%)]">
+    <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden before:absolute before:inset-0 before:bg-[conic-gradient(from_0deg_at_50%_50%,rgba(59,130,246,0.1),rgba(147,51,234,0.1),rgba(236,72,153,0.1),rgba(59,130,246,0.1))] after:absolute after:inset-0 after:bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.1),transparent_70%)]">
       {/* Framer Motion Bubble Animation from old code */}
-      {[...Array(20)].map((_, index) => (
+      {/* these codes where commented out for performance reasons */}
+      {/* {[...Array(20)].map((_, index) => (
         <motion.div
           key={index}
           className="absolute bg-white opacity-20 rounded-full"
@@ -143,10 +145,10 @@ const Login = () => {
             delay: Math.random() * 2,
           }}
         />
-      ))}
+      ))} */}
 
       {/* Enhanced Floating Particles */}
-      {[...Array(30)].map((_, index) => {
+      {/* {[...Array(30)].map((_, index) => {
         const size = Math.random() * 6 + 2;
         const delay = Math.random() * 5;
         const duration = Math.random() * 10 + 15;
@@ -167,7 +169,7 @@ const Login = () => {
             <div className="w-full h-full bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full blur-sm animate-pulse" />
           </div>
         );
-      })}
+      })} */}
 
       {/* Gradient Orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
@@ -285,7 +287,7 @@ const Login = () => {
                           ? "border-cyan-400 shadow-lg shadow-cyan-400/25"
                           : "border-white/20 hover:border-white/30"
                       }`}
-                      placeholder="email.smith@gmail.com"
+                      placeholder="Enter your email address"
                       required
                     />
                     {email && (
