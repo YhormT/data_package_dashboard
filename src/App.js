@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import UserDashboard from "./pages/UserDashboard";
+import Superagent from "./pages/SuperAgent";
+import Normalagent from "./pages/NormalAgent";
 import Analytics from "./components/AnalyticsPage";
 import Settings from "./components/SettingsPage";
 import { ToastContainer } from "react-toastify";
@@ -13,6 +15,9 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<AdminDashboard />} />
         <Route path="/user" element={<UserDashboard />} />
+        <Route path="/superagent" element={<Superagent />} />
+        <Route path="/normalagent" element={<Normalagent />} />
+        {/* Dashboard routes */}
         <Route path="/dashboard/analytics" element={<Analytics />} />
         <Route path="/dashboard/settings" element={<Settings />} />
         {/* Redirect unknown routes */}

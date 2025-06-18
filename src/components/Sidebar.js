@@ -9,6 +9,8 @@ import TransactionsModal from "./TransactionsModal";
 import UploadExcel from "./UploadExcel";
 import Logo from "../assets/logo-icon.png";
 import bgImage from "../assets/sidefloor.jpg";
+import { Dialog } from "@headlessui/react";
+import AuditLog from "./AuditLog";
 
 const Sidebar = ({
   isOpen,
@@ -18,6 +20,7 @@ const Sidebar = ({
   logoutUser,
   setDailySalesOpen
 }) => {
+  const [showAuditLog, setShowAuditLog] = React.useState(false);
   return (
     <aside
       className={`bg-white w-64 p-5 fixed h-full transition-transform transform ${
@@ -32,7 +35,7 @@ const Sidebar = ({
     >
       <div>
         <div className="flex items-center justify-between mb-5">
-          <img src={Logo} height={150} width={150} />
+          <img src={Logo} height={150} width={150} alt="Logo" />
           <button className="md:hidden" onClick={() => setIsOpen(false)}>
             X
           </button>
@@ -42,6 +45,18 @@ const Sidebar = ({
 
         <nav>
           <ul className="space-y-4">
+            {/* Audit Log Button - visible only on admin dashboard */}
+            {(window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/dashboard/admin")) && (
+              <li
+                className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
+                  window.location.pathname.includes("audit") ? "bg-blue-500 text-white" : "hover:bg-gray-200 text-gray-700"
+                }`}
+                onClick={() => setShowAuditLog(true)}
+              >
+                <History className="w-5 h-5" />
+                <span>Audit Log</span>
+              </li>
+            )}
             {/* Home */}
             <li
               className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
@@ -73,6 +88,7 @@ const Sidebar = ({
               <img
                 src="https://images.seeklogo.com/logo-png/9/1/mtn-logo-png_seeklogo-95716.png"
                 className="w-5 h-5"
+                alt="MTN"
               />
               <span>MTN</span>
             </li>
@@ -92,6 +108,7 @@ const Sidebar = ({
               <img
                 src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTl4R7lA1tlSlrBzf9OrDXIswYytfI7TfvC0w&s"
                 className="w-5 h-5"
+                alt="TELECEL"
               />
               <span>TELECEL</span>
             </li>
@@ -111,12 +128,23 @@ const Sidebar = ({
               <img
                 src="https://play-lh.googleusercontent.com/yZFOhTvnlb2Ply82l8bXusA3OAhYopla9750NcqsjqcUNAd4acuohCTAlqHR9_bKrqE"
                 className="w-5 h-5"
+                alt="AIRTEL TIGO"
               />
               <span>AIRTEL TIGO</span>
             </li>
 
             <hr className="my-10" />
             <TransactionsModal />
+            {/* Audit Log Button - always visible for admin */}
+            <li
+              className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
+                showAuditLog ? "bg-blue-500 text-white" : "hover:bg-gray-200 text-gray-700"
+              }`}
+              onClick={() => setShowAuditLog(true)}
+            >
+              <History className="w-5 h-5" />
+              <span>Audit Log</span>
+            </li>
             <hr className="my-10" />
             <div onClick={() => setIsOpen(false)}>
               <UploadExcel />
@@ -145,6 +173,16 @@ const Sidebar = ({
           </ul>
         </nav>
       </div>
+
+      {/* Audit Log Modal */}
+      <Dialog open={showAuditLog} onClose={() => setShowAuditLog(false)} className="fixed inset-0 z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black bg-opacity-40" aria-hidden="true" />
+        <div className="relative bg-white rounded-lg shadow-lg w-[95vw] md:w-[70vw] max-h-[90vh] overflow-y-auto p-4">
+          <Dialog.Title className="text-xl font-bold mb-2">Audit Log</Dialog.Title>
+          <button onClick={() => setShowAuditLog(false)} className="absolute top-2 right-4 text-gray-500 hover:text-red-500 text-lg">&times;</button>
+          <AuditLog />
+        </div>
+      </Dialog>
 
       <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
         <p className="text-xs text-gray-500">Sponsored Ad</p>

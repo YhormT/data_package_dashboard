@@ -9,6 +9,8 @@ import AdminDashboard from "./AdminDashboard";
 import UserDashboard from "./UserDashboard";
 import Premium from "./Premium";
 import OtherDashboard from "./OtherDashboard";
+import Superagent from "./SuperAgent";
+import Normalagent from "./NormalAgent";
 import Logo from "../assets/logo-icon.png";
 import { toast } from "react-toastify";
 import { Dialog } from "@headlessui/react";
@@ -30,13 +32,6 @@ const Login = () => {
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   // In real app, this would check localStorage
-  // useEffect(() => {
-  //   // const storedRole = localStorage.getItem("role");
-  //   // if (storedRole) {
-  //   //   setUserRole(storedRole);
-  //   // }
-  // }, []);
-
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
     if (storedRole) {
@@ -76,7 +71,6 @@ const Login = () => {
       localStorage.setItem("email", user.email);
       localStorage.setItem("userId", user.id);
       localStorage.setItem("isLoggedIn", true);
-
       // In real app: toast.success("Login successful!");
       toast.success("Login successful!");
 
@@ -115,6 +109,10 @@ const Login = () => {
     return <UserDashboard setUserRole={setUserRole} userRole={userRole} />;
   } else if (userRole === "PREMIUM") {
     return <Premium setUserRole={setUserRole} userRole={userRole} />;
+  } else if (userRole === "SUPERAGENT") {
+    return <Superagent setUserRole={setUserRole} userRole={userRole} />;
+  } else if (userRole === "NORMALAGENT") {
+    return <Normalagent setUserRole={setUserRole} userRole={userRole} />;
   } else if (userRole === "Other") {
     return <OtherDashboard setUserRole={setUserRole} userRole={userRole} />;
   }

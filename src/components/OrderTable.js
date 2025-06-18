@@ -749,7 +749,11 @@ const TotalRequestsComponent = () => {
     <>
       <div
         className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-auto flex-1 cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition duration-300 relative"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+  setOpen(true);
+  setHasNewRequests(false);
+  setNewRequestsCount(0);
+}}
       >
         <FileText className="w-12 h-12 text-purple-500" />
         <div>

@@ -38,9 +38,11 @@ import TransactionalAdminModal from "../components/TransactionalAdminModal";
 import PaymentModal from "../components/PaymentModal";
 import TotalRequestsComponent from "../components/OrderTable";
 import AnnouncementManager from "../components/AnnouncementManager";
+import AuditLog from "../components/AuditLog";
 // import OrderDialog from "../components/OrderDialog.js";
 
 const AdminDashboard = ({ setUserRole }) => {
+  const [showAuditLog, setShowAuditLog] = useState(false);
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -78,31 +80,6 @@ const AdminDashboard = ({ setUserRole }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // useEffect(() => {
-  //   const fetchTopups = async () => {
-  //     setLoading(true);
-  //     try {
-  //       const response = await axios.get(
-  //         BASE_URL + "/api/topups?startDate=2024-03-01&endDate=2030-03-14"
-  //       );
-  //       setJustCount(response.data.length);
-  //     } catch (error) {
-  //       console.error("Error fetching top-ups:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   // Initial fetch when component mounts
-  //   fetchTopups();
-
-  //   // Fetch data every 10 seconds
-  //   const interval = setInterval(fetchTopups, 10000);
-
-  //   // Clean up interval on component unmount
-  //   return () => clearInterval(interval);
-  // }, [setUserRole]); // Add dependencies as needed
-
   const [hasNewTopups, setHasNewTopups] = useState(false);
 
   useEffect(() => {
@@ -137,9 +114,6 @@ const AdminDashboard = ({ setUserRole }) => {
             text: "Click on Topups Ordered to view details",
           });
 
-          // Optional: Add a sound notification
-          // const audio = new Audio('/notification-sound.mp3');
-          // audio.play().catch(e => console.log('Audio play failed:', e));
           setHasNewTopups(true);
         }
 
@@ -299,16 +273,6 @@ const AdminDashboard = ({ setUserRole }) => {
     phone: "",
   });
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   if (selectedUser) {
-  //     setSelectedUser((prevUser) => ({ ...prevUser, [name]: value }));
-  //   } else {
-  //     setNewUser((prevUser) => ({ ...prevUser, [name]: value }));
-  //   }
-  // };
-
  const handleInputChange = (e) => {
   const { name, value } = e.target;
 
@@ -417,42 +381,54 @@ const AdminDashboard = ({ setUserRole }) => {
 
   const [selectedStatusMain, setSelectedStatusMain] = useState("");
 
-  const filteredOrders = allItems.filter((item) => {
-    if (!item.createdAt) return false; // Ensure createdAt exists
+// List of status tabs for filtering orders
+const statusTabs = [
+  { label: "All", value: "" },
+  { label: "Processing", value: "Processing" },
+  { label: "Completed", value: "Completed" },
+  { label: "Canceled", value: "Canceled" }, // Added Canceled tab
+];
 
-    const orderDateTime = new Date(item.createdAt);
-    const orderDate = orderDateTime.toISOString().split("T")[0];
-    const orderTime = orderDateTime.toTimeString().split(" ")[0]; // Get HH:MM:SS format
+  // Enhanced filtering: support both 'Canceled' and 'Cancelled' for status
+const filteredOrders = allItems.filter((item) => {
+  if (!item.createdAt) return false; // Ensure createdAt exists
 
-    const selectedStartTime = startTime
-      ? new Date(`${selectedDate}T${startTime}`)
-      : null;
-    const selectedEndTime = endTime
-      ? new Date(`${selectedDate}T${endTime}`)
-      : null;
+  const orderDateTime = new Date(item.createdAt);
+  const orderDate = orderDateTime.toISOString().split("T")[0];
+  const orderTime = orderDateTime.toTimeString().split(" ")[0]; // Get HH:MM:SS format
 
-    if (selectedDate && orderDate !== selectedDate) return false;
+  const selectedStartTime = startTime
+    ? new Date(`${selectedDate}T${startTime}`)
+    : null;
+  const selectedEndTime = endTime
+    ? new Date(`${selectedDate}T${endTime}`)
+    : null;
 
-    if (selectedProduct && item.product?.name !== selectedProduct) return false;
+  if (selectedDate && orderDate !== selectedDate) return false;
 
-    if (startTime && endTime) {
-      if (
-        orderDateTime < selectedStartTime ||
-        orderDateTime > selectedEndTime
-      ) {
-        return false;
-      }
-    }
+  if (selectedProduct && item.product?.name !== selectedProduct) return false;
 
+  if (startTime && endTime) {
     if (
-      selectedStatusMain
-        ? item.order?.items?.[0]?.status !== selectedStatusMain
-        : false
-    )
+      orderDateTime < selectedStartTime ||
+      orderDateTime > selectedEndTime
+    ) {
       return false;
+    }
+  }
 
-    return true;
-  });
+  // Support both spellings for canceled status
+  if (selectedStatusMain) {
+    const status = item.order?.items?.[0]?.status;
+    if (selectedStatusMain === "Canceled") {
+      if (status !== "Canceled" && status !== "Cancelled") return false;
+    } else if (status !== selectedStatusMain) {
+      return false;
+    }
+  }
+
+  return true;
+});
 
   console.log("Filter", filteredOrders);
 
@@ -494,13 +470,6 @@ const AdminDashboard = ({ setUserRole }) => {
   const [lastActivity, setLastActivity] = useState(Date.now());
   const inactivityTimeout = useRef(null);
   const INACTIVE_TIMEOUT = 300000;
-
-  // const logoutAdmin = useCallback(() => {
-  //   localStorage.removeItem("token");
-  //   localStorage.removeItem("role");
-  //   localStorage.removeItem("adminId");
-  //   setUserRole(null);
-  // }, [setUserRole]);
 
   const logoutAdmin = useCallback(async () => {
     try {
@@ -710,36 +679,6 @@ const AdminDashboard = ({ setUserRole }) => {
     XLSX.writeFile(wb, "Filtered_Orders.xlsx");
   };
 
-  // const handleUpdateUser = async () => {
-  //   if (!selectedUser) return;
-
-  //   try {
-  //     const response = await axios.put(
-  //       `${BASE_URL}/api/users/${selectedUser.id}`,
-  //       {
-  //         name: selectedUser.name,
-  //         email: selectedUser.email,
-  //         password: selectedUser.password,
-  //         role: selectedUser.role || "USER",
-  //         phone: selectedUser.phone,
-  //       },
-  //       {
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //       }
-  //     );
-
-  //     console.log("Updated user:", response.data);
-
-  //     setShowModal(false);
-
-  //     fetchUsers();
-  //   } catch (error) {
-  //     console.error("Error updating user:", error);
-  //   }
-  // };
-
   const handleUpdateUser = async () => {
   if (!selectedUser) return;
 
@@ -822,35 +761,6 @@ const AdminDashboard = ({ setUserRole }) => {
       }
     });
   };
-
-  // const handleLoanStatusChange = async (userId, hasLoan) => {
-  //   try {
-  //     const { isConfirmed } = await Swal.fire({
-  //       title: "Are you sure?",
-  //       text: `Do you want to ${
-  //         hasLoan ? "grant" : "remove"
-  //       } loan status for this user?`,
-  //       icon: "warning",
-  //       showCancelButton: true,
-  //       confirmButtonColor: "#3085d6",
-  //       cancelButtonColor: "#d33",
-  //       confirmButtonText: "Yes, update it!",
-  //     });
-
-  //     if (!isConfirmed) return;
-
-  //     await axios.put(BASE_URL + "/api/users/loan/status", {
-  //       userId,
-  //       hasLoan,
-  //     });
-
-  //     Swal.fire("Updated!", "Loan status has been updated.", "success");
-  //     fetchUsers();
-  //   } catch (error) {
-  //     console.error("Error updating loan status:", error);
-  //     Swal.fire("Error!", "Failed to update loan status.", "error");
-  //   }
-  // };
 
   const handleLoanStatusChange = async (userId, hasLoan) => {
     try {
@@ -1012,21 +922,34 @@ const AdminDashboard = ({ setUserRole }) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col ml-0 md:ml-64">
         {/* Header */}
-        <header className="bg-white shadow-md p-4 flex justify-between items-center w-[65%] sm:w-full">
+        <header className="bg-white shadow-md p-4 flex items-center w-[65%] sm:w-full">
           <button className="md:hidden" onClick={() => setIsOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-semibold hidden md:block">
+          <h1 className="text-xl font-semibold hidden md:block flex-1">
             Admin Dashboard
           </h1>
-
-          {/* <AnnouncementManager /> */}
-          {/* <button
-            className="bg-green-500 text-white px-4 py-2 rounded-md flex items-center"
-            onClick={exportToExcel}
+          <button
+            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow ml-auto"
+            onClick={() => setShowAuditLog(true)}
+            style={{ minWidth: 120 }}
           >
-            <Download className="w-5 h-5 mr-2" /> Export to Excel
-          </button> */}
+            Audit Log
+          </button>
+          <Dialog open={showAuditLog} onClose={() => setShowAuditLog(false)} className="z-50">
+            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+              <Dialog.Panel className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
+                <button
+                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowAuditLog(false)}
+                  aria-label="Close Audit Log"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+                <AuditLog />
+              </Dialog.Panel>
+            </div>
+          </Dialog>
         </header>
 
         {/* Admin Info Card */}
@@ -1041,7 +964,24 @@ const AdminDashboard = ({ setUserRole }) => {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[40%] sm:w-full">
+        {/* Order Status Tabs */}
+{/* <div className="flex flex-row gap-2 mt-6 px-4 sm:px-6 md:px-8">
+  {statusTabs.map((tab) => (
+    <button
+      key={tab.value}
+      className={`px-4 py-2 rounded-md text-sm font-medium shadow-md transition-colors duration-200 ${
+        selectedStatusMain === tab.value
+          ? "bg-blue-600 text-white"
+          : "bg-white text-gray-800 border border-gray-300"
+      }`}
+      onClick={() => setSelectedStatusMain(tab.value)}
+    >
+      {tab.label}
+    </button>
+  ))}
+</div> */}
+
+<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[40%] sm:w-full">
           {/* Total Users */}
           <div className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-auto flex-1 cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition duration-300">
             <Users className="w-12 h-12 text-blue-500" />
@@ -1070,17 +1010,6 @@ const AdminDashboard = ({ setUserRole }) => {
             </div>
           </div>
 
-          {/* Total Requests */}
-          {/* <div
-            className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-auto flex-1 cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition duration-300"
-            onClick={() => setOpen(true)}
-          >
-            <FileText className="w-12 h-12 text-purple-500" />
-            <div>
-              <h3 className="text-xl font-semibold">Total Requests</h3>
-              <p className="text-lg font-bold">{allItems?.length}</p>
-            </div>
-          </div> */}
           <TotalRequestsComponent />
 
           <div className="mt-4 text-right font-semibold text-gray-700 animate-pulse flex-nowrap">
@@ -1094,7 +1023,6 @@ const AdminDashboard = ({ setUserRole }) => {
               })}
             </span>
           </div>
-          
         </div>
 
         <ProductDialog
@@ -1111,10 +1039,6 @@ const AdminDashboard = ({ setUserRole }) => {
             >
               <Plus className="w-5 h-5 mr-2" /> Add New User
             </button>
-
-            {/* <div className="mt-4 text-right font-semibold text-gray-700 animate-pulse">
-              Total Agents Balance:  <span className="text-green-600"> GHS {totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span> 
-            </div> */}
           </div>
 
           <div className="overflow-x-auto w-[37%] sm:w-full">
@@ -1193,17 +1117,7 @@ const AdminDashboard = ({ setUserRole }) => {
                       )}
                     </td>
 
-                    {/* <td className="border p-2 text-center">
-                    {new Date(user.createdAt).toLocaleString("en-US", {
-                      year: "numeric",
-                      month: "short", // "Jan", "Feb", etc.
-                      day: "2-digit",
-                      hour: "2-digit",
-                      minute: "2-digit",
-                      second: "2-digit",
-                      hour12: true, // Use 12-hour format (AM/PM)
-                    })}
-                  </td> */}
+                   
                     <td className="border p-2 flex justify-center space-x-2">
                       <button
                         className="text-blue-500 hover:text-blue-700"
@@ -1388,6 +1302,8 @@ const AdminDashboard = ({ setUserRole }) => {
               <option value="">Select status</option>
               <option value="Processing">Processing</option>
               <option value="Completed">Completed</option>
+              <option value="Canceled">Canceled</option>
+              <option value="Cancelled">Cancelled</option> // Added both spellings for robustness
             </select>
           </div>
 
