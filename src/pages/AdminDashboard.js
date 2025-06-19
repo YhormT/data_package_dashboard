@@ -936,20 +936,7 @@ const filteredOrders = allItems.filter((item) => {
           >
             Audit Log
           </button>
-          <Dialog open={showAuditLog} onClose={() => setShowAuditLog(false)} className="z-50">
-            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-              <Dialog.Panel className="bg-white rounded-lg shadow-lg max-w-3xl w-full p-6 relative">
-                <button
-                  className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
-                  onClick={() => setShowAuditLog(false)}
-                  aria-label="Close Audit Log"
-                >
-                  <X className="w-6 h-6" />
-                </button>
-                <AuditLog />
-              </Dialog.Panel>
-            </div>
-          </Dialog>
+          <AuditLog isOpen={showAuditLog} onClose={() => setShowAuditLog(false)} />
         </header>
 
         {/* Admin Info Card */}
@@ -1388,5 +1375,8 @@ const filteredOrders = allItems.filter((item) => {
     </div>
   );
 };
+
+  // ...other dashboard JSX components...
+  <AuditLog />
 
 export default AdminDashboard;
