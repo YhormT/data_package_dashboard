@@ -57,13 +57,6 @@ const Premium = ({ setUserRole, userRole }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  // const logoutUser = useCallback(() => {
-  //   localStorage.removeItem("token");
-  //   localStorage.removeItem("role");
-  //   localStorage.removeItem("userId"); // Optional: Remove user ID if needed
-  //   setUserRole(null); // Reset state to show login screen
-  // }, []);
-
   const logoutUser = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -109,68 +102,7 @@ const Premium = ({ setUserRole, userRole }) => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   const userId = localStorage.getItem("userId");
-  //   const fetchLoanBalance = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${BASE_URL}/api/users/loan/${userId}`
-  //       );
-  //       setLoanBalance(response.data);
-  //     } catch (err) {
-  //       setError(err.message);
-  //     }
-  //   };
-
-  //   if (userId) {
-  //     fetchLoanBalance();
-  //   }
-  // }, [userRole]);
-
   const [transactionInProgress, setTransactionInProgress] = useState(false);
-
-  // useEffect(() => {
-  //   const userId = localStorage.getItem("userId");
-
-  //   const fetchLoanBalance = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${BASE_URL}/api/users/loan/${userId}`
-  //       );
-  //       setLoanBalance(response.data);
-  //     } catch (err) {
-  //       setError(err.message);
-  //     }
-  //   };
-
-  //   let interval;
-
-  //   if (userId) {
-  //     // Initial fetch immediately
-  //     fetchLoanBalance();
-
-  //     // Set interval to fetch every 1 second
-  //     interval = setInterval(fetchLoanBalance, 1000);
-  //   }
-
-  //   return () => {
-  //     if (interval) clearInterval(interval); // Cleanup on component unmount
-  //   };
-  // }, [userRole]);
-
-  // useEffect(() => {
-  //   const fetchProducts = async () => {
-  //     try {
-  //       const response = await fetch(`${BASE_URL}/products`);
-  //       const data = await response.json();
-  //       setProducts(data);
-  //     } catch (error) {
-  //       console.error("Error fetching products:", error);
-  //     }
-  //   };
-
-  //   fetchProducts();
-  // }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -360,72 +292,6 @@ const Premium = ({ setUserRole, userRole }) => {
     }
   };
 
-  // const addToCart = async (productId) => {
-  //   try {
-  //     const userId = parseInt(localStorage.getItem("userId"), 10);
-  //     if (!userId) return;
-
-  //     const mobileNumber = mobileNumbers[productId] || "";
-
-  //     if (!mobileNumber.trim()) {
-  //       setError((prev) => ({
-  //         ...prev,
-  //         [productId]:
-  //           "Please enter a valid mobile number before adding to cart.",
-  //       }));
-  //       return;
-  //     }
-
-  //     const data = JSON.stringify({
-  //       userId,
-  //       productId,
-  //       quantity: 1,
-  //       mobileNumber,
-  //     });
-
-  //     const config = {
-  //       method: "post",
-  //       maxBodyLength: Infinity,
-  //       url: `${BASE_URL}/cart/add/`,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       data: data,
-  //     };
-
-  //     // Show loader
-  //     setLoading(true);
-
-  //     await axios.request(config);
-
-  //     // Hide loader
-  //     setLoading(false);
-
-  //     // Show success notification
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Added to Cart!",
-  //       text: `Product ${productId} has been added to your cart.`,
-  //       timer: 2000, // Auto close after 2 sec
-  //       showConfirmButton: false,
-  //     });
-
-  //     fetchCart();
-  //     setMobileNumbers("");
-  //   } catch (error) {
-  //     setLoading(false);
-
-  //     // Show error notification
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Oops!",
-  //       text: "Something went wrong while adding the product to the cart.",
-  //     });
-
-  //     console.error("Error adding to cart:", error);
-  //   }
-  // };
-
   const removeFromCart = async (cartItemId) => {
     Swal.fire({
       title: "Are you sure?",
@@ -463,15 +329,6 @@ const Premium = ({ setUserRole, userRole }) => {
   const filteredProducts = selectedCategory
     ? products?.filter((product) => product.name === selectedCategory)
     : products;
-
-  // Function to handle category selection
-  //   const handleCategorySelect = (category) => {
-  //     setLoading(true); // Show loading spinner
-  //     setTimeout(() => {
-  //       setSelectedCategory(category);
-  //       setLoading(false); // Hide loading after delay
-  //     }, 1000);
-  //   };
 
   const [filteredProducts1, setFilteredProducts1] = useState([]);
 
@@ -559,23 +416,6 @@ const Premium = ({ setUserRole, userRole }) => {
     }, 1000);
   };
 
-  //   const handleCategorySelect = (category) => {
-  //     setLoading(true); // Show loading spinner
-
-  //     setTimeout(() => {
-  //       setSelectedCategory(category);
-
-  //       // Filter only "PREMIUM" products related to the selected category
-  //       const premiumProducts = products.filter(
-  //         (product) =>
-  //           product.name.includes(category) && product.name.includes("PREMIUM")
-  //       );
-
-  //       setFilteredProducts1(premiumProducts);
-  //       setLoading(false); // Hide loading after delay
-  //     }, 1000);
-  //   };
-
   const [visibleInputs, setVisibleInputs] = useState({});
 
   // Toggle function
@@ -597,160 +437,6 @@ const Premium = ({ setUserRole, userRole }) => {
       setError(err.message);
     }
   };
-
-  // const submitCart = async () => {
-  //   if (isSubmitting) return; // Prevent multiple clicks
-
-  //   try {
-  //     setIsSubmitting(true); // Disable button
-
-  //     const userId = parseInt(localStorage.getItem("userId"), 10);
-  //     if (!userId) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "User ID is missing",
-  //         text: "Please log in before submitting your cart.",
-  //       });
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-
-  //     // Calculate total cart amount
-  //     const totalAmount = cart.reduce(
-  //       (total, item) => total + item.product.price * (item.quantity || 1),
-  //       0
-  //     );
-
-  //     // Convert loanBalance to a number
-  //     // const walletBalance = parseFloat(loanBalance.loanBalance);
-
-  //     const walletBalance = Math.abs(parseFloat(loanBalance.loanBalance));
-
-  //     // console.log("Total Amount:", walletBalance, loanBalance);
-
-  //     // Ensure loanBalance is a valid number
-  //     if (isNaN(walletBalance)) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error Fetching Wallet Balance",
-  //         text: "Unable to retrieve your wallet balance. Please try again.",
-  //       });
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-
-  //     // Strictly enforce no negative balance
-  //     if (totalAmount > walletBalance) {
-  //       Swal.fire({
-  //         icon: "warning",
-  //         title: "Insufficient Funds",
-  //         text: `Your wallet balance is GHS ${walletBalance.toFixed(
-  //           2
-  //         )}, but your cart total is GHS ${totalAmount.toFixed(
-  //           2
-  //         )}. Please top up before proceeding.`,
-  //         confirmButtonColor: "#d33",
-  //       });
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-
-  //     // Proceed with order submission
-  //     const data = JSON.stringify({ userId });
-
-  //     const config = {
-  //       method: "post",
-  //       maxBodyLength: Infinity,
-  //       url: `${BASE_URL}/order/submit`,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       data: data,
-  //     };
-
-  //     const response = await axios.request(config);
-  //     console.log("Order submitted:", response.data);
-
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Cart Submitted!",
-  //       text: "Your order has been placed successfully.",
-  //       confirmButtonColor: "#28a745",
-  //     }).then(() => {
-  //       fetchCart(); // Refresh cart
-  //       fetchLoanBalance();
-  //       setIsCartOpen(false); // Close modal
-  //     });
-  //   } catch (error) {
-  //     console.error("Error submitting cart:", error);
-
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Failed to Submit Cart",
-  //       text: "There was an error processing your order. Please try again.",
-  //       confirmButtonColor: "#d33",
-  //     });
-  //   } finally {
-  //     setIsSubmitting(false); // Re-enable button
-  //   }
-  // };
-
-  //     if (isSubmitting) return; // Prevent multiple clicks
-
-  //     try {
-  //       setIsSubmitting(true); // Disable button
-
-  //       const userId = parseInt(localStorage.getItem("userId"), 10);
-  //       if (!userId) {
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "User ID is missing",
-  //           text: "Please log in before submitting your cart.",
-  //         });
-  //         setIsSubmitting(false);
-  //         return;
-  //       }
-
-  //       const data = JSON.stringify({ userId });
-
-  //       const config = {
-  //         method: "post",
-  //         maxBodyLength: Infinity,
-  //         url: `${BASE_URL}/order/submit`,
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         data: data,
-  //       };
-
-  //       const response = await axios.request(config);
-  //       console.log("Order submitted:", response.data);
-
-  //       Swal.fire({
-  //         icon: "success",
-  //         title: "Cart Submitted!",
-  //         text: "Your order has been placed successfully.",
-  //         confirmButtonColor: "#28a745",
-  //       }).then(() => {
-  //         fetchCart(); // Refresh cart
-  //         fetchLoanBalance()
-  //         setIsCartOpen(false); // Close modal
-  //       });
-  //     } catch (error) {
-  //       console.error("Error submitting cart:", error);
-
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Failed to Submit Cart",
-  //         text: "There was an error processing your order. Please try again.",
-  //         confirmButtonColor: "#d33",
-  //       });
-  //     } finally {
-  //       setIsSubmitting(false); // Re-enable button
-  //     }
-  //   };
-
-  // const [isCartOpen, setIsCartOpen] = useState(false);
 
   const submitCart = async () => {
     // CRITICAL FIX: Prevent multiple simultaneous transactions
@@ -1100,24 +786,6 @@ const Premium = ({ setUserRole, userRole }) => {
                 <span>AIRTEL TIGO</span>
               </li>
 
-              {/* <li
-                className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
-                  selectedCategory === "OTHERS"
-                    ? "bg-blue-500 text-white"
-                    : "hover:bg-gray-200"
-                }`}
-                onClick={() => {
-                  handleCategorySelect("OTHERS");
-                  setIsOpen(false);
-                }}
-              >
-                <img
-                  src="https://cdn-icons-png.flaticon.com/512/1970/1970023.png"
-                  className="w-5 h-5"
-                />
-                <span>Other Products</span>
-              </li> */}
-
               <hr className="my-10" />
 
               <hr className="my-10" />
@@ -1171,18 +839,7 @@ const Premium = ({ setUserRole, userRole }) => {
           <p className="text-md font-semibold uppercase whitespace-nowrap">
             <span className="">WELCOME</span> {loanBalance?.name}
           </p>
-          {/* <h1 className="text-xl font-semibold">{userRole} USER</h1> */}
-          {/* <div
-            className="relative cursor-pointer"
-            onClick={() => setIsCartOpen(true)}
-          >
-            <ShoppingCart className="w-6 h-6" />
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
-                {cart.length}
-              </span>
-            )}
-          </div> */}
+          
           <div className="flex items-center space-x-4">
             {loanBalance?.hasLoan && (
               <div className="text-sm text-red-500 mt-2 animate-pulse  hidden md:block">
@@ -1207,16 +864,6 @@ const Premium = ({ setUserRole, userRole }) => {
                 </div>
               </div>
             </div>
-
-            {/* <div className="bg-white p-2 rounded-lg shadow-md border border-gray-300 flex flex-col items-center hidden md:block white space-nowrap">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase">
-                wallet
-              </h2>
-              <div className="text-2xl font-bold text-blue-600 mt-2">
-                GHS {parseFloat(Math.abs(loanBalance?.loanBalance)).toFixed(2)}
-              </div>
-              
-            </div> */}
 
             {/* Shopping Cart */}
             <div
@@ -1435,20 +1082,6 @@ const Premium = ({ setUserRole, userRole }) => {
   return gbA - gbB; // ascending order: 1GB → 2GB → 10GB
 })
 
-                    // .sort((a, b) => {
-                    //   // Extract GB values from description
-                    //   const extractGB = (description) => {
-                    //     const match =
-                    //       description?.match(/(\d+(?:\.\d+)?)\s*GB/i);
-                    //     return match ? parseFloat(match[1]) : 0;
-                    //   };
-
-                    //   const gbA = extractGB(a.description);
-                    //   const gbB = extractGB(b.description);
-
-                    //   // Sort in descending order (largest first)
-                    //   return gbB - gbA;
-                    // })
                     .map((product) => (
                       <div
                         key={product.id}
@@ -1542,125 +1175,6 @@ const Premium = ({ setUserRole, userRole }) => {
             Access Denied: Only Premium Users Can View These Products.
           </div>
         )}
-
-        {/* {loading ? (
-          <div
-            className="flex justify-center items-center min-h-screen"
-            style={{
-              backgroundImage: `url(${bgImageMain})`, // Replace with your actual asset path
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundAttachment: "fixed",
-            }}
-          >
-            <svg
-              className="animate-spin h-10 w-10 text-blue-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8z"
-              ></path>
-            </svg>
-          </div>
-        ) : (
-          <main
-            className="p-6 bg-gray-100 min-h-screen"
-            style={{
-              backgroundImage: `url(${bgImageMain})`, // Replace with your actual asset path
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundAttachment: "fixed",
-            }}
-          >
-            <h2 className="text-2xl font-semibold mt-6 text-center text-gray-800">
-              {selectedCategory
-                ? `${selectedCategory} PRODUCTS`
-                : "AVAILABLE PRODUCTS"}
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
-              {filteredProducts?.map((product) => (
-                <motion.div
-                  key={product.id}
-                  className="relative border p-6 rounded-xl shadow-lg bg-white hover:shadow-2xl transition-shadow duration-300"
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                >
-                  
-                  <motion.button
-                    onClick={() => toggleInput(product.id)}
-                    className="absolute top-2 right-2 bg-gray-500 text-white text-xs px-2 py-1 rounded-lg 
-                  hover:bg-gray-600 transition-colors duration-300"
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    Other Number
-                  </motion.button>
-
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {product.name}
-                  </h3>
-                  <h3 className="text-lg font-bold text-gray-900">
-                    {product.description}
-                  </h3>
-                  <p className="text-gray-600 mt-2 text-sm">
-                    Price: GHS {product.price}
-                  </p>
-
-             
-
-                  {visibleInputs[product.id] && (
-                    <>
-                      <input
-                        type="text"
-                        placeholder="Enter mobile number"
-                        value={mobileNumbers[product.id] || ""}
-                        onChange={(e) =>
-                          handleMobileNumberChange(product.id, e.target.value)
-                        }
-                        className={`mt-2 w-full p-2 border ${
-                          error[product.id]
-                            ? "border-red-500"
-                            : "border-gray-300"
-                        } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      />
-                      {error[product.id] && (
-                        <p className="text-red-500 text-sm">
-                          {error[product.id]}
-                        </p>
-                      )}
-                    </>
-                  )}
-
-                 
-                  <motion.button
-                    onClick={() => addToCart(product.id)}
-                    className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-lg w-full 
-                  hover:bg-blue-600 transition-colors duration-300"
-                    whileHover={{ scale: 1.1 }}
-                    whileTap={{ scale: 0.9 }}
-                  >
-                    Add to Cart
-                  </motion.button>
-                </motion.div>
-              ))}
-            </div>
-          </main>
-        )} */}
       </div>
 
       <Dialog

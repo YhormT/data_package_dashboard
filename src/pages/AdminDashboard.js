@@ -154,8 +154,7 @@ const AdminDashboard = ({ setUserRole }) => {
     setLoading(true);
     try {
       const response = await axios.post(
-        // `${BASE_URL}/api/users/loan/add`,
-        `${BASE_URL}/api/users/loan/repay`,
+        `${BASE_URL}/api/users/loan/add`,
         {
           userId: orderNo,
           amount: Number(loanAmount),
@@ -1235,6 +1234,8 @@ const filteredOrders = allItems.filter((item) => {
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>
             <option value="PREMIUM">PREMIUM</option>
+            <option value="SUPERAGENT">SUPER AGENT</option>
+            <option value="NORMALAGENT">NORMAL AGENT</option>
             <option value="Other">Other</option>
           </select>
 
@@ -1375,8 +1376,5 @@ const filteredOrders = allItems.filter((item) => {
     </div>
   );
 };
-
-  // ...other dashboard JSX components...
-  <AuditLog />
 
 export default AdminDashboard;

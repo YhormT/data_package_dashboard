@@ -88,76 +88,6 @@ const TotalRequestsComponent = () => {
     };
   }, [autoRefresh, refreshInterval]);
 
-  // Fetch order data
-  // const fetchOrderData = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await axios.get(`${BASE_URL}/order/admin/allorder`);
-
-  //     setOrderCount(response.data.length);
-  //     const currentTime = new Date();
-
-  //     // Process the data
-  //     if (Array.isArray(response.data)) {
-  //       const itemsList = response.data.flatMap((order) =>
-  //         Array.isArray(order.items)
-  //           ? order.items.map((item) => ({
-  //               ...item,
-  //               orderId: order.id,
-  //               createdAt: order.createdAt,
-  //               user: order.user,
-  //               order,
-  //               // Mark as new if the item was created in the last 5 minutes
-  //               isNew:
-  //                 new Date(order.createdAt) >
-  //                 new Date(currentTime - 5 * 60 * 1000),
-  //             }))
-  //           : []
-  //       );
-
-  //       // Check for new items since last fetch
-  //       const prevCount = prevItemsCountRef.current;
-  //       const newCount = itemsList.length;
-
-  //       if (prevCount > 0 && newCount > prevCount) {
-  //         setHasNewRequests(true);
-  //         setNewRequestsCount(newCount - prevCount);
-
-  //         // Notify admin about new requests
-  //         if (notificationsEnabled) {
-  //           // Show browser notification
-  //           if (
-  //             "Notification" in window &&
-  //             Notification.permission === "granted"
-  //           ) {
-  //             new Notification("New Requests", {
-  //               body: `${newCount - prevCount} new requests have arrived.`,
-  //               icon: "/notification-icon.png", // Add an icon to your public directory
-  //             });
-  //           }
-
-  //           // Play notification sound
-  //           if (audioRef.current) {
-  //             audioRef.current
-  //               .play()
-  //               .catch((e) =>
-  //                 console.error("Error playing notification sound:", e)
-  //               );
-  //           }
-  //         }
-  //       }
-
-  //       prevItemsCountRef.current = newCount;
-  //       setAllItems(itemsList);
-  //       setLastFetchTime(currentTime);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching order data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const fetchOrderData = async () => {
     setLoading(true);
     try {
@@ -330,55 +260,6 @@ const TotalRequestsComponent = () => {
   };
 
   // Apply filters and memoize the result
-  // const filteredOrders = useMemo(() => {
-  //   let filtered = allItems.filter((item) => {
-  //     if (!item.createdAt) return false;
-
-  //     const orderDateTime = new Date(item.createdAt);
-  //     const orderDate = orderDateTime.toISOString().split("T")[0];
-
-  //     // Only show new requests if the toggle is on
-  //     if (showNewRequestsOnly && !item.isNew) return false;
-
-  //     const selectedStartTime = startTime
-  //       ? new Date(`${selectedDate}T${startTime}`)
-  //       : null;
-  //     const selectedEndTime = endTime
-  //       ? new Date(`${selectedDate}T${endTime}`)
-  //       : null;
-
-  //     if (selectedDate && orderDate !== selectedDate) return false;
-  //     if (selectedProduct && item.product?.name !== selectedProduct) return false;
-
-  //     if (startTime && endTime) {
-  //       if (
-  //         orderDateTime < selectedStartTime ||
-  //         orderDateTime > selectedEndTime
-  //       ) {
-  //         return false;
-  //       }
-  //     }
-
-  //     if (
-  //       selectedStatusMain &&
-  //       item.order?.items?.[0]?.status !== selectedStatusMain
-  //     )
-  //       return false;
-
-  //     return true;
-  //   });
-
-  //   // Sort by creation date
-  //   filtered.sort((a, b) => {
-  //     const dateA = new Date(a.createdAt);
-  //     const dateB = new Date(b.createdAt);
-  //     return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-  //   });
-
-  //   return filtered;
-  // }, [allItems, selectedDate, selectedProduct, startTime, endTime, selectedStatusMain, showNewRequestsOnly, sortOrder]);
-
-  // Apply filters and memoize the result
   const filteredOrders = useMemo(() => {
     let filtered = allItems.filter((item) => {
       if (!item.createdAt) return false;
@@ -467,12 +348,6 @@ const TotalRequestsComponent = () => {
     setSelectedOrderId(orderItemId);
     setIsOpenStatus(true);
   };
-
-  // const handleViewClickStatus = (orderItemId) => {
-  //   console.log("Order Item",orderItemId)
-  //   setSelectedOrderId(orderItemId);
-  //   setIsOpenStatus(true);
-  // };
 
   const handleUpdateStatus = async (orderId) => {
     try {
@@ -571,14 +446,6 @@ const TotalRequestsComponent = () => {
         status: selectedStatus,
       });
 
-      // Update local state using the response data
-      // setAllItems((prevItems) =>
-      //   prevItems.map((item) =>
-      //     item.id === response.data.updatedItem.id
-      //       ? { ...item, ...response.data.updatedItem, isNew: false }
-      //       : item
-      //   )
-      // );
       setAllItems((prevItems) =>
         prevItems.map((item) =>
           item.id === selectedOrderId
@@ -597,17 +464,6 @@ const TotalRequestsComponent = () => {
             : item
         )
       );
-
-      // Update local state
-      // Update local state
-
-      // setAllItems((prevItems) =>
-      //   prevItems.map((item) =>
-      //     item.id === selectedOrderId
-      //       ? { ...item, status: selectedStatus, isNew: false }
-      //       : item
-      //   )
-      // );
 
       Swal.fire({
         icon: "success",
@@ -931,13 +787,20 @@ const TotalRequestsComponent = () => {
                 >
                   <option value="">All Products</option>
                   <option value="MTN">MTN</option>
-                  <option value="TELECEL">TELECEL</option>
-                  <option value="AIRTEL TIGO">AIRTEL TIGO</option>
                   <option value="MTN - PREMIUM">MTN - PREMIUM</option>
+                  <option value="MTN - SUPERAGENT">MTN - SUPERAGENT</option>
+                  <option value="MTN - NORMALAGENT">MTN - NORMALAGENT</option>
+                  <option value="MTN - OTHER">MTN - OTHER</option>
+                  <option value="TELECEL">TELECEL</option>
                   <option value="TELECEL - PREMIUM">TELECEL - PREMIUM</option>
-                  <option value="AIRTEL TIGO - PREMIUM">
-                    AIRTEL TIGO - PREMIUM
-                  </option>
+                  <option value="TELECEL - SUPERAGENT">TELECEL - SUPERAGENT</option>
+                  <option value="TELECEL - NORMALAGENT">TELECEL - NORMALAGENT</option>
+                  <option value="TELECEL - OTHER">TELECEL - OTHER</option>
+                  <option value="AIRTEL TIGO">AIRTEL TIGO</option>
+                  <option value="AIRTEL TIGO - PREMIUM">AIRTEL TIGO - PREMIUM</option>
+                  <option value="AIRTEL TIGO - SUPERAGENT">AIRTEL TIGO - SUPERAGENT</option>
+                  <option value="AIRTEL TIGO - NORMALAGENT">AIRTEL TIGO - NORMALAGENT</option>
+                  <option value="AIRTEL TIGO - OTHER">AIRTEL TIGO - OTHER</option>
                 </select>
               </div>
 
@@ -1174,26 +1037,6 @@ const TotalRequestsComponent = () => {
                           >
                             GH₵ {item.product?.price || 0}
                           </td>
-
-                          {/* <td className="border px-2 py-2 md:px-4 text-center flex items-center justify-center space-x-2">
-                            <button
-                              className={`text-blue-500 hover:text-blue-700 mr-2 ${
-                                item.isNew ? "animate-bounce" : ""
-                              }`}
-                              onClick={() => handleViewClickStatus(item.id)}
-                            >
-                              <SpellCheck className="w-5 h-5" />
-                            </button>
-                            <button
-                              className={`text-green-500 hover:text-green-700 ${
-                                item.isNew ? "animate-bounce" : ""
-                              }`}
-                              onClick={() => handleUpdateStatus(item.order?.id)}
-                              title="Mark as Completed"
-                            >
-                              <Check className="w-5 h-5" />
-                            </button>
-                          </td> */}
 
                           <td className="border px-2 py-2 md:px-4 text-center flex items-center justify-center space-x-2">
                             <button
