@@ -6,7 +6,7 @@ import Swal from "sweetalert2";
 import BASE_URL from "../endpoints/endpoints";
 import orderTemplate from '../assets/template/order_template.xlsx'
 
-const AgentOrderUpload = () => {
+const AgentOrderUpload = ({ onUploadSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedNetwork, setSelectedNetwork] = useState("");
@@ -77,7 +77,7 @@ const AgentOrderUpload = () => {
 
     try {
       const response = await axios.post(
-        `${BASE_URL}/api/orders/upload-excel`,
+        `${BASE_URL}/order/upload-excel`,
         formData,
         {
           headers: {
@@ -95,22 +95,25 @@ const AgentOrderUpload = () => {
           title: "Upload Completed",
           html: `
             <div class="text-left">
-              <p><strong>Total Orders:</strong> ${result.summary.total}</p>
-              <p><strong>Successfully Processed:</strong> ${result.summary.successful}</p>
-              <p><strong>Failed:</strong> ${result.summary.failed}</p>
+              <p><strong>Total Rows:</strong> ${result.summary.total}</p>
+              <p><strong>Added to Cart:</strong> ${result.summary.added}</p>
             </div>
           `,
         });
+        if (onUploadSuccess) onUploadSuccess();
       } else {
+        let errorDetails = '';
+        if (result.errorReport) {
+          errorDetails = `<pre style="max-height:200px;overflow:auto;background:#f8d7da;padding:8px;border-radius:4px;">${JSON.stringify(result.errorReport, null, 2)}</pre>`;
+        }
         Swal.fire({
-          icon: "warning",
-          title: "Upload Completed with Issues",
+          icon: "error",
+          title: "Upload Failed",
           html: `
             <div class="text-left">
-              <p><strong>Total Orders:</strong> ${result.summary.total}</p>
-              <p><strong>Successfully Processed:</strong> ${result.summary.successful}</p>
-              <p><strong>Failed:</strong> ${result.summary.failed}</p>
-              <p class="text-red-600 mt-2">Please check the detailed report below.</p>
+              <p><strong>Total Rows:</strong> ${result.summary ? result.summary.total : 'N/A'}</p>
+              <p class="text-red-600 mt-2">${result.errorReport ? 'Validation errors occurred:' : (result.message || 'Unknown error.')}</p>
+              ${errorDetails}
             </div>
           `,
         });
@@ -118,10 +121,16 @@ const AgentOrderUpload = () => {
 
     } catch (error) {
       setUploadResult(null);
+      let backendMsg = error.response?.data?.message || "Something went wrong. Please try again.";
+      let errorReport = error.response?.data?.errorReport;
+      let errorHtml = backendMsg;
+      if (errorReport) {
+        errorHtml += `<pre style='max-height:200px;overflow:auto;background:#f8d7da;padding:8px;border-radius:4px;'>${JSON.stringify(errorReport, null, 2)}</pre>`;
+      }
       Swal.fire({
         icon: "error",
         title: "Upload Failed",
-        text: error.response?.data?.message || "Something went wrong. Please try again.",
+        html: errorHtml,
       });
       console.error("Upload Error:", error);
     } finally {
@@ -165,7 +174,8 @@ const AgentOrderUpload = () => {
 
             {/* Description */}
             <Dialog.Description className="text-sm text-gray-600 mb-6">
-              Upload your orders using an Excel file. Select the network and ensure your file follows the template format.
+              Upload your orders using an Excel file. Select the network and ensure your file follows the template format.<br/>
+              <span className="block mt-2 text-xs text-blue-700 font-semibold">Required Excel headers: <code>phone</code>, <code>item</code>, <code>bundle amount</code>, <code>quantity</code> (optional)</span>
             </Dialog.Description>
 
             {/* Template Download */}
@@ -175,8 +185,9 @@ const AgentOrderUpload = () => {
                 Use this template to format your orders correctly.
               </p>
               <a
-                href={orderTemplate}
-                download="order_template.xlsx"
+                href={`${BASE_URL}/order/download-template`}
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition text-sm"
               >
                 <DownloadIcon className="h-4 w-4 mr-2" />

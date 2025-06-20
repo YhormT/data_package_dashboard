@@ -18,7 +18,8 @@ const Sidebar = ({
   selectedCategory,
   handleCategorySelect,
   logoutUser,
-  setDailySalesOpen
+  setDailySalesOpen,
+  onUploadSuccess
 }) => {
   const [showAuditLog, setShowAuditLog] = React.useState(false);
   return (
@@ -147,7 +148,7 @@ const Sidebar = ({
             </li>
             <hr className="my-10" />
             <div onClick={() => setIsOpen(false)}>
-              <UploadExcel />
+              <UploadExcel onUploadSuccess={onUploadSuccess} />
             </div>
 
             {/* Daily Sales */}

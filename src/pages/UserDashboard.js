@@ -1200,6 +1200,7 @@ const handleCategorySelect = (category) => {
         handleCategorySelect={handleCategorySelect}
         logoutUser={logoutUser}
         setDailySalesOpen={setDailySalesOpen}
+        onUploadSuccess={fetchCart}
       />
 
       <div className="flex-1 flex flex-col ml-0 md:ml-64">

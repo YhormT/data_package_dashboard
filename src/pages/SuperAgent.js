@@ -773,7 +773,7 @@ const Superagent = ({ setUserRole, userRole }) => {
 
               <hr className="my-10" />
               <div onClick={() => setIsOpen(false)}>
-                <UploadExcel />
+                <UploadExcel onUploadSuccess={fetchCart} />
               </div>
 
               {/* <hr className="my-5" /> */}
