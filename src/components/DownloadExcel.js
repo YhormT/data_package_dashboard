@@ -22,62 +22,6 @@ const DownloadExcel = () => {
     fetchData();
   }, []);
 
-  //   try {
-  //     const userId = parseInt(id, 10); // Ensure userId is an integer
-  //     const url = `${BASE_URL}/api/users/download/${filename}`;
-
-  //     console.log("Requesting:", url, userId);
-
-  //     // Show loading alert
-  //     Swal.fire({
-  //       title: "Downloading...",
-  //       text: "Please wait while your file is being downloaded.",
-  //       allowOutsideClick: false,
-  //       didOpen: () => {
-  //         Swal.showLoading();
-  //       },
-  //     });
-
-  //     const response = await axios.post(
-  //       url,
-  //       { userId }, // Ensure this matches Postman request
-  //       {
-  //         headers: { "Content-Type": "application/json" },
-  //         // responseType: "blob",
-  //       }
-  //     );
-
-  //     if (response.status !== 200) {
-  //       throw new Error(`Server returned status ${response.status}`);
-  //     }
-
-  //     // Hide loading and show success alert
-  //     Swal.fire({
-  //       title: "Download Successful!",
-  //       text: `File "${filename}" has been downloaded successfully.`,
-  //       icon: "success",
-  //     });
-
-  //     // Download file
-  //     const downloadUrl = window.URL.createObjectURL(new Blob([response.data]));
-  //     const link = document.createElement("a");
-  //     link.href = downloadUrl;
-  //     link.setAttribute("download", filename);
-  //     document.body.appendChild(link);
-  //     link.click();
-  //     document.body.removeChild(link);
-  //   } catch (error) {
-  //     console.error("Download Error:", error);
-
-  //     // Show error alert
-  //     Swal.fire({
-  //       title: "Download Failed!",
-  //       text: "An error occurred while downloading the file.",
-  //       icon: "error",
-  //     });
-  //   }
-  // };
-
   const handleDownload = async (id, filename) => {
     try {
       const userId = parseInt(id, 10); // Ensure userId is an integer

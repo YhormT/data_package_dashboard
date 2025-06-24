@@ -48,6 +48,7 @@ const AdminDashboard = ({ setUserRole }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+const [isRefunding, setIsRefunding] = useState(false); // Prevent double refund
 
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [orderNo, setOrderNo] = useState([]);
@@ -139,54 +140,69 @@ const AdminDashboard = ({ setUserRole }) => {
     setShowLoanModal(true);
     setOrderNo(user.id);
     // setLoanUser(user);
-    setLoanAmount(user.loanBalance || ""); // Set loan field value
+    setLoanAmount(""); // Always start refund field blank
   };
 
-  const handleSubmitLoanAmount = async () => {
-    console.log(
-      "Order No:",
-      orderNo,
-      "Loan Amount:",
-      loanAmount,
-      "Has Loan:",
-      hasLoan
-    );
-    setLoading(true);
-    try {
-      const response = await axios.post(
-        `${BASE_URL}/api/users/loan/add`,
-        {
-          userId: orderNo,
-          amount: Number(loanAmount),
-          hasLoan: hasLoan, // Send the admin's choice
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-
-      console.log(response.data);
-
+  // Dedicated refund function to add only the refund amount to user's balance
+const handleRefundAmount = async () => {
+  console.log('[REFUND] Handler called');
+  if (isRefunding) {
+    console.log('Refund already in progress, ignoring duplicate click.');
+    return;
+  }
+  setIsRefunding(true);
+  setLoading(true);
+  try {
+    const refundAmount = parseFloat(loanAmount);
+    // Generate a unique refund reference for idempotency
+    const refundReference = `${Date.now()}_${orderNo}`;
+    if (isNaN(refundAmount) || refundAmount <= 0) {
       Swal.fire({
-        title: "Success!",
-        text: "Loan request submitted successfully.",
-        icon: "success",
+        title: "Invalid Amount!",
+        text: "Please enter a valid refund amount.",
+        icon: "error",
         confirmButtonText: "OK",
       });
-      fetchUsers();
-    } catch (error) {
-      console.error(error);
-
-      Swal.fire({
-        title: "Error!",
-        text: "Failed to submit loan request.",
-        icon: "error",
-        confirmButtonText: "Try Again",
-      });
-    } finally {
       setLoading(false);
+      return;
     }
-  };
+    // Send only the refund amount to the backend, expecting backend to increment
+    const response = await axios.post(
+      `${BASE_URL}/api/users/refund`,
+      {
+        userId: orderNo,
+        amount: Number(refundAmount),
+        refundReference,
+      },
+      {
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    Swal.fire({
+      title: "Success!",
+      text: "Refund successfully added to user's wallet!",
+      icon: "success",
+      confirmButtonText: "OK",
+    });
+    setLoanAmount(""); // Reset input
+    fetchUsers();
+    console.log('Refund successful for user:', orderNo, 'amount:', refundAmount);
+  } catch (error) {
+    console.error(error);
+    Swal.fire({
+      title: "Error!",
+      text: "Failed to add refund.",
+      icon: "error",
+      confirmButtonText: "Try Again",
+    });
+  } finally {
+    setLoading(false);
+    setIsRefunding(false);
+  }
+};
+
+// (Optional) Keep the original handleSubmitLoanAmount for other loan operations if needed.
+
 
   const [isOpenStatus, setIsOpenStatus] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState("");
@@ -762,55 +778,91 @@ const filteredOrders = allItems.filter((item) => {
   };
 
   const handleLoanStatusChange = async (userId, hasLoan) => {
-    try {
-      const { isConfirmed } = await Swal.fire({
-        title: "Are you sure?",
-        text: `Do you want to ${
-          hasLoan ? "grant" : "remove"
-        } loan status for this user?`,
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, update it!",
-      });
-
-      if (!isConfirmed) return;
-
-      // API request configuration
-      const data = {
-        userId,
-        hasLoan,
-        adminLoanBalance: 0, // Ensuring adminLoanBalance remains 0
-      };
-
-      const config = {
-        method: "put",
-        maxBodyLength: Infinity,
-        url: BASE_URL + "/api/users/updateLoan/loanAmount",
-        headers: { "Content-Type": "application/json" },
-        data: data,
-      };
-
-      await axios.request(config);
-
-      Swal.fire("Updated!", "Loan status has been updated.", "success");
-      fetchUsers(); // Refresh users list
-    } catch (error) {
-      console.error("Error updating loan status:", error);
-      Swal.fire("Error!", "Failed to update loan status.", "error");
+    const user = users.find((u) => u.id === userId);
+    if (hasLoan) {
+      // Only allow checking if a valid loan amount is present
+      if (!user.adminLoanBalance || user.adminLoanBalance === 0) {
+        window.alert('No amount has been inputted as loan');
+        // Prevent checkbox from being checked
+        setUsers((prevUsers) =>
+          prevUsers.map((u) =>
+            u.id === userId
+              ? { ...u, hasLoan: false }
+              : u
+          )
+        );
+        setEditingUserId(userId);
+        setNewBalance("");
+        return;
+      }
     }
+    // Existing logic for unchecking
+    if (!hasLoan) {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId
+            ? { ...user, adminLoanBalance: 0 }
+            : user
+        )
+      );
+    }
+    const { isConfirmed } = await Swal.fire({
+      title: "Are you sure?",
+      text: `Do you want to ${hasLoan ? "grant" : "remove"} loan status for this user?`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, update it!",
+    });
+    if (!isConfirmed) return;
+    // API request configuration
+    const data = {
+      userId,
+      hasLoan,
+      adminLoanBalance: 0, // Ensuring adminLoanBalance remains 0
+    };
+    const config = {
+      method: "put",
+      maxBodyLength: Infinity,
+      url: BASE_URL + "/api/users/updateLoan/loanAmount",
+      headers: { "Content-Type": "application/json" },
+      data: data,
+    };
+    await axios.request(config);
+    Swal.fire("Updated!", "Loan status has been updated.", "success");
+    fetchUsers(); // Refresh users list
   };
+
+  // Note: loanBalance is NOT modified here, only adminLoanBalance is set to zero when hasLoan is unchecked.
 
   const [editingUserId, setEditingUserId] = useState(null);
   const [newBalance, setNewBalance] = useState("");
 
+// ...
   const handleEditClick1 = (user) => {
     setEditingUserId(user.id);
     setNewBalance(user.adminLoanBalance);
   };
 
+  // In handleSaveClick, if no amount is entered, uncheck hasLoan
   const handleSaveClick = async (userId) => {
+    // Only allow negative numbers (not -0, -0.00, or zero)
+    const isValidNegative = (val) => {
+      return /^-([1-9]\d*)(\.\d+)?$/.test(val.trim()) && parseFloat(val) < 0;
+    };
+    if (!isValidNegative(newBalance)) {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId
+            ? { ...user, hasLoan: false, adminLoanBalance: 0 }
+            : user
+        )
+      );
+      setEditingUserId(null);
+      window.alert("Please enter a valid negative loan amount to activate loan status.");
+      return;
+    }
     try {
       await axios.put(BASE_URL + "/api/users/update-admin/loan-balance", {
         userId,
@@ -818,11 +870,24 @@ const filteredOrders = allItems.filter((item) => {
       });
       Swal.fire("Success", "Loan balance updated successfully!", "success");
       setEditingUserId(null);
+      // Optimistically update the UI: set hasLoan true and adminLoanBalance to new value
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                adminLoanBalance: parseFloat(newBalance),
+                hasLoan: true,
+              }
+            : user
+        )
+      );
       fetchUsers();
     } catch (error) {
       Swal.fire("Error", "Failed to update loan balance!", "error");
     }
   };
+
 
   const handleUpdateStatus = async (orderId) => {
     try {
@@ -852,7 +917,9 @@ const filteredOrders = allItems.filter((item) => {
   };
 
   const totalBalance = users
-    .filter((user) => user.role === "USER" || user.role === "PREMIUM")
+    .filter((user) =>
+      ["USER", "PREMIUM", "SUPERAGENT", "NORMALAGENT"].includes((user.role || "").toUpperCase())
+    )
     .reduce((acc, user) => acc + parseFloat(user.loanBalance || 0), 0);
 
   return (
@@ -1320,7 +1387,7 @@ const filteredOrders = allItems.filter((item) => {
         <div className="bg-white p-6 rounded-lg shadow-lg w-96">
           <div className="flex items-center justify-between">
             <Dialog.Title className="text-lg font-semibold">
-              ORIGINATE LOAN
+              ORIGINATE REFUND
             </Dialog.Title>
             <Dialog.Description className="text-gray-600">
               ORDER <strong>#0000{orderNo}</strong>.
@@ -1333,17 +1400,17 @@ const filteredOrders = allItems.filter((item) => {
 
           <div className="mt-2">
             <label className="block text-sm font-medium text-gray-700">
-              Amount
+              Refund Amount
             </label>
             <input
               type="number"
               value={loanAmount}
               onChange={(e) => setLoanAmount(e.target.value)}
               className="w-full mt-2 p-2 border rounded"
-              placeholder="Enter loan amount"
+              placeholder="Enter refund amount"
             />
 
-            <div className="mt-2 flex items-center space-x-2">
+            {/* <div className="mt-2 flex items-center space-x-2">
               <input
                 type="checkbox"
                 checked={hasLoan}
@@ -1353,7 +1420,7 @@ const filteredOrders = allItems.filter((item) => {
               <label className="block text-sm font-medium text-gray-700">
                 Has Loan
               </label>
-            </div>
+            </div> */}
           </div>
 
           <div className="mt-4 flex justify-end space-x-2">
@@ -1363,13 +1430,15 @@ const filteredOrders = allItems.filter((item) => {
             >
               Cancel
             </button>
-            <div
-              className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-400 flex items-center space-x-1"
-              onClick={handleSubmitLoanAmount}
-            >
-              <BadgeCent className="h-5 w-5" />
-              <p>pay</p>
-            </div>
+            <button
+               type="button"
+               className="px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer hover:bg-blue-400 flex items-center space-x-1"
+               onClick={handleRefundAmount}
+               disabled={isRefunding || loading}
+             >
+               <BadgeCent className="h-5 w-5" />
+               <p>pay</p>
+             </button>
           </div>
         </div>
       </Dialog>

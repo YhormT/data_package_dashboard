@@ -46,18 +46,7 @@ const Sidebar = ({
 
         <nav>
           <ul className="space-y-4">
-            {/* Audit Log Button - visible only on admin dashboard */}
-            {(window.location.pathname.startsWith("/admin") || window.location.pathname.startsWith("/dashboard/admin")) && (
-              <li
-                className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
-                  window.location.pathname.includes("audit") ? "bg-blue-500 text-white" : "hover:bg-gray-200 text-gray-700"
-                }`}
-                onClick={() => setShowAuditLog(true)}
-              >
-                <History className="w-5 h-5" />
-                <span>Audit Log</span>
-              </li>
-            )}
+            
             {/* Home */}
             <li
               className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
@@ -137,7 +126,7 @@ const Sidebar = ({
             <hr className="my-10" />
             <TransactionsModal />
             {/* Audit Log Button - always visible for admin */}
-            <li
+            {/* <li
               className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
                 showAuditLog ? "bg-blue-500 text-white" : "hover:bg-gray-200 text-gray-700"
               }`}
@@ -145,7 +134,7 @@ const Sidebar = ({
             >
               <History className="w-5 h-5" />
               <span>Audit Log</span>
-            </li>
+            </li> */}
             <hr className="my-10" />
             <div onClick={() => setIsOpen(false)}>
               <UploadExcel onUploadSuccess={onUploadSuccess} />
