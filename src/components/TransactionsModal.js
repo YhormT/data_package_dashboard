@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
-import { X, Filter, Upload, FileStack } from "lucide-react";
+// import { X, Filter, Upload, FileStack } from "lucide-react";
+import { Filter, FileStack } from "lucide-react";
 import axios from "axios";
 import _ from "lodash";
 import BASE_URL from "../endpoints/endpoints";
