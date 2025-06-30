@@ -245,8 +245,8 @@ const Superagent = ({ setUserRole, userRole }) => {
     if (/^\d{0,10}$/.test(value)) {
       const product = filteredProducts?.find((p) => p.id === id);
 
-      // Normalize provider name by removing " - SUPERAGENT"
-      const normalizedProductName = product?.name.replace(" - SUPERAGENT", "");
+      // Normalize provider name by removing " - SUPER"
+      const normalizedProductName = product?.name.replace(" - SUPER", "");
 
       // Get restricted prefixes
       const restrictedPatterns = restrictions[normalizedProductName] || [];
@@ -339,7 +339,7 @@ const Superagent = ({ setUserRole, userRole }) => {
     // Filter only SUPERAGENT products safely
     if (products.length > 0) {
       const superAgentProducts = products.filter((product) =>
-        product.name?.includes("SUPERAGENT")
+        product.name?.includes("SUPER")
       );
       setFilteredProducts1(superAgentProducts);
     } else {
@@ -376,17 +376,17 @@ const Superagent = ({ setUserRole, userRole }) => {
       setSelectedCategory(category);
 
       if (category === null) {
-        // Show all SUPERAGENT products when Home is clicked
+        // Show all SUPER products when Home is clicked
         setFilteredProducts1(
-          products?.filter((product) => product.name.includes("SUPERAGENT"))
+          products?.filter((product) => product.name.includes("SUPER"))
         );
       } else {
-        // Show SUPERAGENT products within the selected category
+        // Show SUPER products within the selected category
         setFilteredProducts1(
           products?.filter(
             (product) =>
               product.name.includes(category) &&
-              product.name.includes("SUPERAGENT")
+              product.name.includes("SUPER")
           )
         );
       }
@@ -882,7 +882,7 @@ const Superagent = ({ setUserRole, userRole }) => {
           orderHistory={orderHistory}
         />
 
-        {userRole === "SUPERAGENT" ? (
+        {userRole === "SUPER" ? (
           loading ? (
             <div
               className="flex justify-center items-center min-h-screen"
@@ -1032,8 +1032,8 @@ const Superagent = ({ setUserRole, userRole }) => {
 
                   {filteredProducts1
                     ?.filter((product) =>
-                      userRole === "SUPERAGENT"
-                        ? product.name.includes("SUPERAGENT")
+                      userRole === "SUPER"
+                        ? product.name.includes("SUPER")
                         : true
                     )
                     .sort((a, b) => {
@@ -1042,7 +1042,7 @@ const Superagent = ({ setUserRole, userRole }) => {
     return match ? parseFloat(match[1]) : Number.MAX_VALUE; // fallback to large number
   };
 
-  // First, group by product.name (e.g., "MTN - SUPERAGENT")
+  // First, group by product.name (e.g., "MTN - SUPER")
   if (a.name < b.name) return -1;
   if (a.name > b.name) return 1;
 
@@ -1058,11 +1058,11 @@ const Superagent = ({ setUserRole, userRole }) => {
                         key={product.id}
                         className={`border p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-cover bg-center 
                         ${
-                          product.name === "MTN - SUPERAGENT"
+                          product.name === "MTN - SUPER"
                             ? "bg-[url('https://img.freepik.com/premium-vector/trendy-abstract-background-design-with-yellow-background-used-texture-design-bright-poster_293525-2997.jpg')]"
-                            : product.name === "TELECEL - SUPERAGENT"
+                            : product.name === "TELECEL - SUPER"
                             ? "bg-[url('https://cdn.vectorstock.com/i/500p/37/28/abstract-background-design-modern-red-and-gold-vector-49733728.jpg')]"
-                            : product.name === "AIRTEL TIGO - SUPERAGENT"
+                            : product.name === "AIRTEL TIGO - SUPER"
                             ? "bg-[url('https://t4.ftcdn.net/jpg/00/72/07/17/360_F_72071785_iWP4jgsalJFR1YdiumPMboDHHOZhA3Wi.jpg')]"
                             : product.name.includes("OTHERS")
                             ? "bg-[url('https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjEwMTYtYy0wOF8xLWtzaDZtemEzLmpwZw.jpg')]"

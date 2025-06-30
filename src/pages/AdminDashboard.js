@@ -37,7 +37,7 @@ import DownloadExcel from "../components/DownloadExcel";
 import TransactionalAdminModal from "../components/TransactionalAdminModal";
 import PaymentModal from "../components/PaymentModal";
 import TotalRequestsComponent from "../components/OrderTable";
-import AnnouncementManager from "../components/AnnouncementManager";
+import Announcement from "../components/Announcement"; // New Announcement modal component
 import AuditLog from "../components/AuditLog";
 // import OrderDialog from "../components/OrderDialog.js";
 
@@ -845,49 +845,100 @@ const filteredOrders = allItems.filter((item) => {
     setNewBalance(user.adminLoanBalance);
   };
 
-  // In handleSaveClick, if no amount is entered, uncheck hasLoan
+  // In handleSaveClick, support loan assignment and repayment
   const handleSaveClick = async (userId) => {
     // Only allow negative numbers (not -0, -0.00, or zero)
     const isValidNegative = (val) => {
       return /^-([1-9]\d*)(\.\d+)?$/.test(val.trim()) && parseFloat(val) < 0;
     };
-    if (!isValidNegative(newBalance)) {
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userId
-            ? { ...user, hasLoan: false, adminLoanBalance: 0 }
-            : user
-        )
-      );
-      setEditingUserId(null);
-      window.alert("Please enter a valid negative loan amount to activate loan status.");
+    const isValidPositive = (val) => {
+      return /^([1-9]\d*)(\.\d+)?$/.test(val.trim()) && parseFloat(val) > 0;
+    };
+
+    // Find the user in state
+    const user = users.find((u) => u.id === userId);
+    if (!user) {
+      window.alert("User not found.");
       return;
     }
-    try {
-      await axios.put(BASE_URL + "/api/users/update-admin/loan-balance", {
-        userId,
-        newBalance: parseFloat(newBalance),
-      });
-      Swal.fire("Success", "Loan balance updated successfully!", "success");
-      setEditingUserId(null);
-      // Optimistically update the UI: set hasLoan true and adminLoanBalance to new value
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === userId
-            ? {
-                ...user,
-                adminLoanBalance: parseFloat(newBalance),
-                hasLoan: true,
-              }
-            : user
-        )
-      );
-      fetchUsers();
-    } catch (error) {
-      Swal.fire("Error", "Failed to update loan balance!", "error");
-    }
-  };
 
+    // Handle negative value: assign loan
+    if (isValidNegative(newBalance)) {
+      try {
+        await axios.put(BASE_URL + "/api/users/update-admin/loan-balance", {
+          userId,
+          newBalance: parseFloat(newBalance),
+        });
+        Swal.fire("Success", "Loan balance updated successfully!", "success");
+        setEditingUserId(null);
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId
+              ? {
+                  ...user,
+                  adminLoanBalance: parseFloat(newBalance),
+                  hasLoan: true,
+                }
+              : user
+          )
+        );
+        fetchUsers();
+      } catch (error) {
+        Swal.fire("Error", "Failed to update loan balance!", "error");
+      }
+      return;
+    }
+
+    // Handle positive value: loan repayment
+    if (isValidPositive(newBalance)) {
+      // Only allow repayment if user has a loan (check button is checked)
+      if (!user.hasLoan) {
+        window.alert("This user does not have a loan");
+        return;
+      }
+      // Subtract repayment from loan (loan is negative)
+      let newLoan = user.adminLoanBalance + parseFloat(newBalance);
+      // If repayment exceeds loan, cap at 0
+      if (newLoan > 0) newLoan = 0;
+      try {
+        await axios.put(BASE_URL + "/api/users/update-admin/loan-balance", {
+          userId,
+          newBalance: newLoan,
+        });
+        Swal.fire("Success", `Loan repayment processed successfully! New balance: ${newLoan}`, "success");
+        setEditingUserId(null);
+        // Optimistically update the UI: set hasLoan and adminLoanBalance to new value
+        setUsers((prevUsers) =>
+          prevUsers.map((user) =>
+            user.id === userId
+              ? {
+                  ...user,
+                  adminLoanBalance: newLoan,
+                  hasLoan: newLoan < 0,
+                }
+              : user
+          )
+        );
+        fetchUsers();
+      } catch (error) {
+        Swal.fire("Error", "Failed to process loan repayment!", "error");
+      }
+      return;
+    }
+
+    // If neither, treat as invalid
+    setUsers((prevUsers) =>
+      prevUsers.map((user) =>
+        user.id === userId
+          ? { ...user, hasLoan: false, adminLoanBalance: 0 }
+          : user
+      )
+    );
+    setEditingUserId(null);
+    window.alert(
+      "Please enter a valid negative loan amount to assign a loan, or a positive amount to repay an existing loan."
+    );
+  };
 
   const handleUpdateStatus = async (orderId) => {
     try {
@@ -918,7 +969,7 @@ const filteredOrders = allItems.filter((item) => {
 
   const totalBalance = users
     .filter((user) =>
-      ["USER", "PREMIUM", "SUPERAGENT", "NORMALAGENT"].includes((user.role || "").toUpperCase())
+      ["USER", "PREMIUM", "SUPER", "NORMAL"].includes((user.role || "").toUpperCase())
     )
     .reduce((acc, user) => acc + parseFloat(user.loanBalance || 0), 0);
 
@@ -955,7 +1006,7 @@ const filteredOrders = allItems.filter((item) => {
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
               onClick={() => setIsOpen(false)}
             >
-              <DownloadExcel />
+              <Announcement />
             </div>
 
             <div
@@ -1016,25 +1067,12 @@ const filteredOrders = allItems.filter((item) => {
           </div>
         </div>
 
-        {/* Stats Cards */}
-        {/* Order Status Tabs */}
-{/* <div className="flex flex-row gap-2 mt-6 px-4 sm:px-6 md:px-8">
-  {statusTabs.map((tab) => (
-    <button
-      key={tab.value}
-      className={`px-4 py-2 rounded-md text-sm font-medium shadow-md transition-colors duration-200 ${
-        selectedStatusMain === tab.value
-          ? "bg-blue-600 text-white"
-          : "bg-white text-gray-800 border border-gray-300"
-      }`}
-      onClick={() => setSelectedStatusMain(tab.value)}
-    >
-      {tab.label}
-    </button>
-  ))}
-</div> */}
+        {/* Announcement Modal Button */}
+       {/*  <div className="p-6 w-[40%] sm:w-full">
+          <Announcement />
+        </div> */}
 
-<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[40%] sm:w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[40%] sm:w-full">
           {/* Total Users */}
           <div className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-auto flex-1 cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition duration-300">
             <Users className="w-12 h-12 text-blue-500" />
@@ -1301,8 +1339,8 @@ const filteredOrders = allItems.filter((item) => {
             <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>
             <option value="PREMIUM">PREMIUM</option>
-            <option value="SUPERAGENT">SUPER AGENT</option>
-            <option value="NORMALAGENT">NORMAL AGENT</option>
+            <option value="SUPER">SUPER</option>
+            <option value="NORMAL">NORMAL</option>
             <option value="Other">Other</option>
           </select>
 

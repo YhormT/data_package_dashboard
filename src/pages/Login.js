@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Eye, EyeOff, Sparkles, CheckCircle, Mail, Lock } from "lucide-react";
+import AnnouncementBanner from "./AnnouncementBanner";
 import { motion } from "framer-motion";
 
 // These would be your actual imports in the real application
@@ -72,17 +73,14 @@ const Login = () => {
       localStorage.setItem("userId", user.id);
       localStorage.setItem("isLoggedIn", true);
       // In real app: toast.success("Login successful!");
-      toast.success("Login successful!");
+      //toast.success("Login successful!");
 
       setTimeout(() => {
         setUserRole(user.role);
         setLoading(false);
-      }, 1000);
+      }, 500);
     } catch (err) {
       setLoading(false);
-
-      // 🔇 Don't log to console unless debugging
-      // console.error(err);  // <-- REMOVE or comment this out in production
 
       if (err.response?.status === 403) {
         // In real app: toast.warn("This account is currently in use. Please log out from other devices.");
@@ -109,66 +107,16 @@ const Login = () => {
     return <UserDashboard setUserRole={setUserRole} userRole={userRole} />;
   } else if (userRole === "PREMIUM") {
     return <Premium setUserRole={setUserRole} userRole={userRole} />;
-  } else if (userRole === "SUPERAGENT") {
+  } else if (userRole === "SUPER") {
     return <Superagent setUserRole={setUserRole} userRole={userRole} />;
-  } else if (userRole === "NORMALAGENT") {
+  } else if (userRole === "NORMAL") {
     return <Normalagent setUserRole={setUserRole} userRole={userRole} />;
   } else if (userRole === "Other") {
     return <OtherDashboard setUserRole={setUserRole} userRole={userRole} />;
   }
 
   return (
-    //<div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden before:absolute before:inset-0 before:bg-[conic-gradient(from_0deg_at_50%_50%,rgba(59,130,246,0.1),rgba(147,51,234,0.1),rgba(236,72,153,0.1),rgba(59,130,246,0.1))] after:absolute after:inset-0 after:bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.1),transparent_70%)]">
     <div className="relative flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 overflow-hidden before:absolute before:inset-0 before:bg-[conic-gradient(from_0deg_at_50%_50%,rgba(59,130,246,0.1),rgba(147,51,234,0.1),rgba(236,72,153,0.1),rgba(59,130,246,0.1))] after:absolute after:inset-0 after:bg-[radial-gradient(ellipse_at_center,rgba(139,92,246,0.1),transparent_70%)]">
-      {/* Framer Motion Bubble Animation from old code */}
-      {/* these codes where commented out for performance reasons */}
-      {/* {[...Array(20)].map((_, index) => (
-        <motion.div
-          key={index}
-          className="absolute bg-white opacity-20 rounded-full"
-          style={{
-            width: `${Math.random() * 40 + 10}px`,
-            height: `${Math.random() * 40 + 10}px`,
-            bottom: `${-Math.random() * 50}px`,
-            left: `${Math.random() * 100}%`,
-          }}
-          animate={{
-            y: [-50, -600],
-            opacity: [0.5, 1, 0],
-          }}
-          transition={{
-            duration: Math.random() * 4 + 3,
-            repeat: Infinity,
-            ease: "easeInOut",
-            delay: Math.random() * 2,
-          }}
-        />
-      ))} */}
-
-      {/* Enhanced Floating Particles */}
-      {/* {[...Array(30)].map((_, index) => {
-        const size = Math.random() * 6 + 2;
-        const delay = Math.random() * 5;
-        const duration = Math.random() * 10 + 15;
-        const initialY = Math.random() * 100;
-        const initialX = Math.random() * 100;
-        return (
-          <div
-            key={`particle-${index}`}
-            className="absolute pointer-events-none opacity-60"
-            style={{
-              width: `${size}px`,
-              height: `${size}px`,
-              left: `${initialX}%`,
-              top: `${initialY}%`,
-              animation: `float-${index} ${duration}s ${delay}s infinite linear`,
-            }}
-          >
-            <div className="w-full h-full bg-gradient-to-r from-cyan-400 to-purple-400 rounded-full blur-sm animate-pulse" />
-          </div>
-        );
-      })} */}
-
       {/* Gradient Orbs */}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-cyan-400/20 to-purple-500/20 rounded-full blur-3xl animate-pulse" />
       <div
@@ -176,35 +124,8 @@ const Login = () => {
         style={{ animationDelay: "2s" }}
       />
 
-      {/* Premium Announcement Banner */}
-      <div className="absolute top-0 left-0 w-full h-12 bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 overflow-hidden z-20">
-        <div className="flex items-center h-full">
-          <motion.div
-            animate={{ x: ["100%", "-100%"] }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "linear",
-            }}
-            className="flex items-center whitespace-nowrap text-white font-semibold text-sm"
-          >
-            <div className="flex items-center space-x-8 px-8">
-              <span className="flex items-center space-x-2">
-                <Sparkles className="w-4 h-4" />
-                <span>🎉 ANNOUNCEMENT • ANNOUNCEMENT • ANNOUNCEMENT</span>
-              </span>
-              <span>•</span>
-              <span>✨ PREMIUM DASHBOARD UPDATES</span>
-              <span>•</span>
-              <span>🚀 ENHANCED SECURITY</span>
-              <span>•</span>
-              <span>
-                💎✌ PLEASE REMEMBER TO LOGOUT BEFORE CLOSING YOUR TAB!!!
-              </span>
-            </div>
-          </motion.div>
-        </div>
-      </div>
+      {/* Dynamic Announcement Banner */}
+      <AnnouncementBanner />
 
       {/* Main Login Card */}
       <motion.div
@@ -387,15 +308,6 @@ const Login = () => {
                 </a>
               </div>
 
-              {/* <div className="flex justify-center items-center space-x-4 text-xs text-gray-400">
-                <a href="#" className="hover:text-cyan-400 transition-colors">
-                  Terms of use
-                </a>
-                <div className="w-1 h-1 bg-gray-400 rounded-full" />
-                <a href="#" className="hover:text-cyan-400 transition-colors">
-                  Privacy policy
-                </a>
-              </div> */}
               <div className="flex justify-center items-center space-x-4 text-xs text-gray-400">
                 <button
                   type="button"

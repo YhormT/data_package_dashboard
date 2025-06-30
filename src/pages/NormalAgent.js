@@ -245,8 +245,8 @@ const Normalagent = ({ setUserRole, userRole }) => {
     if (/^\d{0,10}$/.test(value)) {
       const product = filteredProducts?.find((p) => p.id === id);
 
-      // Normalize provider name by removing " - NORMALAGENT"
-      const normalizedProductName = product?.name.replace(" - NORMALAGENT", "");
+      // Normalize provider name by removing " - NORMAL"
+      const normalizedProductName = product?.name.replace(" - NORMAL", "");
 
       // Get restricted prefixes
       const restrictedPatterns = restrictions[normalizedProductName] || [];
@@ -336,10 +336,10 @@ const Normalagent = ({ setUserRole, userRole }) => {
       return; // Exit early if products is not an array
     }
 
-    // Filter only NORMALAGENT products safely
+    // Filter only NORMAL products safely
     if (products.length > 0) {
       const normalAgentProducts = products.filter((product) =>
-        product.name?.includes("NORMALAGENT")
+        product.name?.includes("NORMAL")
       );
       setFilteredProducts1(normalAgentProducts);
     } else {
@@ -376,17 +376,17 @@ const Normalagent = ({ setUserRole, userRole }) => {
       setSelectedCategory(category);
 
       if (category === null) {
-        // Show all NORMALAGENT products when Home is clicked
+        // Show all NORMAL products when Home is clicked
         setFilteredProducts1(
-          products?.filter((product) => product.name.includes("NORMALAGENT"))
+          products?.filter((product) => product.name.includes("NORMAL"))
         );
       } else {
-        // Show NORMALAGENT products within the selected category
+        // Show NORMAL products within the selected category
         setFilteredProducts1(
           products?.filter(
             (product) =>
               product.name.includes(category) &&
-              product.name.includes("NORMALAGENT")
+              product.name.includes("NORMAL")
           )
         );
       }
@@ -882,7 +882,7 @@ const Normalagent = ({ setUserRole, userRole }) => {
           orderHistory={orderHistory}
         />
 
-        {userRole === "NORMALAGENT" ? (
+        {userRole === "NORMAL" ? (
           loading ? (
             <div
               className="flex justify-center items-center min-h-screen"
@@ -1032,8 +1032,8 @@ const Normalagent = ({ setUserRole, userRole }) => {
 
                   {filteredProducts1
                     ?.filter((product) =>
-                      userRole === "NORMALAGENT"
-                        ? product.name.includes("NORMALAGENT")
+                      userRole === "NORMAL"
+                        ? product.name.includes("NORMAL")
                         : true
                     )
                     .sort((a, b) => {
@@ -1042,7 +1042,7 @@ const Normalagent = ({ setUserRole, userRole }) => {
     return match ? parseFloat(match[1]) : Number.MAX_VALUE; // fallback to large number
   };
 
-  // First, group by product.name (e.g., "MTN - NORMALAGENT")
+  // First, group by product.name (e.g., "MTN - NORMAL")
   if (a.name < b.name) return -1;
   if (a.name > b.name) return 1;
 
@@ -1058,11 +1058,11 @@ const Normalagent = ({ setUserRole, userRole }) => {
                         key={product.id}
                         className={`border p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-cover bg-center 
                         ${
-                          product.name === "MTN - NORMALAGENT"
+                          product.name === "MTN - NORMAL"
                             ? "bg-[url('https://img.freepik.com/premium-vector/trendy-abstract-background-design-with-yellow-background-used-texture-design-bright-poster_293525-2997.jpg')]"
-                            : product.name === "TELECEL - NORMALAGENT"
+                            : product.name === "TELECEL - NORMAL"
                             ? "bg-[url('https://cdn.vectorstock.com/i/500p/37/28/abstract-background-design-modern-red-and-gold-vector-49733728.jpg')]"
-                            : product.name === "AIRTEL TIGO - NORMALAGENT"
+                            : product.name === "AIRTEL TIGO - NORMAL"
                             ? "bg-[url('https://t4.ftcdn.net/jpg/00/72/07/17/360_F_72071785_iWP4jgsalJFR1YdiumPMboDHHOZhA3Wi.jpg')]"
                             : product.name.includes("OTHERS")
                             ? "bg-[url('https://images.rawpixel.com/image_800/czNmcy1wcml2YXRlL3Jhd3BpeGVsX2ltYWdlcy93ZWJzaXRlX2NvbnRlbnQvbHIvdjEwMTYtYy0wOF8xLWtzaDZtemEzLmpwZw.jpg')]"

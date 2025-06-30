@@ -788,18 +788,18 @@ const TotalRequestsComponent = () => {
                   <option value="">All Products</option>
                   <option value="MTN">MTN</option>
                   <option value="MTN - PREMIUM">MTN - PREMIUM</option>
-                  <option value="MTN - SUPERAGENT">MTN - SUPERAGENT</option>
-                  <option value="MTN - NORMALAGENT">MTN - NORMALAGENT</option>
+                  <option value="MTN - SUPER">MTN - SUPER</option>
+                  <option value="MTN - NORMAL">MTN - NORMAL</option>
                   <option value="MTN - OTHER">MTN - OTHER</option>
                   <option value="TELECEL">TELECEL</option>
                   <option value="TELECEL - PREMIUM">TELECEL - PREMIUM</option>
-                  <option value="TELECEL - SUPERAGENT">TELECEL - SUPERAGENT</option>
-                  <option value="TELECEL - NORMALAGENT">TELECEL - NORMALAGENT</option>
+                  <option value="TELECEL - SUPER">TELECEL - SUPER</option>
+                  <option value="TELECEL - NORMAL">TELECEL - NORMAL</option>
                   <option value="TELECEL - OTHER">TELECEL - OTHER</option>
                   <option value="AIRTEL TIGO">AIRTEL TIGO</option>
                   <option value="AIRTEL TIGO - PREMIUM">AIRTEL TIGO - PREMIUM</option>
-                  <option value="AIRTEL TIGO - SUPERAGENT">AIRTEL TIGO - SUPERAGENT</option>
-                  <option value="AIRTEL TIGO - NORMALAGENT">AIRTEL TIGO - NORMALAGENT</option>
+                  <option value="AIRTEL TIGO - SUPER">AIRTEL TIGO - SUPER</option>
+                  <option value="AIRTEL TIGO - NORMAL">AIRTEL TIGO - NORMAL</option>
                   <option value="AIRTEL TIGO - OTHER">AIRTEL TIGO - OTHER</option>
                 </select>
               </div>
