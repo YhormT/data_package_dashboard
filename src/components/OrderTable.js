@@ -824,6 +824,7 @@ const TotalRequestsComponent = () => {
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
                   <option value="Processing">Processing</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
 

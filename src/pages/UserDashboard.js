@@ -627,52 +627,6 @@ const UserDashboard = ({ setUserRole, userRole }) => {
     ? products?.filter((product) => product.name === selectedCategory)
     : products;
 
-  // Load all non-PREMIUM products on first render
-  // Initial filtering effect - add this to the useEffect that loads initial products
-  // useEffect(() => {
-  //   if (!Array.isArray(products)) {
-  //     setFilteredProducts1([]); // Ensure filteredProducts1 is always an array
-
-  //     if (!navigator.onLine) {
-  //       // Show SweetAlert if no internet
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "No Internet Connection",
-  //         text: "Please check your connection and try again.",
-  //       });
-  //     }
-
-  //     return; // Exit early if products is not an array
-  //   }
-
-  //   // Filter products safely - exclude PREMIUM and any OTHER variations
-  //   // setFilteredProducts1(
-  //   //   products.filter(
-  //   //     (product) =>
-  //   //       product.name?.includes("PREMIUM") === false &&
-  //   //       !product.name?.toLowerCase().includes("other")
-  //   //   )
-  //   // );
-
-  //   // Filter and sort products
-  //   const filtered = products
-  //     .filter(
-  //       (product) =>
-  //         product.name?.includes("PREMIUM") === false &&
-  //         !product.name?.toLowerCase().includes("other")
-  //     )
-  //     .sort((a, b) => {
-  //       // Extract numbers from description for sorting
-  //       const aNum = parseFloat(a.description?.match(/\d+/)?.[0] || 0);
-  //       const bNum = parseFloat(b.description?.match(/\d+/)?.[0] || 0);
-  //       return bNum - aNum; // Descending order (largest first)
-  //     });
-
-  //   setFilteredProducts1(filtered);
-  // }, [products]);
-
-  // Replace the existing sorting logic in both useEffect and handleCategorySelect
-
 // In the useEffect that loads initial products:
 useEffect(() => {
   if (!Array.isArray(products)) {
@@ -687,13 +641,10 @@ useEffect(() => {
     return;
   }
 
-  // Filter and sort products with network grouping and ascending order
+  // Only allow products with exact names
+  const allowedNames = ["MTN", "TELECEL", "AIRTEL TIGO"];
   const filtered = products
-    .filter(
-      (product) =>
-        product.name?.includes("PREMIUM") === false &&
-        !product.name?.toLowerCase().includes("other")
-    )
+    .filter((product) => allowedNames.includes(product.name))
     .sort((a, b) => {
       // First, group by network name
       const aNetwork = a.name?.toUpperCase() || '';
@@ -719,30 +670,17 @@ const handleCategorySelect = (category) => {
 
   setTimeout(() => {
     let filtered;
-
+    const allowedNames = ["MTN", "TELECEL", "AIRTEL TIGO"];
     if (!category) {
       filtered = products?.filter(
-        (product) =>
-          !product.name.includes("PREMIUM") &&
-          !product.name.toLowerCase().includes("other")
+        (product) => allowedNames.includes(product.name)
       );
-    } else if (
-      category === "MTN" ||
-      category === "TELECEL" ||
-      category === "AIRTEL TIGO"
-    ) {
+    } else if (allowedNames.includes(category)) {
       filtered = products?.filter(
-        (product) =>
-          product.name.toUpperCase().includes(category) &&
-          !product.name.includes("PREMIUM") &&
-          !product.name.toLowerCase().includes("other")
+        (product) => product.name === category
       );
     } else {
-      filtered = products?.filter(
-        (product) =>
-          !product.name.includes("PREMIUM") &&
-          !product.name.toLowerCase().includes("other")
-      );
+      filtered = [];
     }
 
     // Sort the filtered products with network grouping and ascending order
@@ -766,50 +704,6 @@ const handleCategorySelect = (category) => {
   }, 1000);
 };
 
-  // useEffect(() => {
-  //   let intervalId;
-
-  //   const fetchAndFilterProducts = async () => {
-  //     try {
-  //       if (!navigator.onLine) {
-  //         Swal.fire({
-  //           icon: "error",
-  //           title: "No Internet Connection",
-  //           text: "Please check your connection and try again.",
-  //           timer: 3000,
-  //           showConfirmButton: false,
-  //         });
-  //         return;
-  //       }
-
-  //       const response = await axios.get("/api/products"); // Update endpoint as needed
-  //       const allProducts = response.data;
-
-  //       if (!Array.isArray(allProducts)) {
-  //         setFilteredProducts1([]);
-  //         return;
-  //       }
-
-  //       // Filter out "PREMIUM" products
-  //       const filtered = allProducts.filter(
-  //         (product) => !product.name?.includes("PREMIUM")
-  //       );
-
-  //       setFilteredProducts1(filtered);
-  //     } catch (error) {
-  //       console.error("Error fetching products:", error.message);
-  //     }
-  //   };
-
-  //   fetchAndFilterProducts(); // Initial fetch
-
-  //   // Start polling every 10 seconds
-  //   intervalId = setInterval(fetchAndFilterProducts, 3000);
-
-  //   // Cleanup on unmount
-  //   return () => clearInterval(intervalId);
-  // }, []);
-
   useEffect(() => {
     const handleOnline = () => {
       Swal.fire({
@@ -831,102 +725,8 @@ const handleCategorySelect = (category) => {
       window.removeEventListener("online", handleOnline); // Cleanup event listener
     };
   }, []);
-  // useEffect(() => {
-  //   setFilteredProducts1(
-  //     products?.filter((product) => !product.name.includes("PREMIUM"))
-  //   );
-  // }, [products]);
 
   const [filteredProducts1, setFilteredProducts1] = useState(products);
-
-  // Function to handle category selection
-  // Function to filter by product.name
-  // Function to filter by product.name
-  // const handleCategorySelect = (category) => {
-  //   setLoading(true); // Start loading
-  //   setSelectedCategory(category);
-
-  //   setTimeout(() => {
-  //     if (!category) {
-  //       // Reset to show all products except PREMIUM and any variant of OTHER
-  //       setFilteredProducts1(
-  //         products?.filter(
-  //           (product) =>
-  //             !product.name.includes("PREMIUM") &&
-  //             !product.name.toLowerCase().includes("other")
-  //         )
-  //       );
-  //     } else if (
-  //       category === "MTN" ||
-  //       category === "TELECEL" ||
-  //       category === "AIRTEL TIGO"
-  //     ) {
-  //       // Original filter behavior for specific categories but also exclude OTHER variations
-  //       setFilteredProducts1(
-  //         products?.filter(
-  //           (product) =>
-  //             product.name.toUpperCase().includes(category) &&
-  //             !product.name.includes("PREMIUM") &&
-  //             !product.name.toLowerCase().includes("other")
-  //         )
-  //       );
-  //     } else {
-  //       // For any other category, don't show products with PREMIUM or OTHER in name
-  //       setFilteredProducts1(
-  //         products?.filter(
-  //           (product) =>
-  //             !product.name.includes("PREMIUM") &&
-  //             !product.name.toLowerCase().includes("other")
-  //         )
-  //       );
-  //     }
-  //     setLoading(false);
-  //   }, 1000);
-  // };
-
-  // const handleCategorySelect = (category) => {
-  //   setLoading(true);
-  //   setSelectedCategory(category);
-
-  //   setTimeout(() => {
-  //     let filtered;
-
-  //     if (!category) {
-  //       filtered = products?.filter(
-  //         (product) =>
-  //           !product.name.includes("PREMIUM") &&
-  //           !product.name.toLowerCase().includes("other")
-  //       );
-  //     } else if (
-  //       category === "MTN" ||
-  //       category === "TELECEL" ||
-  //       category === "AIRTEL TIGO"
-  //     ) {
-  //       filtered = products?.filter(
-  //         (product) =>
-  //           product.name.toUpperCase().includes(category) &&
-  //           !product.name.includes("PREMIUM") &&
-  //           !product.name.toLowerCase().includes("other")
-  //       );
-  //     } else {
-  //       filtered = products?.filter(
-  //         (product) =>
-  //           !product.name.includes("PREMIUM") &&
-  //           !product.name.toLowerCase().includes("other")
-  //       );
-  //     }
-
-  //     // Sort the filtered products by description (largest first)
-  //     const sorted = filtered?.sort((a, b) => {
-  //       const aNum = parseFloat(a.description?.match(/\d+/)?.[0] || 0);
-  //       const bNum = parseFloat(b.description?.match(/\d+/)?.[0] || 0);
-  //       return bNum - aNum;
-  //     });
-
-  //     setFilteredProducts1(sorted);
-  //     setLoading(false);
-  //   }, 1000);
-  // };
 
   const [visibleInputs, setVisibleInputs] = useState({});
 
@@ -939,105 +739,6 @@ const handleCategorySelect = (category) => {
   };
 
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // const submitCart = async () => {
-  //   if (isSubmitting) return; // Prevent multiple clicks
-
-  //   try {
-  //     setIsSubmitting(true); // Disable button
-
-  //     const userId = parseInt(localStorage.getItem("userId"), 10);
-  //     if (!userId) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "User ID is missing",
-  //         text: "Please log in before submitting your cart.",
-  //       });
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-
-  //     // Calculate total cart amount
-  //     const totalAmount = cart.reduce(
-  //       (total, item) => total + item.product.price * (item.quantity || 1),
-  //       0
-  //     );
-
-  //     // Convert loanBalance to a number
-  //     // const walletBalance = parseFloat(loanBalance.loanBalance);
-
-  //     const walletBalance = Math.abs(parseFloat(loanBalance.loanBalance));
-
-  //     // console.log("Total Amount:", walletBalance, loanBalance);
-
-  //     // Ensure loanBalance is a valid number
-  //     if (isNaN(walletBalance)) {
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error Fetching Wallet Balance",
-  //         text: "Unable to retrieve your wallet balance. Please try again.",
-  //       });
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-
-  //     // Strictly enforce no negative balance
-  //     if (totalAmount > walletBalance) {
-  //       Swal.fire({
-  //         icon: "warning",
-  //         title: "Insufficient Funds",
-  //         text: `Your wallet balance is GHS ${walletBalance.toFixed(
-  //           2
-  //         )}, but your cart total is GHS ${totalAmount.toFixed(
-  //           2
-  //         )}. Please top up before proceeding.`,
-  //         confirmButtonColor: "#d33",
-  //       });
-  //       setIsSubmitting(false);
-  //       return;
-  //     }
-
-  //     // Proceed with order submission
-  //     const data = JSON.stringify({ userId });
-
-  //     const config = {
-  //       method: "post",
-  //       maxBodyLength: Infinity,
-  //       url: `${BASE_URL}/order/submit`,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       data: data,
-  //     };
-
-  //     const response = await axios.request(config);
-  //     console.log("Order submitted:", response.data);
-
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Cart Submitted!",
-  //       text: "Your order has been placed successfully.",
-  //       confirmButtonColor: "#28a745",
-  //     }).then(() => {
-  //       fetchCart(); // Refresh cart
-  //       fetchLoanBalance();
-  //       setIsCartOpen(false); // Close modal
-  //     });
-  //   } catch (error) {
-  //     console.error("Error submitting cart:", error);
-
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Failed to Submit Cart",
-  //       text: "There was an error processing your order. Please try again.",
-  //       confirmButtonColor: "#d33",
-  //     });
-  //   } finally {
-  //     setIsSubmitting(false); // Re-enable button
-  //   }
-  // };
-
-  // const [isCartOpen, setIsCartOpen] = useState(false);
 
   const submitCart = async () => {
     // CRITICAL FIX: Prevent multiple simultaneous transactions

@@ -89,8 +89,8 @@ const Login = () => {
         );
       } else {
         // In real app: toast.error("Invalid email or password");
-        toast.error("Invalid email or password");
-      }
+        //toast.error("Invalid email or password");
+      } 
 
       setError("Login failed");
     }

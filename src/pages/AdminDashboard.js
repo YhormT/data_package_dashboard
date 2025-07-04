@@ -829,9 +829,19 @@ const filteredOrders = allItems.filter((item) => {
       headers: { "Content-Type": "application/json" },
       data: data,
     };
-    await axios.request(config);
-    Swal.fire("Updated!", "Loan status has been updated.", "success");
-    fetchUsers(); // Refresh users list
+    try {
+      await axios.request(config);
+      Swal.fire("Updated!", "Loan status has been updated.", "success");
+      fetchUsers(); // Refresh users list
+    } catch (error) {
+      const backendMessage = error?.response?.data?.error || error.message;
+      if (backendMessage && backendMessage.includes("User still has an outstanding loan and cannot be deactivated manually until loan is fully repaid")) {
+        window.alert("User still has loan and cannot be deactivated manually until loan is done paying.");
+      } else {
+        // fallback: show error as before
+        Swal.fire("Error", backendMessage, "error");
+      }
+    }
   };
 
   // Note: loanBalance is NOT modified here, only adminLoanBalance is set to zero when hasLoan is unchecked.
@@ -847,12 +857,12 @@ const filteredOrders = allItems.filter((item) => {
 
   // In handleSaveClick, support loan assignment and repayment
   const handleSaveClick = async (userId) => {
-    // Only allow negative numbers (not -0, -0.00, or zero)
-    const isValidNegative = (val) => {
-      return /^-([1-9]\d*)(\.\d+)?$/.test(val.trim()) && parseFloat(val) < 0;
-    };
-    const isValidPositive = (val) => {
-      return /^([1-9]\d*)(\.\d+)?$/.test(val.trim()) && parseFloat(val) > 0;
+    // Allow any non-zero number (positive or negative)
+    const isValidNumber = (val) => {
+      // Always convert input to string before trimming
+      const trimmedVal = String(val).trim();
+      const num = parseFloat(trimmedVal);
+      return !isNaN(num) && num !== 0;
     };
 
     // Find the user in state
@@ -862,82 +872,72 @@ const filteredOrders = allItems.filter((item) => {
       return;
     }
 
-    // Handle negative value: assign loan
-    if (isValidNegative(newBalance)) {
+    // Handle loan operations
+    if (isValidNumber(newBalance)) {
+      const amount = parseFloat(newBalance);
       try {
-        await axios.put(BASE_URL + "/api/users/update-admin/loan-balance", {
-          userId,
-          newBalance: parseFloat(newBalance),
-        });
-        Swal.fire("Success", "Loan balance updated successfully!", "success");
+        // If amount is negative: assign loan
+        if (amount < 0) {
+          // Send absolute value to backend
+          const loanAmount = Math.abs(amount);
+          
+          // Use the loan assignment endpoint
+          await axios.post(`${BASE_URL}/api/users/loan/assign`, {
+            userId,
+            amount: loanAmount
+          });
+          
+          // Update UI optimistically with both balances
+          setUsers((prevUsers) =>
+            prevUsers.map((u) =>
+              u.id === userId
+                ? {
+                    ...u,
+                    loanBalance: (parseFloat(u.loanBalance) || 0) + loanAmount,
+                    adminLoanBalance: (parseFloat(u.adminLoanBalance) || 0) + loanAmount,
+                    hasLoan: true
+                  }
+                : u
+            )
+          );
+          // Always fetch fresh data after loan operations to ensure UI reflects backend state
+          fetchUsers();
+          setTimeout(() => {
+            console.log('DEBUG: Users after loan assign:', users);
+          }, 1000);
+          Swal.fire("Success", "Loan assigned successfully!", "success");
+        }
+        // If amount is positive: process repayment
+        else if (amount > 0) {
+          if (!user.hasLoan) {
+            window.alert("This user does not have a loan");
+            return;
+          }
+          
+          // Send repayment amount to backend
+          await axios.post(`${BASE_URL}/api/users/repay-loan`, {
+            userId,
+            amount
+          });
+          
+          // Fetch fresh data from backend
+          fetchUsers();
+          setTimeout(() => {
+            console.log('DEBUG: Users after loan repayment:', users);
+          }, 1000);
+          Swal.fire("Success", "Loan repayment processed successfully!", "success");
+        }
         setEditingUserId(null);
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user.id === userId
-              ? {
-                  ...user,
-                  adminLoanBalance: parseFloat(newBalance),
-                  hasLoan: true,
-                }
-              : user
-          )
-        );
-        fetchUsers();
       } catch (error) {
-        Swal.fire("Error", "Failed to update loan balance!", "error");
+        console.error(error);
+        Swal.fire("Error", error.response?.data?.error || "Failed to process loan operation!", "error");
       }
-      return;
+    } else {
+      setEditingUserId(null);
+      window.alert(
+        "Please enter a valid non-zero number: negative for loan assignment, positive for repayment"
+      );
     }
-
-    // Handle positive value: loan repayment
-    if (isValidPositive(newBalance)) {
-      // Only allow repayment if user has a loan (check button is checked)
-      if (!user.hasLoan) {
-        window.alert("This user does not have a loan");
-        return;
-      }
-      // Subtract repayment from loan (loan is negative)
-      let newLoan = user.adminLoanBalance + parseFloat(newBalance);
-      // If repayment exceeds loan, cap at 0
-      if (newLoan > 0) newLoan = 0;
-      try {
-        await axios.put(BASE_URL + "/api/users/update-admin/loan-balance", {
-          userId,
-          newBalance: newLoan,
-        });
-        Swal.fire("Success", `Loan repayment processed successfully! New balance: ${newLoan}`, "success");
-        setEditingUserId(null);
-        // Optimistically update the UI: set hasLoan and adminLoanBalance to new value
-        setUsers((prevUsers) =>
-          prevUsers.map((user) =>
-            user.id === userId
-              ? {
-                  ...user,
-                  adminLoanBalance: newLoan,
-                  hasLoan: newLoan < 0,
-                }
-              : user
-          )
-        );
-        fetchUsers();
-      } catch (error) {
-        Swal.fire("Error", "Failed to process loan repayment!", "error");
-      }
-      return;
-    }
-
-    // If neither, treat as invalid
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId
-          ? { ...user, hasLoan: false, adminLoanBalance: 0 }
-          : user
-      )
-    );
-    setEditingUserId(null);
-    window.alert(
-      "Please enter a valid negative loan amount to assign a loan, or a positive amount to repay an existing loan."
-    );
   };
 
   const handleUpdateStatus = async (orderId) => {
@@ -957,9 +957,6 @@ const filteredOrders = allItems.filter((item) => {
       console.log(JSON.stringify(response.data));
       toast.success("Order status updated successfully!"); // Show success message
 
-      // Refresh your data after successful update
-      // Call your function that fetches orders data
-      // For example: fetchOrders();
       fetchOrderCount();
     } catch (error) {
       console.error("Error updating order status:", error);
@@ -992,7 +989,6 @@ const filteredOrders = allItems.filter((item) => {
           <ul className="space-y-4">
             <li
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
-              // onClick={() => navigate("/admin/users")}
               onClick={() => {
                 navigate("/admin/users");
                 setIsOpen(false);
@@ -1017,7 +1013,7 @@ const filteredOrders = allItems.filter((item) => {
             </div>
 
             <hr />
-
+ 
             <div
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
               onClick={() => setIsOpen(false)}
@@ -1066,11 +1062,6 @@ const filteredOrders = allItems.filter((item) => {
             </div>
           </div>
         </div>
-
-        {/* Announcement Modal Button */}
-       {/*  <div className="p-6 w-[40%] sm:w-full">
-          <Announcement />
-        </div> */}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[40%] sm:w-full">
           {/* Total Users */}
@@ -1138,15 +1129,11 @@ const filteredOrders = allItems.filter((item) => {
                 <tr className="bg-sky-700 text-white shadow-sm">
                   <th className="border p-2">ID</th>
                   <th className="border p-2">User Name</th>
-                  {/* <th className="border p-2">User Email</th> */}
                   <th className="border p-2">User Phone</th>
-                  {/* <th className="border p-2">Password</th> */}
                   <th className="border p-2">Role</th>
                   <th className="border p-2 ">Balance</th>
                   <th className="border p-2">Has Loan</th>
                   <th className="border p-2">Loan</th>
-                  {/* <th className="border p-2">Date Created</th> */}
-
                   <th className="border p-2">Action</th>
                 </tr>
               </thead>
@@ -1157,24 +1144,30 @@ const filteredOrders = allItems.filter((item) => {
                     <td className="border p-2 whitespace-nowrap">
                       {user.name}
                     </td>
-                    {/* <td className="border p-2">{user.email}</td> */}
                     <td className="border p-2">{user.phone}</td>
-                    {/* <td className="border p-2 text-center">{user.password}</td> */}
                     <td className="border p-2 text-left">{user.role}</td>
                     <td className="border p-2 text-right whitespace-nowrap">
-                      {/* GHS {user.loanBalance} */}
                       GHS {parseFloat(user.loanBalance).toFixed(2)}
                     </td>
                     <td className="border p-2 text-center">
                       <input
                         type="checkbox"
-                        checked={user.hasLoan}
+                        checked={user.hasLoan && parseFloat(user.adminLoanBalance) > 0}
+                        onChange={(e) =>
+                          handleLoanStatusChange(user.id, e.target.checked)
+                        }
+                        disabled={loading || !(user.hasLoan && parseFloat(user.adminLoanBalance) > 0)}
+                        className="cursor-pointer text-blue-500 focus:ring-blue-500"
+                      />
+                      {/* <input
+                        type="checkbox"
+                        checked={user.hasLoan > 0}
                         onChange={(e) =>
                           handleLoanStatusChange(user.id, e.target.checked)
                         }
                         disabled={loading}
                         className="cursor-pointer text-blue-500 focus:ring-blue-500"
-                      />
+                      /> */}
                     </td>
                     <td className="p-2">
                       {editingUserId === user.id ? (
@@ -1353,18 +1346,11 @@ const filteredOrders = allItems.filter((item) => {
             </button>
 
             <button
-  onClick={selectedUserTF ? handleUpdateUser : handleAddUser}
-  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
->
-  {selectedUserTF ? "Update" : "Add"}
-</button>
-
-            {/* <button
-              onClick={selectedUser ? handleUpdateUser : handleAddUser}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              {selectedUserTF ? "Update" : "Add"}
-            </button> */}
+			  onClick={selectedUserTF ? handleUpdateUser : handleAddUser}
+			  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+			>
+			  {selectedUserTF ? "Update" : "Add"}
+			</button>
           </div>
         </div>
       </Dialog>
