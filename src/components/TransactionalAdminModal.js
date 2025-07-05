@@ -139,6 +139,7 @@ const UserSalesSummary = ({ userSales }) => {
                 Total Sales Amount
               </th>
               <th className="px-4 py-2 text-right border">Avg Order Value</th>
+              <th className="px-4 py-2 text-right border">Current Balance</th>
             </tr>
           </thead>
           <tbody>
@@ -158,6 +159,9 @@ const UserSalesSummary = ({ userSales }) => {
                 </td>
                 <td className="px-4 py-2 border text-right">
                   {formatAmount(Math.abs(user.totalSales / user.orderCount))}
+                </td>
+                <td className="px-4 py-2 border text-right">
+                  {formatAmount(Math.abs(user.loanBalance))}
                 </td>
               </tr>
             ))}
@@ -254,9 +258,9 @@ const AdminBalanceSheet = ({ balanceData }) => {
               <span className="font-medium">{balanceData.topupCount}</span>
             </div>
            <div className="flex justify-between">
-  <span>Total Refunds:</span>
-  <span className="font-medium text-teal-700">{balanceData.refundCount}</span>
-</div>
+              <span>Total Refunds:</span>
+              <span className="font-medium text-teal-700">{balanceData.refundCount}</span>
+            </div>
             <div className="flex justify-between">
               <span>Rejected Top-ups:</span>
               <span className="font-medium text-red-600">
@@ -368,37 +372,6 @@ const TransactionalAdminModal = () => {
     return () => clearTimeout(timer);
   }, [search]);
 
-  // const fetchTransactions = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     let url = BASE_URL + "/api/transactions";
-  //     const queryParams = [];
-
-  //     if (startDate && endDate) {
-  //       queryParams.push(`startDate=${startDate}`);
-  //       queryParams.push(`endDate=${endDate}`);
-  //     }
-
-  //     if (typeFilter) {
-  //       queryParams.push(`type=${typeFilter}`);
-  //     }
-
-  //     queryParams.push(`page=${currentPage}`);
-  //     queryParams.push(`limit=${itemsPerPage}`);
-
-  //     if (queryParams.length > 0) {
-  //       url += "?" + queryParams.join("&");
-  //     }
-
-  //     const response = await axios.get(url);
-  //     const data = response.data.data || [];
-  //     setTransactions(data);
-  //   } catch (err) {
-  //     console.error("Failed to fetch transactions", err);
-  //   }
-  //   setLoading(false);
-  // }, [startDate, endDate, typeFilter, currentPage, itemsPerPage]);
-
   // Memoized filtered and sorted transactions
 
   const fetchTransactions = useCallback(async () => {
@@ -479,8 +452,17 @@ const TransactionalAdminModal = () => {
   // Calculate user sales summary
   const userSalesData = useMemo(() => {
     const salesByUser = {};
+    // To track latest balance per user
+    const latestBalanceByUser = {};
 
     filteredTransactions.forEach((tx) => {
+      if (tx.user?.name) {
+        const userName = tx.user.name;
+        // Track the latest balance for the user
+        if (!latestBalanceByUser[userName] || new Date(tx.createdAt) > new Date(latestBalanceByUser[userName].createdAt)) {
+          latestBalanceByUser[userName] = { balance: tx.balance || 0, createdAt: tx.createdAt };
+        }
+      }
       if (tx.type === "ORDER" && tx.user?.name) {
         const userName = tx.user.name;
         if (!salesByUser[userName]) {
@@ -488,11 +470,17 @@ const TransactionalAdminModal = () => {
             userName,
             totalSales: 0,
             orderCount: 0,
+            loanBalance: 0,
           };
         }
         salesByUser[userName].totalSales += tx.amount;
         salesByUser[userName].orderCount += 1;
       }
+    });
+
+    // Attach current balance (loanBalance) to each user
+    Object.keys(salesByUser).forEach(userName => {
+      salesByUser[userName].loanBalance = latestBalanceByUser[userName]?.balance || 0;
     });
 
     return Object.values(salesByUser).sort(
@@ -557,20 +545,39 @@ const TransactionalAdminModal = () => {
       }
     });
 
-    // data.activeUsers = data.activeUsers.size;
-    // data.netPosition =
-    //   data.totalRevenue + data.totalTopups - data.totalExpenses;
-    // data.netCashFlow = data.totalCredits + data.totalDebits;
-
-    // return data;
     data.activeUsers = data.activeUsers.size;
     data.netPosition =
       data.totalRevenue + data.totalTopups - data.totalExpenses;
     data.netCashFlow = data.totalCredits + data.totalDebits;
-    data.previousBalance =
-      filteredTransactions.length > 0
-        ? filteredTransactions[0].previousBalance
-        : 0;
+    // Calculate previousBalance based on user filter and 12am cutoff
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // today at 00:00:00
+    
+    // Find all transactions before 12am today
+    const transactionsBefore12am = transactions.filter(tx => {
+      const txDate = new Date(tx.createdAt);
+      return txDate < today;
+    });
+
+    if (debouncedSearch) {
+      // User search is active, get the user's balance before 12am
+      const userName = debouncedSearch.toLowerCase();
+      const userTxs = transactionsBefore12am.filter(tx => tx.user?.name?.toLowerCase().includes(userName));
+      // Get the latest transaction for the user before 12am
+      const latestUserTx = userTxs.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+      data.previousBalance = latestUserTx ? latestUserTx.balance : 0;
+    } else {
+      // No user filter, sum the latest balances of all users before 12am
+      const latestByUser = {};
+      transactionsBefore12am.forEach(tx => {
+        const uname = tx.user?.name;
+        if (!uname) return;
+        if (!latestByUser[uname] || new Date(tx.createdAt) > new Date(latestByUser[uname].createdAt)) {
+          latestByUser[uname] = tx;
+        }
+      });
+      data.previousBalance = Object.values(latestByUser).reduce((sum, tx) => sum + (tx.balance || 0), 0);
+    }
     data.totalTopupsAndRefunds = data.totalTopups + data.totalRefunds;
 
     return data;

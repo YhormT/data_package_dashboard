@@ -1094,7 +1094,7 @@ const filteredOrders = allItems.filter((item) => {
 
           <TotalRequestsComponent />
 
-          <div className="mt-4 text-right font-semibold text-gray-700 animate-pulse flex-nowrap">
+          <div className="mt-4 text-left font-semibold text-gray-700 animate-pulse flex-nowrap">
             Total Agents Balance:{" "}
             <span className="text-green-600">
               {" "}
