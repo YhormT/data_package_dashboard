@@ -271,7 +271,7 @@ const TotalRequestsComponent = () => {
       if (showNewRequestsOnly && !item.isNew) return false;
 
       // Filter by Order ID if specified
-      if (orderIdFilter && !String(item.id).includes(orderIdFilter))
+      if (orderIdFilter && !String(item.orderId).includes(orderIdFilter))
         return false;
 
       const selectedStartTime = startTime
@@ -970,7 +970,7 @@ const TotalRequestsComponent = () => {
                               {item.isNew && (
                                 <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                               )}
-                              {item.id || "N/A"}
+                              {item.orderId || "N/A"}
                               {item.isNew && (
                                 <span className="ml-2 text-xs bg-green-100 text-green-800 px-1 rounded">
                                   New
