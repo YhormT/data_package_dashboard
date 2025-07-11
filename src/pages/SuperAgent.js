@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Menu, X, Home, BarChart, Settings, User, LogOut, ShoppingCart, Trash, History, MessageCircleWarning, } from "lucide-react";
@@ -314,9 +314,9 @@ const Superagent = ({ setUserRole, userRole }) => {
   const [mobileNumber, setMobileNumber] = useState("");
 
   // Function to filter products
-  const filteredProducts = selectedCategory
+  const filteredProducts = useMemo(() => selectedCategory
     ? products?.filter((product) => product.name === selectedCategory)
-    : products;
+    : products, [products, selectedCategory]);
 
   const [filteredProducts1, setFilteredProducts1] = useState([]);
 

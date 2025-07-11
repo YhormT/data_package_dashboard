@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
@@ -405,7 +405,7 @@ const statusTabs = [
 ];
 
   // Enhanced filtering: support both 'Canceled' and 'Cancelled' for status
-const filteredOrders = allItems.filter((item) => {
+const filteredOrders = useMemo(() => allItems.filter((item) => {
   if (!item.createdAt) return false; // Ensure createdAt exists
 
   const orderDateTime = new Date(item.createdAt);
@@ -443,7 +443,7 @@ const filteredOrders = allItems.filter((item) => {
   }
 
   return true;
-});
+}), [allItems, selectedDate, startTime, endTime, selectedProduct, selectedStatusMain]);
 
   console.log("Filter", filteredOrders);
 
@@ -1264,7 +1264,7 @@ const filteredOrders = allItems.filter((item) => {
             placeholder="Name"
             value={selectedUser ? selectedUser.name : newUser.name}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2 uppercase"
+            className="w-full p-2 border rounded mb-2"
           />
 
           <input
@@ -1273,7 +1273,7 @@ const filteredOrders = allItems.filter((item) => {
             placeholder="Email"
             value={selectedUser ? selectedUser.email : newUser.email}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2 uppercase"
+            className="w-full p-2 border rounded mb-2"
           />
 
           <input
@@ -1282,7 +1282,7 @@ const filteredOrders = allItems.filter((item) => {
             placeholder="Phone"
             value={selectedUser ? selectedUser.phone : newUser.phone}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2 uppercase"
+            className="w-full p-2 border rounded mb-2"
           />
 
           <label className="flex items-center mb-2">
@@ -1312,7 +1312,7 @@ const filteredOrders = allItems.filter((item) => {
               placeholder="Password"
               value={selectedUser ? selectedUser.password : newUser.password}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded mb-2 uppercase"
+              className="w-full p-2 border rounded mb-2"
             />
             <button
               onClick={generateRandomPassword}
@@ -1326,7 +1326,7 @@ const filteredOrders = allItems.filter((item) => {
             name="role"
             value={selectedUser ? selectedUser.role : newUser.role}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-4 uppercase"
+            className="w-full p-2 border rounded mb-4"
           >
             <option value="">Select Role</option>
             <option value="USER">USER</option>
@@ -1433,18 +1433,6 @@ const filteredOrders = allItems.filter((item) => {
               className="w-full mt-2 p-2 border rounded"
               placeholder="Enter refund amount"
             />
-
-            {/* <div className="mt-2 flex items-center space-x-2">
-              <input
-                type="checkbox"
-                checked={hasLoan}
-                onChange={(e) => setHasLoan(e.target.checked)}
-                className="mt-1"
-              />
-              <label className="block text-sm font-medium text-gray-700">
-                Has Loan
-              </label>
-            </div> */}
           </div>
 
           <div className="mt-4 flex justify-end space-x-2">
