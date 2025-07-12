@@ -18,6 +18,7 @@ const PaymentModal = () => {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [users, setUsers] = useState([]);
   
   const itemsPerPage = 10;
   const prevDataRef = useRef([]);
@@ -107,6 +108,20 @@ const PaymentModal = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm]);
+
+  // Fetch users
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get(`${BASE_URL}/api/users`);
+        setUsers(response.data);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   // Get filtered data
   const getFilteredData = () => {
@@ -409,6 +424,16 @@ const PaymentModal = () => {
                     </div>
 
                     <div className="mt-6 flex justify-end">
+                      <select
+                        className="px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="">Select User</option>
+                        {users.map((user) => (
+                          <option key={user.id} value={user.id}>
+                            {user.name}
+                          </option>
+                        ))}
+                      </select>
                       <button
                         type="button"
                         className="bg-red-500 text-white px-5 py-2 rounded hover:bg-red-600 transition shadow"
