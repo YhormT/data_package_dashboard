@@ -924,6 +924,7 @@ const TotalRequestsComponent = () => {
                   <thead className="bg-sky-700 text-white sticky top-0">
                     <tr>
                       <th className="border p-2 whitespace-nowrap">Order ID</th>
+                      <th className="border p-2 whitespace-nowrap">Item ID</th>
                       <th className="border p-2 whitespace-nowrap">Username</th>
                       {/* <th className="border p-2 whitespace-nowrap">
                         User Phone
@@ -977,6 +978,9 @@ const TotalRequestsComponent = () => {
                                 </span>
                               )}
                             </div>
+                          </td>
+                          <td className="border px-2 py-2 md:px-4">
+                            {item.id || "N/A"}
                           </td>
                           <td className="border px-2 py-2 md:px-4">
                             {item.user?.name || "N/A"}

@@ -84,7 +84,11 @@ const OrderHistory = ({ isHistoryOpen, setIsHistoryOpen, orderHistory }) => {
                     className="border p-3 rounded-md shadow-sm bg-white"
                   >
                     <div className="flex items-center space-x-2">
-                      <strong>Item ID:</strong>
+                                          <strong>Order ID:</strong>
+                    <p className="text-gray-600">{order.id || "N/A"}</p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <strong>Item ID:</strong>
                       <p className="text-gray-600">{item.id || "N/A"}</p>
                     </div>
                     <div className="flex items-center space-x-2">
