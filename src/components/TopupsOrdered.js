@@ -51,56 +51,6 @@ export default function TopupsOrdered({
   const [newTopupsCount, setNewTopupsCount] = useState(0);
   const [lastTopupsTotal, setLastTopupsTotal] = useState(0);
 
-  // Function to fetch topups data
-  // const fetchTopups = useCallback(async () => {
-  //   setLoading(true);
-  //   try {
-  //     const controller = new AbortController();
-  //     const timeoutId = setTimeout(() => controller.abort(), 10000);
-
-  //     const response = await axios.get(
-  //       `${BASE_URL}/api/topups?startDate=${startDate}&endDate=${endDate}`,
-  //       { signal: controller.signal }
-  //     );
-
-  //     clearTimeout(timeoutId);
-  //     setTopups(response.data);
-  //     setLastRefreshed(new Date());
-
-  //     // Calculate stats
-  //     const approved = response.data.filter(t => t.status === "Approved").length;
-  //     const pending = response.data.filter(t => t.status === "Pending").length;
-  //     const rejected = response.data.filter(t => t.status === "Rejected").length; // Count rejected
-
-  //     setStats({
-  //       total: response.data.length,
-  //       approved,
-  //       pending,
-  //       rejected // Add rejected count
-  //     });
-
-  //   } catch (error) {
-  //     if (axios.isCancel(error)) {
-  //       console.log('Request canceled:', error.message);
-  //       Swal.fire({
-  //         icon: "warning",
-  //         title: "Timeout",
-  //         text: "The request took too long. Please try again.",
-  //         timer: 3000
-  //       });
-  //     } else {
-  //       console.error("Error fetching top-ups:", error);
-  //       Swal.fire({
-  //         icon: "error",
-  //         title: "Error",
-  //         text: "Failed to fetch top-ups data. Please try again.",
-  //         timer: 3000
-  //       });
-  //     }
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // }, [startDate, endDate]);
   const fetchTopups = useCallback(async () => {
     setLoading(true);
     try {

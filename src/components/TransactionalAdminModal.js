@@ -2,7 +2,28 @@ import { Fragment, useEffect, useState, useMemo, useCallback } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import axios from "axios";
 import BASE_URL from "../endpoints/endpoints";
-import { ArrowRightLeft, Download } from "lucide-react";
+import { ArrowRightLeft, Download, TrendingUp, TrendingDown, Users, Target, FileText, ShoppingCart, CheckCircle, XCircle, RefreshCw } from "lucide-react";
+
+// Tabs Component
+const Tabs = ({ tabs, activeTab, setActiveTab }) => (
+  <div className="border-b border-gray-200">
+    <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+      {tabs.map((tab) => (
+        <button
+          key={tab.id}
+          onClick={() => setActiveTab(tab.id)}
+          className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200 focus:outline-none ${
+            activeTab === tab.id
+              ? "border-indigo-500 text-indigo-600"
+              : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+          }`}
+        >
+          {tab.name}
+        </button>
+      ))}
+    </nav>
+  </div>
+);
 
 // Virtualization hook for large lists
 const useVirtualization = (items, containerHeight = 400, itemHeight = 50) => {
@@ -344,6 +365,11 @@ const AdminBalanceSheet = ({ balanceData }) => {
 };
 
 const TransactionalAdminModal = () => {
+  const tabs = [
+    { id: 'transactions', name: 'Transactions' },
+    { id: 'sales', name: 'Sales Summary' },
+    { id: 'balance', name: 'Admin Balance Sheet' },
+  ];
   const [isOpen, setIsOpen] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -751,19 +777,13 @@ const TransactionalAdminModal = () => {
 
   return (
     <div className="">
-       <li
-              className="flex items-center space-x-3 p-2 rounded-md cursor-pointer bg-gray-700 hover:bg-gray-600"
-             onClick={openModal}
-            >
-              <ArrowRightLeft className="w-5 h-5" />
-              <div>Show Transactions</div>
-            </li>
-      {/* <button
+      <li
+        className="flex items-center space-x-3 p-2 rounded-md cursor-pointer bg-gray-700 hover:bg-gray-600"
         onClick={openModal}
-        className="px-6 py-2 bg-blue-600 text-white font-semibold rounded-md shadow hover:bg-blue-700"
       >
-        Show Transactions
-      </button> */}
+        <ArrowRightLeft className="w-5 h-5" />
+        <div>Show Transactions</div>
+      </li>
 
       <Transition appear show={isOpen} as={Fragment}>
         <Dialog as="div" className="relative z-50" onClose={closeModal}>
@@ -790,87 +810,43 @@ const TransactionalAdminModal = () => {
                 leaveFrom="opacity-100 scale-100"
                 leaveTo="opacity-0 scale-95"
               >
-                <Dialog.Panel className="bg-white rounded-lg w-11/12 max-w-7xl h-[90vh] overflow-y-auto p-2">
-                  <Dialog.Title className="text-xl font-bold text-gray-900 mb-4 flex justify-between items-center">
-                    <span>Transaction Analytics Dashboard</span>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={exportToCSV}
-                        disabled={exportLoading || loading}
-                        className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
-                      >
-                        {exportLoading ? "Exporting..." : `Export ${activeTab}`}
-                      </button>
-                    </div>
+                <Dialog.Panel className="bg-white rounded-lg w-11/12 max-w-7xl h-[90vh] overflow-y-auto p-4 flex flex-col">
+                  <Dialog.Title as="div" className="text-xl font-bold text-gray-900 mb-4 flex justify-between items-center sticky top-0 bg-white p-4 z-20 border-b">
+                    <span>Transactional Overview</span>
+                    <button
+                      onClick={exportToCSV}
+                      disabled={exportLoading}
+                      className="text-sm px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400 flex items-center"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {exportLoading ? "Exporting..." : `Export ${activeTab}`}
+                    </button>
                   </Dialog.Title>
 
-                  {/* Tab Navigation */}
-                  <div className="flex border-b border-gray-200 mb-4">
-                    <button
-                      onClick={() => setActiveTab("transactions")}
-                      className={`px-4 py-2 font-medium text-sm ${
-                        activeTab === "transactions"
-                          ? "border-b-2 border-blue-500 text-blue-600"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      Transactions
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("sales")}
-                      className={`px-4 py-2 font-medium text-sm ${
-                        activeTab === "sales"
-                          ? "border-b-2 border-blue-500 text-blue-600"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      Sales Summary
-                    </button>
-                    <button
-                      onClick={() => setActiveTab("balance")}
-                      className={`px-4 py-2 font-medium text-sm ${
-                        activeTab === "balance"
-                          ? "border-b-2 border-blue-500 text-blue-600"
-                          : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      Admin Balance Sheet
-                    </button>
-                  </div>
+                  <div className="flex-grow overflow-y-auto px-4">
+                    <Tabs tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />
 
-                  {/* Filters - Only show for transactions tab */}
-                  {activeTab === "transactions" && (
-                    <>
-                      <div className="bg-gray-50 p-4 rounded-lg mb-4">
-                        <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                          <div className="w-full sm:w-1/2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Date Range
-                            </label>
-                            <div className="md:flex items-center gap-2">
-                              <input
-                                type="date"
-                                value={startDate}
-                                onChange={(e) => setStartDate(e.target.value)}
-                                className="border rounded-md px-3 py-2 w-full"
-                              />
-                              <span>to</span>
-                              <input
-                                type="date"
-                                value={endDate}
-                                onChange={(e) => setEndDate(e.target.value)}
-                                className="border rounded-md px-3 py-2 w-full"
-                              />
-                            </div>
-                          </div>
-                          <div className="w-full sm:w-1/2">
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Transaction Type
-                            </label>
+                    <div className="mt-6">
+                      {activeTab === "transactions" && (
+                        <>
+                          {/* Filters and Actions */}
+                          {/* <div className="flex flex-wrap items-center gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
+                            <input
+                              type="date"
+                              value={startDate}
+                              onChange={(e) => setStartDate(e.target.value)}
+                              className="form-input"
+                            />
+                            <input
+                              type="date"
+                              value={endDate}
+                              onChange={(e) => setEndDate(e.target.value)}
+                              className="form-input"
+                            />
                             <select
                               value={typeFilter}
                               onChange={(e) => setTypeFilter(e.target.value)}
-                              className="border rounded-md px-3 py-2 w-full"
+                              className="form-select"
                             >
                               <option value="">All Types</option>
                               {transactionTypes.map((type) => (
@@ -879,138 +855,146 @@ const TransactionalAdminModal = () => {
                                 </option>
                               ))}
                             </select>
-                          </div>
-                        </div>
-                        <div className="flex justify-end">
-                          <button
-                            onClick={resetFilters}
-                            className="px-4 py-2 mr-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100"
-                          >
-                            Reset
-                          </button>
-                          <button
-                            onClick={handleFilter}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-                          >
-                            Apply Filters
-                          </button>
-                        </div>
-                      </div>
+                            <input
+                              type="text"
+                              placeholder="Search by user..."
+                              value={search}
+                              onChange={(e) => setSearch(e.target.value)}
+                              className="form-input w-48"
+                            />
+                            <select
+                              value={amountFilter}
+                              onChange={(e) => setAmountFilter(e.target.value)}
+                              className="form-select"
+                            >
+                              <option value="all">All Amounts</option>
+                              <option value="positive">Credits Only</option>
+                              <option value="negative">Debits Only</option>
+                            </select>
+                          </div> */}
+                          <div className="bg-white border border-gray-200 rounded-xl p-6 mb-6 shadow-sm">
+                            <div className="flex flex-col lg:flex-row gap-4">
+                              {/* Date Range Section */}
+                              <div className="flex flex-col sm:flex-row gap-3 lg:border-r lg:border-gray-200 lg:pr-6">
+                                <div className="flex flex-col">
+                                  <label className="text-sm font-medium text-gray-700 mb-1">From</label>
+                                  <input
+                                    type="date"
+                                    value={startDate}
+                                    onChange={(e) => setStartDate(e.target.value)}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                                  />
+                                </div>
+                                <div className="flex flex-col">
+                                  <label className="text-sm font-medium text-gray-700 mb-1">To</label>
+                                  <input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                                  />
+                                </div>
+                              </div>
 
-                      {/* Additional Filters */}
-                      <div className="flex flex-col sm:flex-row gap-4 mb-4">
-                        <div className="w-full sm:w-1/3">
-                          <input
-                            type="text"
-                            placeholder="Search by user..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            className="border rounded-md px-3 py-2 w-full"
-                          />
-                        </div>
-                        <div className="w-full sm:w-1/3">
-                          <select
-                            value={amountFilter}
-                            onChange={(e) => setAmountFilter(e.target.value)}
-                            className="border rounded-md px-3 py-2 w-full"
-                          >
-                            <option value="all">All Amounts</option>
-                            <option value="positive">Credits Only</option>
-                            <option value="negative">Debits Only</option>
-                          </select>
-                        </div>
-                        <div className="w-full sm:w-1/3">
-                          <select
-                            value={sortBy}
-                            onChange={(e) => setSortBy(e.target.value)}
-                            className="border rounded-md px-3 py-2 w-full"
-                          >
-                            <option value="date-desc">
-                              Date (Newest First)
-                            </option>
-                            <option value="date-asc">
-                              Date (Oldest First)
-                            </option>
-                            <option value="amount-desc">
-                              Amount (High to Low)
-                            </option>
-                            <option value="amount-asc">
-                              Amount (Low to High)
-                            </option>
-                          </select>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                              {/* Filters Section */}
+                              <div className="flex flex-col sm:flex-row gap-3 lg:border-r lg:border-gray-200 lg:pr-6">
+                                <div className="flex flex-col">
+                                  <label className="text-sm font-medium text-gray-700 mb-1">Type</label>
+                                  <select
+                                    value={typeFilter}
+                                    onChange={(e) => setTypeFilter(e.target.value)}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white"
+                                  >
+                                    <option value="">All Types</option>
+                                    {transactionTypes.map((type) => (
+                                      <option key={type} value={type}>
+                                        {type}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </div>
+                                <div className="flex flex-col">
+                                  <label className="text-sm font-medium text-gray-700 mb-1">Amount</label>
+                                  <select
+                                    value={amountFilter}
+                                    onChange={(e) => setAmountFilter(e.target.value)}
+                                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors bg-white"
+                                  >
+                                    <option value="all">All Amounts</option>
+                                    <option value="positive">Credits Only</option>
+                                    <option value="negative">Debits Only</option>
+                                  </select>
+                                </div>
+                              </div>
 
-                  {/* Content based on active tab */}
-                  {activeTab === "balance" && (
-                    <AdminBalanceSheet balanceData={adminBalanceData} />
-                  )}
+                              {/* Search Section */}
+                              <div className="flex flex-col flex-1">
+                                <label className="text-sm font-medium text-gray-700 mb-1">Search</label>
+                                <div className="relative">
+                                  <input
+                                    type="text"
+                                    placeholder="Search by user..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full px-3 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-colors"
+                                  />
+                                  <svg
+                                    className="absolute left-3 top-2.5 h-5 w-5 text-gray-400"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                                    />
+                                  </svg>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
 
-                  {activeTab === "sales" && (
-                    <UserSalesSummary userSales={userSalesData} />
-                  )}
+                          {/* Summary Cards */}
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+                              <div className="text-sm text-blue-800">Total Transactions</div>
+                              <div className="font-bold text-lg">{stats.totalTransactions}</div>
+                            </div>
+                            <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                              <div className="text-sm text-green-800">Total Credits</div>
+                              <div className="font-bold text-lg">
+                                GH₵{" "}
+                                {stats.totalCredits.toLocaleString("en-GH", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </div>
+                            </div>
+                            <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                              <div className="text-sm text-red-800">Total Debits</div>
+                              <div className="font-bold text-lg">
+                                GH₵{" "}
+                                {Math.abs(stats.totalDebits).toLocaleString("en-GH", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </div>
+                            </div>
+                            <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
+                              <div className="text-sm text-purple-800">Net Balance Change</div>
+                              <div className="font-bold text-lg">
+                                GH₵{" "}
+                                {stats.netBalance.toLocaleString("en-GH", {
+                                  minimumFractionDigits: 2,
+                                  maximumFractionDigits: 2,
+                                })}
+                              </div>
+                            </div>
+                          </div>
 
-                  {activeTab === "transactions" && (
-                    <>
-                      {/* Stats Summary */}
-                      {!loading && filteredTransactions.length > 0 && (
-                        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
-                          <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                            <div className="text-sm text-blue-800">
-                              Total Transactions
-                            </div>
-                            <div className="font-bold text-lg">
-                              {stats.totalTransactions}
-                            </div>
-                          </div>
-                          <div className="bg-green-50 p-3 rounded-lg border border-green-200">
-                            <div className="text-sm text-green-800">
-                              Total Credits
-                            </div>
-                            <div className="font-bold text-lg text-green-700">
-                              GH₵{" "}
-                              {stats.totalCredits.toLocaleString("en-GH", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </div>
-                          </div>
-                          <div className="bg-red-50 p-3 rounded-lg border border-red-200">
-                            <div className="text-sm text-red-800">
-                              Total Debits
-                            </div>
-                            <div className="font-bold text-lg text-red-700">
-                              GH₵{" "}
-                              {stats.totalDebits.toLocaleString("en-GH", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </div>
-                          </div>
-                          <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
-                            <div className="text-sm text-purple-800">
-                              Net Balance Change
-                            </div>
-                            <div className="font-bold text-lg">
-                              GH₵{" "}
-                              {stats.netBalance.toLocaleString("en-GH", {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2,
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Virtualized Table */}
-                      <div className="p-4">
-                        {loading ? (
-                          <div className="text-center py-12 text-gray-500">
-                            Loading transactions...
-                          </div>
-                        ) : (
+                          {/* Virtualized Table Container */}
                           <div className="border rounded-lg overflow-hidden">
                             <div
                               className="overflow-auto"
@@ -1020,117 +1004,89 @@ const TransactionalAdminModal = () => {
                               <table className="min-w-full text-sm text-left">
                                 <thead className="bg-gray-100 sticky top-0 z-10">
                                   <tr>
-                                    <th className="px-4 py-2 border w-32">
-                                      Type
-                                    </th>
-                                    <th className="px-4 py-2 border w-80">
-                                      Description
-                                    </th>
-                                    <th className="px-4 py-2 border w-32">
-                                      Amount
-                                    </th>
-                                    <th className="px-4 py-2 border w-32 whitespace-nowrap">
-                                      Current Balance
-                                    </th>
-                                    <th className="px-4 py-2 border w-32 whitespace-nowrap">
-                                      Previous Balance
-                                    </th>
-                                    <th className="px-4 py-2 border w-40">
-                                      User
-                                    </th>
-                                    <th className="px-4 py-2 border w-48">
-                                      Date & Time
-                                    </th>
+                                    <th className="px-4 py-2 border w-32">Type</th>
+                                    <th className="px-4 py-2 border w-80">Description</th>
+                                    <th className="px-4 py-2 border w-32">Amount</th>
+                                    <th className="px-4 py-2 border w-32 whitespace-nowrap">Current Balance</th>
+                                    <th className="px-4 py-2 border w-32 whitespace-nowrap">Previous Balance</th>
+                                    <th className="px-4 py-2 border w-40">User</th>
+                                    <th className="px-4 py-2 border w-48">Date & Time</th>
                                   </tr>
                                 </thead>
-                                <tbody style={{ position: "relative" }}>
-                                  {/* Virtual spacer for items before visible area */}
-                                  {offsetY > 0 && (
-                                    <tr style={{ height: offsetY }}>
-                                      <td colSpan="6"></td>
+                                <tbody style={{ position: "relative", height: `${totalHeight}px` }}>
+                                  {loading ? (
+                                    <tr>
+                                      <td colSpan="7" className="text-center py-12 text-gray-500">
+                                        Loading transactions...
+                                      </td>
                                     </tr>
-                                  )}
-
-                                  {/* Visible items */}
-                                  {visibleItems.map((tx, index) => (
-                                    <TransactionRow
-                                      key={tx.id}
-                                      tx={tx}
-                                      index={index + Math.floor(offsetY / 50)}
-                                    />
-                                  ))}
-
-                                  {/* Virtual spacer for items after visible area */}
-                                  {offsetY + visibleItems.length * 50 <
-                                    totalHeight && (
-                                    <tr
-                                      style={{
-                                        height:
-                                          totalHeight -
-                                          offsetY -
-                                          visibleItems.length * 50,
-                                      }}
-                                    >
-                                      <td colSpan="6"></td>
-                                    </tr>
+                                  ) : (
+                                    <>
+                                      <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', transform: `translateY(${offsetY}px)` }}>
+                                        {visibleItems.map((tx, index) => (
+                                          <TransactionRow
+                                            key={tx.id}
+                                            tx={tx}
+                                            index={index + Math.floor(offsetY / 50)}
+                                          />
+                                        ))}
+                                      </div>
+                                      {!filteredTransactions.length && !loading && (
+                                        <tr>
+                                          <td colSpan="7" className="text-center py-8 text-gray-500">
+                                            No transactions found.
+                                          </td>
+                                        </tr>
+                                      )}
+                                    </>
                                   )}
                                 </tbody>
                               </table>
-
-                              {!filteredTransactions.length && !loading && (
-                                <div className="text-center py-8 text-gray-500">
-                                  No transactions found.
-                                </div>
-                              )}
                             </div>
                           </div>
-                        )}
-                      </div>
 
-                      {/* Pagination */}
-                      {filteredTransactions.length > 0 && (
-                        <div className="flex justify-between items-center mt-4">
-                          <div className="text-sm text-gray-600">
-                            Showing{" "}
-                            {Math.min(
-                              itemsPerPage,
-                              filteredTransactions.length
-                            )}{" "}
-                            of {stats.totalTransactions} transactions
-                          </div>
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() =>
-                                setCurrentPage((p) => Math.max(1, p - 1))
-                              }
-                              disabled={currentPage === 1}
-                              className="px-3 py-1 border rounded disabled:opacity-50"
-                            >
-                              Previous
-                            </button>
-                            <span className="px-3 py-1">
-                              Page {currentPage}
-                            </span>
-                            <button
-                              onClick={() => setCurrentPage((p) => p + 1)}
-                              disabled={
-                                filteredTransactions.length < itemsPerPage
-                              }
-                              className="px-3 py-1 border rounded disabled:opacity-50"
-                            >
-                              Next
-                            </button>
-                          </div>
-                        </div>
+                          {/* Pagination */}
+                          {filteredTransactions.length > 0 && (
+                            <div className="flex justify-between items-center mt-4">
+                              <div className="text-sm text-gray-600">
+                                Showing {Math.min(itemsPerPage, filteredTransactions.length)} of {stats.totalTransactions} transactions
+                              </div>
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                  disabled={currentPage === 1}
+                                  className="px-3 py-1 border rounded disabled:opacity-50"
+                                >
+                                  Previous
+                                </button>
+                                <span className="px-3 py-1">Page {currentPage}</span>
+                                <button
+                                  onClick={() => setCurrentPage((p) => p + 1)}
+                                  disabled={filteredTransactions.length < itemsPerPage}
+                                  className="px-3 py-1 border rounded disabled:opacity-50"
+                                >
+                                  Next
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </>
                       )}
-                    </>
-                  )}
 
-                  {/* Footer */}
-                  <div className="mt-6 text-right">
+                      {activeTab === "sales" && (
+                        <UserSalesSummary userSales={userSalesData} />
+                      )}
+
+                      {activeTab === "balance" && (
+                        <AdminBalanceSheet balanceData={adminBalanceData} />
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-4 border-t sticky bottom-0 bg-white p-4 z-20">
                     <button
                       onClick={closeModal}
-                      className="px-5 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+                      className="px-5 py-2 bg-red-600 text-white rounded hover:bg-red-700 w-full"
                     >
                       Close
                     </button>

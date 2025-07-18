@@ -25,6 +25,7 @@ import TopUp from "../components/TopUp";
 import OrderHistory from "../components/OrderHistory";
 import Logo from "../assets/logo-icon.png";
 import UploadExcel from "../components/UploadExcel";
+import PasteOrders from "../components/PasteOrders";
 import PasswordChange from "../components/PasswordChange";
 import TransactionsModal from "../components/TransactionsModal";
 import OtherProducts from "../components/OtherProducts";
@@ -65,12 +66,6 @@ const UserDashboard = ({ setUserRole, userRole }) => {
   const inactivityTimeout = useRef(null);
   const INACTIVE_TIMEOUT = 300000;
 
-  // const logoutUser = useCallback(() => {
-  //   localStorage.removeItem("token");
-  //   localStorage.removeItem("role");
-  //   localStorage.removeItem("userId"); // Optional: Remove user ID if needed
-  //   setUserRole(null); // Reset state to show login screen
-  // }, []);
   const logoutUser = useCallback(async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -186,24 +181,6 @@ const UserDashboard = ({ setUserRole, userRole }) => {
     }
   }, [navigate]);
 
-  // useEffect(() => {
-  //   const userId = localStorage.getItem("userId");
-  //   const fetchLoanBalance = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${BASE_URL}/api/users/loan/${userId}`
-  //       );
-  //       setLoanBalance(response.data);
-  //     } catch (err) {
-  //       setError(err.message);
-  //     }
-  //   };
-
-  //   if (userId) {
-  //     fetchLoanBalance();
-  //   }
-  // }, [userRole]);
-
   const [transactionInProgress, setTransactionInProgress] = useState(false);
 
   useEffect(() => {
@@ -238,35 +215,6 @@ const UserDashboard = ({ setUserRole, userRole }) => {
     };
   }, [userRole]);
 
-  // useEffect(() => {
-  //   const userId = localStorage.getItem("userId");
-
-  //   const fetchLoanBalance = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${BASE_URL}/api/users/loan/${userId}`
-  //       );
-  //       setLoanBalance(response.data);
-  //     } catch (err) {
-  //       setError(err.message);
-  //     }
-  //   };
-
-  //   let interval;
-
-  //   if (userId) {
-  //     // Initial fetch immediately
-  //     fetchLoanBalance();
-
-  //     // Set interval to fetch every 1 second
-  //     interval = setInterval(fetchLoanBalance, 1000);
-  //   }
-
-  //   return () => {
-  //     if (interval) clearInterval(interval); // Cleanup on component unmount
-  //   };
-  // }, [userRole]);
-
   const fetchFreshBalance = async (userId) => {
     try {
       const response = await axios.get(`${BASE_URL}/api/users/loan/${userId}`);
@@ -287,20 +235,6 @@ const UserDashboard = ({ setUserRole, userRole }) => {
   };
 
   console.log("Loan Balance:", loanBalance);
-
-  // useEffect(() => {
-  //   const fetchProducts = async () => {
-  //     try {
-  //       const response = await fetch(`${BASE_URL}/products`);
-  //       const data = await response.json();
-  //       setProducts(data);
-  //     } catch (error) {
-  //       console.error("Error fetching products:", error);
-  //     }
-  //   };
-
-  //   fetchProducts();
-  // }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -428,73 +362,6 @@ const UserDashboard = ({ setUserRole, userRole }) => {
       setMobileNumbers((prev) => ({ ...prev, [id]: value }));
     }
   };
-
-  // const addToCart = async (productId) => {
-  //   try {
-  //     const userId = parseInt(localStorage.getItem("userId"), 10);
-  //     if (!userId) return;
-
-  //     const mobileNumber = mobileNumbers[productId] || "";
-
-  //     if (!mobileNumber.trim()) {
-  //       setError((prev) => ({
-  //         ...prev,
-  //         [productId]:
-  //           "Please enter a valid mobile number before adding to cart.",
-  //       }));
-  //       return;
-  //     }
-
-  //     const data = JSON.stringify({
-  //       userId,
-  //       productId,
-  //       quantity: 1,
-  //       mobileNumber,
-  //     });
-
-  //     const config = {
-  //       method: "post",
-  //       maxBodyLength: Infinity,
-  //       url: `${BASE_URL}/cart/add/`,
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       data: data,
-  //     };
-
-  //     // Show loader
-  //     setLoading(true);
-
-  //     await axios.request(config);
-
-  //     // Hide loader
-  //     setLoading(false);
-
-  //     // Show success notification
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Added to Cart!",
-  //       text: `Product ${productId} has been added to your cart.`,
-  //       timer: 2000, // Auto close after 2 sec
-  //       showConfirmButton: false,
-  //     });
-
-  //     fetchCart();
-  //     setMobileNumbers("");
-  //   } catch (error) {
-  //     setLoading(false);
-
-  //     // Show error notification
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Oops!",
-  //       text: "Something went wrong while adding the product to the cart.",
-  //     });
-
-  //     console.error("Error adding to cart:", error);
-  //   }
-  // };
-
 
   const addToCart = async (productId) => {
   try {
@@ -912,17 +779,6 @@ const handleCategorySelect = (category) => {
           <h1 className="text-md font-semibold uppercase whitespace-nowrap">
             <span className="">WELCOME</span> {loanBalance?.name}
           </h1>
-          {/* <div
-            className="relative cursor-pointer"
-            onClick={() => setIsCartOpen(true)}
-          >
-            <ShoppingCart className="w-6 h-6" />
-            {cart.length > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
-                {cart.length}
-              </span>
-            )}
-          </div> */}
           <div className="flex items-center space-x-4">
             {loanBalance?.hasLoan && (
               <div
@@ -981,9 +837,6 @@ const handleCategorySelect = (category) => {
               </div>
             </div>
 
-            {/* <div>
-              profile
-            </div> */}
             <PasswordChange />
           </div>
         </header>
@@ -993,12 +846,6 @@ const handleCategorySelect = (category) => {
           setIsHistoryOpen={setIsHistoryOpen}
           orderHistory={orderHistory}
         />
-
-        {/* <DailySalesModal
-  isOpen={dailySalesOpen}
-  onClose={() => setDailySalesOpen(false)}
-/> */}
-
         {loading ? (
           <div
             className="flex justify-center items-center min-h-screen"

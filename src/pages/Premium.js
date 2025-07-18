@@ -25,6 +25,7 @@ import Logo from "../assets/logo-icon.png";
 import TopUp from "../components/TopUp";
 import PasswordChange from "../components/PasswordChange";
 import UploadExcel from "../components/UploadExcel";
+import PasteOrders from "../components/PasteOrders";
 import TransactionsModal from "../components/TransactionsModal";
 import OtherProducts from "../components/OtherProducts";
 
@@ -798,10 +799,16 @@ const Premium = ({ setUserRole, userRole }) => {
                 <UploadExcel onUploadSuccess={fetchCart} />
               </div>
 
+              <hr className="my-5" />
+
+              <div onClick={() => setIsOpen(false)}>
+                <PasteOrders onUploadSuccess={fetchCart} />
+              </div>
+
               {/* <hr className="my-5" /> */}
 
               <li
-                className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer mt-6 text-red-500"
+                className="flex items-center space-x-3 p-2 rounded-md hover:bg-red-700 cursor-pointer text-black-500"
                 onClick={logoutUser}
               >
                 <LogOut className="w-5 h-5" />
@@ -812,7 +819,7 @@ const Premium = ({ setUserRole, userRole }) => {
         </div>
 
         {/* 🎥 Video Ad Section */}
-        <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
+        {/* <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
           <p className="text-xs text-gray-500">Sponsored Ad</p>
           <video
             className="mt-2 rounded-lg w-full hover:opacity-80 transition-opacity duration-300"
@@ -827,7 +834,7 @@ const Premium = ({ setUserRole, userRole }) => {
             />
             Your browser does not support the video tag.
           </video>
-        </div>
+        </div> */}
       </aside>
 
       <div className="flex-1 flex flex-col ml-0 md:ml-64">

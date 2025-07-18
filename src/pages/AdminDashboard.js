@@ -288,24 +288,25 @@ const handleRefundAmount = async () => {
     phone: "",
   });
 
- const handleInputChange = (e) => {
-  const { name, value } = e.target;
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
 
-  if (selectedUserTF) {
-    // Editing existing user
-    setSelectedUser((prev) => ({
-      ...prev,
-      [name]: name === "isLoggedIn" ? Boolean(value) : value,
-    }));
-  } else {
-    // Adding new user
-    setNewUser((prev) => ({
-      ...prev,
-      [name]: name === "isLoggedIn" ? Boolean(value) : value,
-    }));
-  }
-};
+    const inputValue = type === 'checkbox' ? checked : value;
 
+    if (selectedUserTF) {
+      // Editing existing user
+      setSelectedUser((prev) => ({
+        ...prev,
+        [name]: inputValue,
+      }));
+    } else {
+      // Adding new user
+      setNewUser((prev) => ({
+        ...prev,
+        [name]: inputValue,
+      }));
+    }
+  };
 
   const generateRandomPassword = () => {
     const randomPassword = Math.random()
@@ -708,16 +709,19 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
       },
     });
 
+    const updatedData = {
+      name: selectedUser.name,
+      email: selectedUser.email,
+      role: selectedUser.role,
+      phone: selectedUser.phone,
+      balance: selectedUser.balance,
+      password: selectedUser.password,
+      isLoggedIn: selectedUser.isLoggedIn,
+    };
+
     const response = await axios.put(
       `${BASE_URL}/api/users/${selectedUser.id}`,
-      {
-        name: selectedUser.name,
-        email: selectedUser.email,
-        password: selectedUser.password,
-        role: selectedUser.role || "USER",
-        phone: selectedUser.phone,
-        isLoggedIn: selectedUser.isLoggedIn, // include this field
-      },
+      updatedData,
       {
         headers: {
           "Content-Type": "application/json",

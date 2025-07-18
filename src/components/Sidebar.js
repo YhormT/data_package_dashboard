@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import TransactionsModal from "./TransactionsModal";
 import UploadExcel from "./UploadExcel";
+import PasteOrders from "./PasteOrders";
 import Logo from "../assets/logo-icon.png";
 import bgImage from "../assets/sidefloor.jpg";
 import { Dialog } from "@headlessui/react";
@@ -140,6 +141,12 @@ const Sidebar = ({
               <UploadExcel onUploadSuccess={onUploadSuccess} />
             </div>
 
+            <hr className="my-5" />
+
+            <div onClick={() => setIsOpen(false)}>
+              <PasteOrders onUploadSuccess={onUploadSuccess} />
+            </div>
+
             {/* Daily Sales */}
             {/* <li
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer text-green-600"
@@ -154,7 +161,7 @@ const Sidebar = ({
 
             {/* Logout */}
             <li
-              className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer mt-6 text-red-500"
+              className="flex items-center space-x-3 p-2 rounded-md hover:bg-red-700 cursor-pointer text-black-500"
               onClick={logoutUser}
             >
               <LogOut className="w-5 h-5" />
@@ -165,16 +172,16 @@ const Sidebar = ({
       </div>
 
       {/* Audit Log Modal */}
-      <Dialog open={showAuditLog} onClose={() => setShowAuditLog(false)} className="fixed inset-0 z-50 flex items-center justify-center">
+      {/* <Dialog open={showAuditLog} onClose={() => setShowAuditLog(false)} className="fixed inset-0 z-50 flex items-center justify-center">
         <div className="fixed inset-0 bg-black bg-opacity-40" aria-hidden="true" />
         <div className="relative bg-white rounded-lg shadow-lg w-[95vw] md:w-[70vw] max-h-[90vh] overflow-y-auto p-4">
           <Dialog.Title className="text-xl font-bold mb-2">Audit Log</Dialog.Title>
           <button onClick={() => setShowAuditLog(false)} className="absolute top-2 right-4 text-gray-500 hover:text-red-500 text-lg">&times;</button>
           <AuditLog />
         </div>
-      </Dialog>
+      </Dialog> */}
 
-      <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
+      {/* <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
         <p className="text-xs text-gray-500">Sponsored Ad</p>
         <video
           className="mt-2 rounded-lg w-full hover:opacity-80 transition-opacity duration-300"
@@ -189,7 +196,7 @@ const Sidebar = ({
           />
           Your browser does not support the video tag.
         </video>
-      </div>
+      </div> */}
     </aside>
   );
 };

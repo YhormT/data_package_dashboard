@@ -6,9 +6,25 @@ import { toast } from "react-toastify";
 
 const TopUp = ({ setTopUp }) => {
   const [loading, setLoading] = useState(false);
+  const [copyStatus, setCopyStatus] = useState("Copy");
   const [formData, setFormData] = useState({
     referenceId: "",
   });
+
+  const phoneNumber = "0596316991";
+
+  const handleCopy = () => {
+    const numberToCopy = phoneNumber.replace(/\s/g, "");
+    navigator.clipboard.writeText(numberToCopy).then(() => {
+      setCopyStatus("Copied!");
+      setTimeout(() => {
+        setCopyStatus("Copy");
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy text: ', err);
+      toast.error("Failed to copy number.");
+    });
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -85,10 +101,17 @@ const TopUp = ({ setTopUp }) => {
 
           <div className="bottom-4 left-4 text-xs text-gray-400 bg-black backdrop-blur-sm rounded-lg p-3 border border-white/10 mb-5">
             <div className="space-y-1">
-              <div>
+              <div className="flex items-center">
                 <span className="text-cyan-400">
-                  PHONE NUMBER : +233 59 631 6991
+                  PHONE NUMBER : {phoneNumber}
                 </span>
+                <button
+                  type="button"
+                  onClick={handleCopy}
+                  className="ml-2 px-2 py-1 text-xs bg-gray-200 text-black rounded hover:bg-gray-300"
+                >
+                  {copyStatus}
+                </button>
               </div>
               <div>
                 <span className="text-purple-400">

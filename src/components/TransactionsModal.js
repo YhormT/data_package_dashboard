@@ -6,8 +6,6 @@ import axios from "axios";
 import _ from "lodash";
 import BASE_URL from "../endpoints/endpoints";
 import DailySalesCard from "./DailySalesCard";
-import { toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 export default function TransactionsModal() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,10 +26,9 @@ export default function TransactionsModal() {
 
   // Top Up modal state
   const [showTopUp, setShowTopUp] = useState(false);
+  const [transactionIdInput, setTransactionIdInput] = useState("");
   const [topUpLoading, setTopUpLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    referenceId: "",
-  });
+  const [topUpMessage, setTopUpMessage] = useState(null);
 
   // Get user ID from local storage on component mount
   useEffect(() => {
@@ -153,50 +150,33 @@ export default function TransactionsModal() {
   };
 
   // Handle Top Up verification
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!formData.referenceId.trim()) {
-      toast.error("Please enter a valid Transaction ID.");
+  const handleTopUpVerify = async () => {
+    if (!transactionIdInput.trim()) {
+      setTopUpMessage({ type: 'error', text: 'Please enter a transaction ID.' });
       return;
     }
 
     setTopUpLoading(true);
-
+    setTopUpMessage(null);
+    
     try {
-      const userId = localStorage.getItem("userId");
-
-      const data = {
-        userId: parseInt(userId, 10),
-        referenceId: formData.referenceId,
-      };
-
-      const response = await axios.post(`${BASE_URL}/api/verify-sms`, data, {
-        headers: { "Content-Type": "application/json" },
+      const response = await axios.post(`${BASE_URL}/api/topup/verify`, {
+        userId,
+        transactionId: transactionIdInput,
       });
-
+      
       if (response.data.success) {
-        toast.success(
-          `🎉 Top-Up Successful!\nAmount: GHS ${response.data.amount}\nNew Balance: GHS ${response.data.newBalance}`,
-          {
-            autoClose: 8000,
-          }
-        );
-        setShowTopUp(false);
-        setFormData({ referenceId: "" });
-        fetchTransactions(); // Refresh transactions list
+        setTopUpMessage({ type: 'success', text: response.data.message || 'Top-up successful!' });
+        fetchTransactions(); // Refresh transactions
+        setTransactionIdInput("");
       } else {
-        toast.error(
-          response.data.message || "Transaction could not be verified."
-        );
+        setTopUpMessage({ type: 'error', text: response.data.message || 'Verification failed.' });
       }
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
-      toast.error(errorMessage);
+    } catch (err) {
+      setTopUpMessage({ 
+        type: 'error', 
+        text: err.response?.data?.message || 'Error verifying transaction.' 
+      });
     } finally {
       setTopUpLoading(false);
     }
@@ -289,12 +269,12 @@ export default function TransactionsModal() {
             <div className="flex justify-between items-center p-4 border-b">
               <Dialog.Title className="text-xl font-semibold">Transaction History</Dialog.Title>
               <div className="flex items-center gap-2">
-                <button
+                {/* <button
                   onClick={() => setShowTopUp(true)}
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
                   Top Up
-                </button>
+                </button> */}
                 <button
                   onClick={() => setIsOpen(false)}
                   className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
@@ -306,54 +286,40 @@ export default function TransactionsModal() {
 
             {/* Top Up Section */}
             {showTopUp && (
-              <div className="p-4 border-b bg-blue-50">
-                <form className="space-y-4" onSubmit={handleSubmit}>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Transaction ID
-                    </label>
-                    <input
-                      type="text"
-                      name="referenceId"
-                      value={formData.referenceId}
-                      onChange={handleChange}
-                      placeholder="Enter your transaction ID"
-                      className="w-full p-3 border rounded-md focus:ring-2 focus:ring-indigo-300 focus:border-indigo-300 outline-none"
-                      required
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      This is the reference number you received after making the payment
-                    </p>
+              <div className="p-4 border-b bg-blue-50 flex flex-col gap-2">
+                <div className="flex items-center gap-2">
+                  <label htmlFor="transactionIdInput" className="font-medium">Enter Transaction ID:</label>
+                  <input
+                    id="transactionIdInput"
+                    type="text"
+                    value={transactionIdInput}
+                    onChange={e => setTransactionIdInput(e.target.value)}
+                    className="border rounded px-3 py-2 w-64"
+                    placeholder="Transaction ID"
+                  />
+                  <button
+                    onClick={handleTopUpVerify}
+                    disabled={topUpLoading || !transactionIdInput.trim()}
+                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
+                  >
+                    {topUpLoading ? 'Verifying...' : 'Verify and Complete'}
+                  </button>
+                  <button
+                    onClick={() => { 
+                      setShowTopUp(false); 
+                      setTransactionIdInput(""); 
+                      setTopUpMessage(null); 
+                    }}
+                    className="ml-2 text-gray-600 hover:text-gray-900"
+                  >
+                    Cancel
+                  </button>
+                </div>
+                {topUpMessage && (
+                  <div className={`mt-2 ${topUpMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
+                    {topUpMessage.text}
                   </div>
-
-                  <div className="flex justify-end gap-2 mt-6">
-                    <button
-                      type="button"
-                      onClick={() => setShowTopUp(false)}
-                      className="px-4 py-2 border border-gray-400 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
-                      disabled={topUpLoading}
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      type="submit"
-                      className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      disabled={topUpLoading}
-                    >
-                      {topUpLoading ? (
-                        <span className="flex items-center gap-2">
-                          <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                          </svg>
-                          Verifying...
-                        </span>
-                      ) : (
-                        "Verify & Complete"
-                      )}
-                    </button>
-                  </div>
-                </form>
+                )}
               </div>
             )}
 

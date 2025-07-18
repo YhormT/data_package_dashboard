@@ -6,16 +6,17 @@ import Swal from "sweetalert2";
 import BASE_URL from "../endpoints/endpoints";
 import orderTemplate from '../assets/template/order_template.xlsx'
 
-const AgentOrderUpload = ({ onUploadSuccess }) => {
+const UploadExcel = ({ onUploadSuccess }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
   const [selectedNetwork, setSelectedNetwork] = useState("");
   const [uploadResult, setUploadResult] = useState(null);
+  const [errors, setErrors] = useState([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const networks = [
     { value: "MTN", label: "MTN" },
-    { value: "AIRTEL_TIGO", label: "Airtel Tigo" },
+    { value: "AIRTEL TIGO", label: "Airtel Tigo" },
     { value: "TELECEL", label: "Telecel" }
   ];
 
@@ -77,7 +78,7 @@ const AgentOrderUpload = ({ onUploadSuccess }) => {
 
     try {
       const response = await axios.post(
-        `${BASE_URL}/order/upload-excel`,
+        `${BASE_URL}/order/upload-simplified`,
         formData,
         {
           headers: {
@@ -89,14 +90,16 @@ const AgentOrderUpload = ({ onUploadSuccess }) => {
       const result = response.data;
       setUploadResult(result);
 
-      if (result.success) {
+      if (response.status === 200 && response.data.success) {
+        const result = response.data;
+        setUploadResult(result);
         Swal.fire({
           icon: "success",
-          title: "Upload Completed",
+          title: "Upload Successful",
           html: `
             <div class="text-left">
               <p><strong>Total Rows:</strong> ${result.summary.total}</p>
-              <p><strong>Added to Cart:</strong> ${result.summary.added}</p>
+              <p><strong>Added to Cart:</strong> ${result.summary.successful}</p>
             </div>
           `,
         });
@@ -121,11 +124,15 @@ const AgentOrderUpload = ({ onUploadSuccess }) => {
 
     } catch (error) {
       setUploadResult(null);
-      let backendMsg = error.response?.data?.message || "Something went wrong. Please try again.";
-      let errorReport = error.response?.data?.errorReport;
-      let errorHtml = backendMsg;
-      if (errorReport) {
-        errorHtml += `<pre style='max-height:200px;overflow:auto;background:#f8d7da;padding:8px;border-radius:4px;'>${JSON.stringify(errorReport, null, 2)}</pre>`;
+      let backendMsg = error.response?.data?.message || "An unexpected error occurred. Please try again.";
+      let errorItems = error.response?.data?.errors || [];
+      setErrors(errorItems);
+      setUploadResult(error.response?.data || null);
+
+      let errorHtml = `<p class='text-red-600'>${backendMsg}</p>`;
+      if (errorItems.length > 0) {
+        const errorList = errorItems.map(e => `<li>Row ${e.row}: ${e.errors.join(', ')}</li>`).join('');
+        errorHtml += `<ul class='text-left text-sm mt-2 list-disc list-inside'>${errorList}</ul>`;
       }
       Swal.fire({
         icon: "error",
@@ -175,7 +182,7 @@ const AgentOrderUpload = ({ onUploadSuccess }) => {
             {/* Description */}
             <Dialog.Description className="text-sm text-gray-600 mb-6">
               Upload your orders using an Excel file. Select the network and ensure your file follows the template format.<br/>
-              <span className="block mt-2 text-xs text-blue-700 font-semibold">Required Excel headers: <code>phone</code>, <code>item</code>, <code>bundle amount</code>, <code>quantity</code> (optional)</span>
+              <span className="block mt-2 text-xs text-blue-700 font-semibold">Required Excel headers: <code>phone</code>, <code>bundle_amount</code></span>
             </Dialog.Description>
 
             {/* Template Download */}
@@ -185,13 +192,13 @@ const AgentOrderUpload = ({ onUploadSuccess }) => {
                 Use this template to format your orders correctly.
               </p>
               <a
-                href={`${BASE_URL}/order/download-template`}
+                href={`${BASE_URL}/order/download-simplified-template`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition text-sm"
               >
                 <DownloadIcon className="h-4 w-4 mr-2" />
-                Download Order Template
+                Download Template
               </a>
             </div>
 
@@ -339,4 +346,4 @@ const AgentOrderUpload = ({ onUploadSuccess }) => {
   );
 };
 
-export default AgentOrderUpload;
+export default UploadExcel;
