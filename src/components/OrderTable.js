@@ -25,12 +25,14 @@ const TotalRequestsComponent = () => {
   const [lastFetchTime, setLastFetchTime] = useState(null);
   const [hasNewRequests, setHasNewRequests] = useState(false);
   const [showNewRequestsOnly, setShowNewRequestsOnly] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(30); // seconds
   const audioRef = useRef(null);
+  const [ticker, setTicker] = useState(0);
 
   const [orderIdFilter, setOrderIdFilter] = useState("");
+  const [phoneNumberFilter, setPhoneNumberFilter] = useState("");
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,36 +119,44 @@ const TotalRequestsComponent = () => {
         );
 
         // Check for new items since last fetch
+        const newItems = itemsList.filter(item => item.isNew).length;
         const prevCount = prevItemsCountRef.current;
-        const newCount = itemsList.length;
 
-        if (prevCount > 0 && newCount > prevCount) {
-          setHasNewRequests(true);
-          setNewRequestsCount(newCount - prevCount);
-
-          // Notify admin about new requests
-          if (notificationsEnabled) {
-            if (
-              "Notification" in window &&
-              Notification.permission === "granted"
-            ) {
-              new Notification("New Requests", {
-                body: `${newCount - prevCount} new requests have arrived.`,
-                icon: "/notification-icon.png",
-              });
+        // On first load, check for existing new items
+        if (prevCount === 0 && newItems > 0) {
+            setHasNewRequests(true);
+            setNewRequestsCount(newItems);
+            if (notificationsEnabled) {
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("New Requests", {
+                        body: `${newItems} new requests are waiting.`,
+                        icon: "/notification-icon.png",
+                    });
+                }
+                if (audioRef.current) {
+                    audioRef.current.play().catch(e => console.error("Error playing sound:", e));
+                }
             }
-
-            if (audioRef.current) {
-              audioRef.current
-                .play()
-                .catch((e) =>
-                  console.error("Error playing notification sound:", e)
-                );
+        } 
+        // On subsequent loads, check for an increase in total items
+        else if (prevCount > 0 && itemsList.length > prevCount) {
+            const newCount = itemsList.length - prevCount;
+            setHasNewRequests(true);
+            setNewRequestsCount(newCount);
+            if (notificationsEnabled) {
+                if ("Notification" in window && Notification.permission === "granted") {
+                    new Notification("New Requests", {
+                        body: `${newCount} new requests have arrived.`,
+                        icon: "/notification-icon.png",
+                    });
+                }
+                if (audioRef.current) {
+                    audioRef.current.play().catch(e => console.error("Error playing sound:", e));
+                }
             }
-          }
         }
 
-        prevItemsCountRef.current = newCount;
+        prevItemsCountRef.current = itemsList.length;
         setAllItems(itemsList);
         setLastFetchTime(currentTime);
       }
@@ -161,6 +171,26 @@ const TotalRequestsComponent = () => {
   useEffect(() => {
     fetchOrderData();
   }, []);
+
+  // Effect to make the 'new requests' filter dynamic
+  useEffect(() => {
+    let interval = null;
+    if (showNewRequestsOnly) {
+      interval = setInterval(() => {
+        setTicker(prev => prev + 1);
+      }, 10000); // Re-render every 10 seconds
+    } else if (interval) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [showNewRequestsOnly]);
+
+  // Effect to request notification permission
+  useEffect(() => {
+    if (notificationsEnabled && "Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, [notificationsEnabled]);
 
   const handleBatchCompleteProcessing = async () => {
     // Get all processing orders
@@ -267,11 +297,20 @@ const TotalRequestsComponent = () => {
       const orderDateTime = new Date(item.createdAt);
       const orderDate = orderDateTime.toISOString().split("T")[0];
 
-      // Only show new requests if the toggle is on
-      if (showNewRequestsOnly && !item.isNew) return false;
+      // Dynamically filter for new requests if the toggle is on
+      if (showNewRequestsOnly) {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        if (new Date(item.createdAt) < fiveMinutesAgo) {
+          return false;
+        }
+      }
 
       // Filter by Order ID if specified
       if (orderIdFilter && !String(item.orderId).includes(orderIdFilter))
+        return false;
+
+      // Filter by Phone Number if specified
+      if (phoneNumberFilter && !String(item.mobileNumber).includes(phoneNumberFilter))
         return false;
 
       const selectedStartTime = startTime
@@ -321,10 +360,15 @@ const TotalRequestsComponent = () => {
     showNewRequestsOnly,
     sortOrder,
     orderIdFilter,
+    phoneNumberFilter,
+    ticker,
   ]);
 
   // Update paginated items whenever filtered orders or page changes
   useEffect(() => {
+    if (allItems.length > 0) {
+      console.log("Inspecting the first item in allItems:", allItems[0]);
+    }
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     setPaginatedItems(filteredOrders.slice(indexOfFirstItem, indexOfLastItem));
@@ -768,6 +812,27 @@ const TotalRequestsComponent = () => {
                 />
               </div>
 
+              {/* Phone Number Filter */}
+              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
+                <label
+                  htmlFor="phoneNumberFilter"
+                  className="font-medium text-gray-700"
+                >
+                  Phone:
+                </label>
+                <input
+                  type="text"
+                  id="phoneNumberFilter"
+                  value={phoneNumberFilter}
+                  onChange={(e) => {
+                    setPhoneNumberFilter(e.target.value);
+                    setCurrentPage(1); // Reset to first page on filter change
+                  }}
+                  placeholder="Enter phone number"
+                  className="border p-2 rounded-md w-full md:w-auto"
+                />
+              </div>
+
               {/* Product Filter */}
               <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
                 <label
@@ -914,6 +979,29 @@ const TotalRequestsComponent = () => {
             </div>
           ) : (
             <>
+              <div className="flex justify-between mt-4">
+              <button
+                onClick={() => setOpen(false)}
+                className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleBatchCompleteProcessing}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+                title="Mark all Processing orders as Completed"
+              >
+                <CheckSquare className="mr-2 w-5 h-5" />
+                Complete All Processing
+              </button>
+              <button
+                onClick={handleDownloadExcel}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                Download Excel
+              </button>
+            </div>
+
               <div className="mt-4 text-sm text-gray-600">
                 Showing {paginatedItems.length} of {filteredOrders.length}{" "}
                 results
@@ -930,7 +1018,7 @@ const TotalRequestsComponent = () => {
                         User Phone
                       </th> */}
                       <th className="border p-2 whitespace-nowrap">
-                        User Phone Number
+                        Phone Number
                       </th>
                       <th className="border p-2 whitespace-nowrap">Status</th>
                       <th className="border p-2 whitespace-nowrap">Name</th>
@@ -1149,29 +1237,6 @@ const TotalRequestsComponent = () => {
               </button>
             </div>
           )}
-
-          <div className="flex justify-between mt-4">
-            <button
-              onClick={() => setOpen(false)}
-              className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded"
-            >
-              Close
-            </button>
-            <button
-              onClick={handleBatchCompleteProcessing}
-              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
-              title="Mark all Processing orders as Completed"
-            >
-              <CheckSquare className="mr-2 w-5 h-5" />
-              Complete All Processing
-            </button>
-            <button
-              onClick={handleDownloadExcel}
-              className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-            >
-              Download Excel
-            </button>
-          </div>
         </div>
       </Dialog>
 
