@@ -50,7 +50,7 @@ const TotalRequestsComponent = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   // Create a ref to track previous items count for detecting new items
-  const prevItemsCountRef = useRef(0);
+  const prevItemsCountRef = useRef(null);
   const intervalRef = useRef(null);
 
   // Request notification permission when component mounts
@@ -190,29 +190,17 @@ const TotalRequestsComponent = () => {
         const prevCount = prevItemsCountRef.current;
         const newCount = itemsList.length;
 
-        if (prevCount > 0 && newCount > prevCount) {
+        if (prevItemsCountRef.current !== null && newCount > prevCount) {
           setHasNewRequests(true);
           setNewRequestsCount(newCount - prevCount);
 
-          // Notify admin about new requests
-          if (notificationsEnabled) {
-            if (
-              "Notification" in window &&
-              Notification.permission === "granted"
-            ) {
-              new Notification("New Requests", {
-                body: `${newCount - prevCount} new requests have arrived.`,
-                icon: "/notification-icon.png",
-              });
-            }
-
-            if (audioRef.current) {
-              audioRef.current
-                .play()
-                .catch((e) =>
-                  console.error("Error playing notification sound:", e)
-                );
-            }
+          // Play notification sound if enabled
+          if (notificationsEnabled && audioRef.current) {
+            audioRef.current
+              .play()
+              .catch((e) =>
+                console.error("Error playing notification sound:", e)
+              );
           }
         }
 
@@ -226,6 +214,13 @@ const TotalRequestsComponent = () => {
       setLoading(false);
     }
   };
+
+  // Reset new requests notification when the modal is closed
+  useEffect(() => {
+    if (!open) {
+      setHasNewRequests(false);
+    }
+  }, [open]);
 
   // Fetch data on component mount
   useEffect(() => {
@@ -927,13 +922,20 @@ const TotalRequestsComponent = () => {
                 >
                   <option value="">All Products</option>
                   <option value="MTN">MTN</option>
-                  <option value="TELECEL">TELECEL</option>
-                  <option value="AIRTEL TIGO">AIRTEL TIGO</option>
                   <option value="MTN - PREMIUM">MTN - PREMIUM</option>
+                  <option value="MTN - SUPER">MTN - SUPER</option>
+                  <option value="MTN - NORMAL">MTN - NORMAL</option>
+                  <option value="MTN - OTHER">MTN - OTHER</option>
+                  <option value="TELECEL">TELECEL</option>
                   <option value="TELECEL - PREMIUM">TELECEL - PREMIUM</option>
-                  <option value="AIRTEL TIGO - PREMIUM">
-                    AIRTEL TIGO - PREMIUM
-                  </option>
+                  <option value="TELECEL - SUPER">TELECEL - SUPER</option>
+                  <option value="TELECEL - NORMAL">TELECEL - NORMAL</option>
+                  <option value="TELECEL - OTHER">TELECEL - OTHER</option>
+                  <option value="AIRTEL TIGO">AIRTEL TIGO</option>
+                  <option value="AIRTEL TIGO - PREMIUM">AIRTEL TIGO - PREMIUM</option>
+                  <option value="AIRTEL TIGO - SUPER">AIRTEL TIGO - SUPER</option>
+                  <option value="AIRTEL TIGO - NORMAL">AIRTEL TIGO - NORMAL</option>
+                  <option value="AIRTEL TIGO - OTHER">AIRTEL TIGO - OTHER</option>
                 </select>
               </div>
 
@@ -957,6 +959,7 @@ const TotalRequestsComponent = () => {
                   <option value="Pending">Pending</option>
                   <option value="Completed">Completed</option>
                   <option value="Processing">Processing</option>
+                  <option value="Cancelled">Cancelled</option>
                 </select>
               </div>
 
