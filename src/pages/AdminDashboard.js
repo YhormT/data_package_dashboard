@@ -288,25 +288,24 @@ const handleRefundAmount = async () => {
     phone: "",
   });
 
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+ const handleInputChange = (e) => {
+  const { name, value } = e.target;
 
-    const inputValue = type === 'checkbox' ? checked : value;
+  if (selectedUserTF) {
+    // Editing existing user
+    setSelectedUser((prev) => ({
+      ...prev,
+      [name]: name === "isLoggedIn" ? Boolean(value) : value,
+    }));
+  } else {
+    // Adding new user
+    setNewUser((prev) => ({
+      ...prev,
+      [name]: name === "isLoggedIn" ? Boolean(value) : value,
+    }));
+  }
+};
 
-    if (selectedUserTF) {
-      // Editing existing user
-      setSelectedUser((prev) => ({
-        ...prev,
-        [name]: inputValue,
-      }));
-    } else {
-      // Adding new user
-      setNewUser((prev) => ({
-        ...prev,
-        [name]: inputValue,
-      }));
-    }
-  };
 
   const generateRandomPassword = () => {
     const randomPassword = Math.random()
@@ -406,7 +405,8 @@ const statusTabs = [
 ];
 
   // Enhanced filtering: support both 'Canceled' and 'Cancelled' for status
-const filteredOrders = useMemo(() => allItems.filter((item) => {
+const filteredOrders = useMemo(() => {
+  return allItems.filter((item) => {
   if (!item.createdAt) return false; // Ensure createdAt exists
 
   const orderDateTime = new Date(item.createdAt);
@@ -444,7 +444,8 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
   }
 
   return true;
-}), [allItems, selectedDate, startTime, endTime, selectedProduct, selectedStatusMain]);
+  });
+}, [allItems, selectedDate, startTime, endTime, selectedProduct, selectedStatusMain]);
 
   console.log("Filter", filteredOrders);
 
@@ -709,19 +710,16 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
       },
     });
 
-    const updatedData = {
-      name: selectedUser.name,
-      email: selectedUser.email,
-      role: selectedUser.role,
-      phone: selectedUser.phone,
-      balance: selectedUser.balance,
-      password: selectedUser.password,
-      isLoggedIn: selectedUser.isLoggedIn,
-    };
-
     const response = await axios.put(
       `${BASE_URL}/api/users/${selectedUser.id}`,
-      updatedData,
+      {
+        name: selectedUser.name,
+        email: selectedUser.email,
+        password: selectedUser.password,
+        role: selectedUser.role || "USER",
+        phone: selectedUser.phone,
+        isLoggedIn: selectedUser.isLoggedIn, // include this field
+      },
       {
         headers: {
           "Content-Type": "application/json",
@@ -970,18 +968,23 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
 
   const totalBalance = users
     .filter((user) =>
-      ["USER", "PREMIUM", "SUPER", "NORMAL"].includes((user.role || "").toUpperCase())
+      ["USER", "PREMIUM", "SUPER", "NORMAL", "OTHER"].includes((user.role || "").toUpperCase())
     )
     .reduce((acc, user) => acc + parseFloat(user.loanBalance || 0), 0);
 
   return (
     <div className="flex min-h-screen min-w-full bg-gray-100 overflow-hidden">
       {/* Sidebar */}
-      <aside
-        className={`bg-gray-700 text-white w-64 p-5 z-50 fixed h-full transition-transform transform ${
-          isOpen ? "translate-x-0" : "-translate-x-64"
-        } md:translate-x-0 shadow-lg`}
-      >
+      {/* Sidebar Overlay for mobile */}
+{isOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden" onClick={() => setIsOpen(false)}></div>
+)}
+<aside
+  className={`bg-gray-700 text-white w-64 p-5 z-50 fixed h-full transition-transform transform ${
+    isOpen ? "translate-x-0" : "-translate-x-64"
+  } md:translate-x-0 shadow-lg ${isOpen ? '' : 'hidden md:block'}`}
+>
+
         <div className="flex items-center justify-between mb-5">
           {/* Image Logo */}
           <img src={Logo} height={150} width={150} />
@@ -1037,13 +1040,13 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
       </aside>
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col ml-0 md:ml-64">
+      <div className="flex-1 w-full min-w-0 flex flex-col ml-0 md:ml-64">
         {/* Header */}
-        <header className="bg-white shadow-md p-4 flex items-center w-[65%] sm:w-full">
+        <header className="bg-white shadow-md p-4 flex items-center w-full relative">
           <button className="md:hidden" onClick={() => setIsOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
-          <h1 className="text-xl font-semibold hidden md:block flex-1">
+          <h1 className="text-base md:text-xl font-semibold flex-1 truncate">
             Admin Dashboard
           </h1>
           <button
@@ -1057,7 +1060,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
         </header>
 
         {/* Admin Info Card */}
-        <div className="p-6 w-[40%] sm:w-full">
+        <div className="p-6 w-[100%] sm:w-full">
           <div className="bg-sky-700 text-white p-5 rounded-lg shadow-md flex items-center space-x-4">
             <User className="w-10 h-10" />
             <div>
@@ -1067,7 +1070,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[40%] sm:w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 px-4 sm:px-6 md:px-8 w-[100%] sm:w-full">
           {/* Total Users */}
           <div className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-auto flex-1 cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition duration-300">
             <Users className="w-12 h-12 text-blue-500" />
@@ -1123,12 +1126,12 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
               className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-md mt-4 flex items-center"
               onClick={openShowModalFunc}
             >
-              <Plus className="w-5 h-5 mr-2" /> Add New User
+              <Plus className="w-5 h-5 mr-2" />
             </button>
           </div>
 
-          <div className="overflow-x-auto w-[37%] sm:w-full">
-            <table className="table-auto w-full mt-4 border-collapse border border-gray-100">
+          <div className="overflow-x-auto w-full min-w-0">
+            <table className="table-auto w-full min-w-[600px] mt-4 border-collapse border border-gray-100">
               <thead>
                 <tr className="bg-sky-700 text-white shadow-sm">
                   <th className="border p-2">ID</th>
@@ -1163,15 +1166,6 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
                         disabled={loading || !(user.hasLoan && parseFloat(user.adminLoanBalance) > 0)}
                         className="cursor-pointer text-blue-500 focus:ring-blue-500"
                       />
-                      {/* <input
-                        type="checkbox"
-                        checked={user.hasLoan > 0}
-                        onChange={(e) =>
-                          handleLoanStatusChange(user.id, e.target.checked)
-                        }
-                        disabled={loading}
-                        className="cursor-pointer text-blue-500 focus:ring-blue-500"
-                      /> */}
                     </td>
                     <td className="p-2">
                       {editingUserId === user.id ? (
@@ -1204,8 +1198,6 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
                         </div>
                       )}
                     </td>
-
-                   
                     <td className="border p-2 flex justify-center space-x-2">
                       <button
                         className="text-blue-500 hover:text-blue-700"
@@ -1268,7 +1260,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
             placeholder="Name"
             value={selectedUser ? selectedUser.name : newUser.name}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2"
+            className="w-full p-2 border rounded mb-2 uppercase"
           />
 
           <input
@@ -1277,7 +1269,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
             placeholder="Email"
             value={selectedUser ? selectedUser.email : newUser.email}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2"
+            className="w-full p-2 border rounded mb-2 uppercase"
           />
 
           <input
@@ -1286,7 +1278,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
             placeholder="Phone"
             value={selectedUser ? selectedUser.phone : newUser.phone}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2"
+            className="w-full p-2 border rounded mb-2 uppercase"
           />
 
           <label className="flex items-center mb-2">
@@ -1316,7 +1308,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
               placeholder="Password"
               value={selectedUser ? selectedUser.password : newUser.password}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded mb-2"
+              className="w-full p-2 border rounded mb-2 uppercase"
             />
             <button
               onClick={generateRandomPassword}
@@ -1330,15 +1322,15 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
             name="role"
             value={selectedUser ? selectedUser.role : newUser.role}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-4"
+            className="w-full p-2 border rounded mb-4 uppercase"
           >
             <option value="">Select Role</option>
-            <option value="USER">USER</option>
             <option value="ADMIN">ADMIN</option>
+            <option value="USER">USER</option>
             <option value="PREMIUM">PREMIUM</option>
             <option value="SUPER">SUPER</option>
             <option value="NORMAL">NORMAL</option>
-            <option value="Other">Other</option>
+            <option value="Other">OTHER</option>
           </select>
 
           <div className="flex justify-end space-x-2">
@@ -1386,7 +1378,7 @@ const filteredOrders = useMemo(() => allItems.filter((item) => {
               <option value="Processing">Processing</option>
               <option value="Completed">Completed</option>
               <option value="Canceled">Canceled</option>
-              <option value="Cancelled">Cancelled</option> // Added both spellings for robustness
+              <option value="Cancelled">Cancelled</option>
             </select>
           </div>
 

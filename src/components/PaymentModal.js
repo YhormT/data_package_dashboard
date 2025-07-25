@@ -424,7 +424,7 @@ const PaymentModal = () => {
                     </div>
 
                     <div className="mt-6 flex justify-end">
-                      <select
+                      {/* <select
                         className="px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                       >
                         <option value="">Select User</option>
@@ -433,7 +433,7 @@ const PaymentModal = () => {
                             {user.name}
                           </option>
                         ))}
-                      </select>
+                      </select> */}
                       <button
                         type="button"
                         className="bg-red-500 text-white px-5 py-2 rounded hover:bg-red-600 transition shadow"

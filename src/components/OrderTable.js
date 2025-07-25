@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import {
@@ -6,7 +6,6 @@ import {
   Bell,
   Check,
   SpellCheck,
-  AlertTriangle,
   Clock,
   RotateCcw,
   CheckSquare,
@@ -16,21 +15,45 @@ import Swal from "sweetalert2";
 import BASE_URL from "../endpoints/endpoints";
 
 const TotalRequestsComponent = () => {
+  const resetAllFilters = () => {
+    setOrderIdFilter("");
+    setPhoneNumberFilter("");
+    setSelectedProduct("");
+    setSelectedStatusMain("");
+    setSelectedDate("");
+    setStartTime("");
+    setEndTime("");
+    setSortOrder("newest");
+    setCurrentPage(1);
+    setShowNewRequestsOnly(false);
+  };
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [allItems, setAllItems] = useState([]);
   const [paginatedItems, setPaginatedItems] = useState([]);
-  const [orderCount, setOrderCount] = useState(0);
+
   const [newRequestsCount, setNewRequestsCount] = useState(0);
-  const [lastFetchTime, setLastFetchTime] = useState(null);
+  const [lastFetchTime, setLastFetchTime] = useState(() => {
+    const savedTime = localStorage.getItem("lastFetchTime");
+    return savedTime ? new Date(savedTime) : null;
+  });
+
+  useEffect(() => {
+    fetchOrderData();
+  }, []); // Empty dependency array ensures this runs only once on mount
   const [hasNewRequests, setHasNewRequests] = useState(false);
   const [showNewRequestsOnly, setShowNewRequestsOnly] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [refreshInterval, setRefreshInterval] = useState(30); // seconds
   const audioRef = useRef(null);
+  const [ticker, setTicker] = useState(0);
 
   const [orderIdFilter, setOrderIdFilter] = useState("");
+  const [phoneNumberFilter, setPhoneNumberFilter] = useState("");
+  // Use deferred values for instant input
+  const deferredOrderIdFilter = useDeferredValue(orderIdFilter);
+  const deferredPhoneNumberFilter = useDeferredValue(phoneNumberFilter);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -50,7 +73,7 @@ const TotalRequestsComponent = () => {
   const [selectedOrderId, setSelectedOrderId] = useState(null);
 
   // Create a ref to track previous items count for detecting new items
-  const prevItemsCountRef = useRef(null);
+  const prevOrderIdsRef = useRef(new Set());
   const intervalRef = useRef(null);
 
   // Request notification permission when component mounts
@@ -88,82 +111,12 @@ const TotalRequestsComponent = () => {
     };
   }, [autoRefresh, refreshInterval]);
 
-  // Fetch order data
-  // const fetchOrderData = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const response = await axios.get(`${BASE_URL}/order/admin/allorder`);
-
-  //     setOrderCount(response.data.length);
-  //     const currentTime = new Date();
-
-  //     // Process the data
-  //     if (Array.isArray(response.data)) {
-  //       const itemsList = response.data.flatMap((order) =>
-  //         Array.isArray(order.items)
-  //           ? order.items.map((item) => ({
-  //               ...item,
-  //               orderId: order.id,
-  //               createdAt: order.createdAt,
-  //               user: order.user,
-  //               order,
-  //               // Mark as new if the item was created in the last 5 minutes
-  //               isNew:
-  //                 new Date(order.createdAt) >
-  //                 new Date(currentTime - 5 * 60 * 1000),
-  //             }))
-  //           : []
-  //       );
-
-  //       // Check for new items since last fetch
-  //       const prevCount = prevItemsCountRef.current;
-  //       const newCount = itemsList.length;
-
-  //       if (prevCount > 0 && newCount > prevCount) {
-  //         setHasNewRequests(true);
-  //         setNewRequestsCount(newCount - prevCount);
-
-  //         // Notify admin about new requests
-  //         if (notificationsEnabled) {
-  //           // Show browser notification
-  //           if (
-  //             "Notification" in window &&
-  //             Notification.permission === "granted"
-  //           ) {
-  //             new Notification("New Requests", {
-  //               body: `${newCount - prevCount} new requests have arrived.`,
-  //               icon: "/notification-icon.png", // Add an icon to your public directory
-  //             });
-  //           }
-
-  //           // Play notification sound
-  //           if (audioRef.current) {
-  //             audioRef.current
-  //               .play()
-  //               .catch((e) =>
-  //                 console.error("Error playing notification sound:", e)
-  //               );
-  //           }
-  //         }
-  //       }
-
-  //       prevItemsCountRef.current = newCount;
-  //       setAllItems(itemsList);
-  //       setLastFetchTime(currentTime);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching order data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const fetchOrderData = async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${BASE_URL}/order/admin/allorder`);
 
-      setOrderCount(response.data.length);
+
       const currentTime = new Date();
 
       // Process the data
@@ -179,34 +132,46 @@ const TotalRequestsComponent = () => {
                   ...order,
                   items: [item], // Only include the current item to avoid status mix-ups
                 },
-                isNew:
-                  new Date(order.createdAt) >
-                  new Date(currentTime - 5 * 60 * 1000),
+                isNew: new Date(order.createdAt) > new Date(Date.now() - 5 * 60 * 1000),
               }))
             : []
         );
 
         // Check for new items since last fetch
-        const prevCount = prevItemsCountRef.current;
-        const newCount = itemsList.length;
+        //const newItems = itemsList.filter(item => item.isNew).length;
 
-        if (prevItemsCountRef.current !== null && newCount > prevCount) {
-          setHasNewRequests(true);
-          setNewRequestsCount(newCount - prevCount);
 
-          // Play notification sound if enabled
-          if (notificationsEnabled && audioRef.current) {
-            audioRef.current
-              .play()
-              .catch((e) =>
-                console.error("Error playing notification sound:", e)
-              );
+        const currentOrderIds = new Set(response.data.map(order => order.id));
+        const prevOrderIds = prevOrderIdsRef.current;
+
+        // On first load, just set the initial order IDs
+        if (prevOrderIds.size === 0) {
+          prevOrderIdsRef.current = currentOrderIds;
+        } else {
+          const newOrderIds = [...currentOrderIds].filter(id => !prevOrderIds.has(id));
+          const newOrdersCount = newOrderIds.length;
+
+          if (newOrdersCount > 0) {
+            setHasNewRequests(true);
+            setNewRequestsCount(newOrdersCount);
+            if (notificationsEnabled) {
+              if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("New Orders", {
+                  body: `${newOrdersCount} new order(s) have arrived.`,
+                  icon: "/notification-icon.png",
+                });
+              }
+              if (audioRef.current) {
+                audioRef.current.play().catch(e => console.error("Error playing sound:", e));
+              }
+            }
           }
         }
 
-        prevItemsCountRef.current = newCount;
+        prevOrderIdsRef.current = currentOrderIds;
         setAllItems(itemsList);
         setLastFetchTime(currentTime);
+        localStorage.setItem("lastFetchTime", currentTime.toISOString()); // Persist the time
       }
     } catch (error) {
       console.error("Error fetching order data:", error);
@@ -215,17 +180,30 @@ const TotalRequestsComponent = () => {
     }
   };
 
-  // Reset new requests notification when the modal is closed
-  useEffect(() => {
-    if (!open) {
-      setHasNewRequests(false);
-    }
-  }, [open]);
-
   // Fetch data on component mount
   useEffect(() => {
     fetchOrderData();
   }, []);
+
+  // Effect to make the 'new requests' filter dynamic
+  useEffect(() => {
+    let interval = null;
+    if (showNewRequestsOnly) {
+      interval = setInterval(() => {
+        setTicker(prev => prev + 1);
+      }, 10000); // Re-render every 10 seconds
+    } else if (interval) {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [showNewRequestsOnly]);
+
+  // Effect to request notification permission
+  useEffect(() => {
+    if (notificationsEnabled && "Notification" in window && Notification.permission !== "granted") {
+      Notification.requestPermission();
+    }
+  }, [notificationsEnabled]);
 
   const handleBatchCompleteProcessing = async () => {
     // Get all processing orders
@@ -325,55 +303,6 @@ const TotalRequestsComponent = () => {
   };
 
   // Apply filters and memoize the result
-  // const filteredOrders = useMemo(() => {
-  //   let filtered = allItems.filter((item) => {
-  //     if (!item.createdAt) return false;
-
-  //     const orderDateTime = new Date(item.createdAt);
-  //     const orderDate = orderDateTime.toISOString().split("T")[0];
-
-  //     // Only show new requests if the toggle is on
-  //     if (showNewRequestsOnly && !item.isNew) return false;
-
-  //     const selectedStartTime = startTime
-  //       ? new Date(`${selectedDate}T${startTime}`)
-  //       : null;
-  //     const selectedEndTime = endTime
-  //       ? new Date(`${selectedDate}T${endTime}`)
-  //       : null;
-
-  //     if (selectedDate && orderDate !== selectedDate) return false;
-  //     if (selectedProduct && item.product?.name !== selectedProduct) return false;
-
-  //     if (startTime && endTime) {
-  //       if (
-  //         orderDateTime < selectedStartTime ||
-  //         orderDateTime > selectedEndTime
-  //       ) {
-  //         return false;
-  //       }
-  //     }
-
-  //     if (
-  //       selectedStatusMain &&
-  //       item.order?.items?.[0]?.status !== selectedStatusMain
-  //     )
-  //       return false;
-
-  //     return true;
-  //   });
-
-  //   // Sort by creation date
-  //   filtered.sort((a, b) => {
-  //     const dateA = new Date(a.createdAt);
-  //     const dateB = new Date(b.createdAt);
-  //     return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-  //   });
-
-  //   return filtered;
-  // }, [allItems, selectedDate, selectedProduct, startTime, endTime, selectedStatusMain, showNewRequestsOnly, sortOrder]);
-
-  // Apply filters and memoize the result
   const filteredOrders = useMemo(() => {
     let filtered = allItems.filter((item) => {
       if (!item.createdAt) return false;
@@ -381,11 +310,20 @@ const TotalRequestsComponent = () => {
       const orderDateTime = new Date(item.createdAt);
       const orderDate = orderDateTime.toISOString().split("T")[0];
 
-      // Only show new requests if the toggle is on
-      if (showNewRequestsOnly && !item.isNew) return false;
+      // Dynamically filter for new requests if the toggle is on
+      if (showNewRequestsOnly) {
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+        if (new Date(item.createdAt) < fiveMinutesAgo) {
+          return false;
+        }
+      }
 
       // Filter by Order ID if specified
-      if (orderIdFilter && !String(item.id).includes(orderIdFilter))
+      if (deferredOrderIdFilter && !String(item.orderId).includes(deferredOrderIdFilter))
+        return false;
+
+      // Filter by Phone Number if specified
+      if (deferredPhoneNumberFilter && !String(item.mobileNumber).includes(deferredPhoneNumberFilter))
         return false;
 
       const selectedStartTime = startTime
@@ -434,11 +372,16 @@ const TotalRequestsComponent = () => {
     selectedStatusMain,
     showNewRequestsOnly,
     sortOrder,
-    orderIdFilter,
+    deferredOrderIdFilter,
+    deferredPhoneNumberFilter,
+    ticker,
   ]);
 
   // Update paginated items whenever filtered orders or page changes
   useEffect(() => {
+    if (allItems.length > 0) {
+      console.log("Inspecting the first item in allItems:", allItems[0]);
+    }
     const indexOfLastItem = currentPage * itemsPerPage;
     const indexOfFirstItem = indexOfLastItem - itemsPerPage;
     setPaginatedItems(filteredOrders.slice(indexOfFirstItem, indexOfLastItem));
@@ -462,12 +405,6 @@ const TotalRequestsComponent = () => {
     setSelectedOrderId(orderItemId);
     setIsOpenStatus(true);
   };
-
-  // const handleViewClickStatus = (orderItemId) => {
-  //   console.log("Order Item",orderItemId)
-  //   setSelectedOrderId(orderItemId);
-  //   setIsOpenStatus(true);
-  // };
 
   const handleUpdateStatus = async (orderId) => {
     try {
@@ -527,6 +464,21 @@ const TotalRequestsComponent = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    const currentTime = new Date();
+    setLastFetchTime(currentTime);
+    localStorage.setItem("lastFetchTime", currentTime.toISOString());
+
+    // Mark all items as not new
+    setAllItems((prevItems) =>
+      prevItems.map((item) => ({ ...item, isNew: false }))
+    );
+
+    setOpen(false);
+    setHasNewRequests(false);
+    setNewRequestsCount(0);
+  };
+
   const handleSubmit = async () => {
     if (!selectedOrderId || !selectedStatus) {
       Swal.fire({
@@ -566,14 +518,6 @@ const TotalRequestsComponent = () => {
         status: selectedStatus,
       });
 
-      // Update local state using the response data
-      // setAllItems((prevItems) =>
-      //   prevItems.map((item) =>
-      //     item.id === response.data.updatedItem.id
-      //       ? { ...item, ...response.data.updatedItem, isNew: false }
-      //       : item
-      //   )
-      // );
       setAllItems((prevItems) =>
         prevItems.map((item) =>
           item.id === selectedOrderId
@@ -592,17 +536,6 @@ const TotalRequestsComponent = () => {
             : item
         )
       );
-
-      // Update local state
-      // Update local state
-
-      // setAllItems((prevItems) =>
-      //   prevItems.map((item) =>
-      //     item.id === selectedOrderId
-      //       ? { ...item, status: selectedStatus, isNew: false }
-      //       : item
-      //   )
-      // );
 
       Swal.fire({
         icon: "success",
@@ -744,7 +677,13 @@ const TotalRequestsComponent = () => {
     <>
       <div
         className="bg-white p-6 rounded-lg shadow-md flex items-center space-x-4 w-full md:w-auto flex-1 cursor-pointer hover:shadow-lg transform hover:-translate-y-1 transition duration-300 relative"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          resetAllFilters(); // Reset filters before opening
+          setOpen(true);
+          fetchOrderData();
+          setHasNewRequests(false); // Turn off notification indicator
+          setNewRequestsCount(0); // Reset notification count
+        }}
       >
         <FileText className="w-12 h-12 text-purple-500" />
         <div>
@@ -754,7 +693,7 @@ const TotalRequestsComponent = () => {
           </p>
           {hasNewRequests && (
             <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs font-bold animate-pulse">
-              {newRequestsCount} new
+              New
             </div>
           )}
         </div>
@@ -762,7 +701,7 @@ const TotalRequestsComponent = () => {
 
       <Dialog
         open={open}
-        onClose={() => setOpen(false)}
+        onClose={handleCloseModal}
         className="fixed inset-0 flex items-center justify-center sm:justify-end bg-black bg-opacity-50 sm:pr-20"
       >
         <div className="overflow-x-auto bg-white p-6 rounded shadow-lg w-[95%] sm:w-[80%] h-[90%]">
@@ -899,6 +838,27 @@ const TotalRequestsComponent = () => {
                     setCurrentPage(1); // Reset to first page on filter change
                   }}
                   placeholder="Enter order ID"
+                  className="border p-2 rounded-md w-full md:w-auto"
+                />
+              </div>
+
+              {/* Phone Number Filter */}
+              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
+                <label
+                  htmlFor="phoneNumberFilter"
+                  className="font-medium text-gray-700"
+                >
+                  Phone:
+                </label>
+                <input
+                  type="text"
+                  id="phoneNumberFilter"
+                  value={phoneNumberFilter}
+                  onChange={(e) => {
+                    setPhoneNumberFilter(e.target.value);
+                    setCurrentPage(1); // Reset to first page on filter change
+                  }}
+                  placeholder="Enter phone number"
                   className="border p-2 rounded-md w-full md:w-auto"
                 />
               </div>
@@ -1049,31 +1009,32 @@ const TotalRequestsComponent = () => {
             </div>
           ) : (
             <>
+              <div className="flex justify-between mt-4">
+              <button
+                onClick={() => setOpen(false)}
+                className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded"
+              >
+                Close
+              </button>
+              <button
+                onClick={handleBatchCompleteProcessing}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
+                title="Mark all Processing orders as Completed"
+              >
+                <CheckSquare className="mr-2 w-5 h-5" />
+                Complete All Processing
+              </button>
+              <button
+                onClick={handleDownloadExcel}
+                className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
+              >
+                Download Excel
+              </button>
+            </div>
+
               <div className="mt-4 text-sm text-gray-600">
                 Showing {paginatedItems.length} of {filteredOrders.length}{" "}
                 results
-              </div>
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => setOpen(false)}
-                  className="bg-red-500 hover:bg-red-400 text-white px-4 py-2 rounded"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={handleBatchCompleteProcessing}
-                  className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center"
-                  title="Mark all Processing orders as Completed"
-                >
-                  <CheckSquare className="mr-2 w-5 h-5" />
-                  Complete All Processing
-                </button>
-                <button
-                  onClick={handleDownloadExcel}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded"
-                >
-                  Download Excel
-                </button>
               </div>
 
               <div className="w-full h-[400px] overflow-y-auto mt-4">
@@ -1081,12 +1042,13 @@ const TotalRequestsComponent = () => {
                   <thead className="bg-sky-700 text-white sticky top-0">
                     <tr>
                       <th className="border p-2 whitespace-nowrap">Order ID</th>
+                      <th className="border p-2 whitespace-nowrap">Item ID</th>
                       <th className="border p-2 whitespace-nowrap">Username</th>
                       {/* <th className="border p-2 whitespace-nowrap">
                         User Phone
                       </th> */}
                       <th className="border p-2 whitespace-nowrap">
-                        User Phone Number
+                        Phone Number
                       </th>
                       <th className="border p-2 whitespace-nowrap">Status</th>
                       <th className="border p-2 whitespace-nowrap">Name</th>
@@ -1106,11 +1068,6 @@ const TotalRequestsComponent = () => {
                       paginatedItems.map((item, index) => (
                         <tr
                           key={index}
-                          // className={`hover:bg-gray-100 ${
-                          //   item.isNew
-                          //     ? "bg-green-50 animate-pulse border-l-4 border-green-500"
-                          //     : ""
-                          // }`}
                           className={`hover:bg-gray-100 ${
                             item.order?.items?.[0]?.status === "Cancelled"
                               ? "bg-red-100 text-red-800"
@@ -1127,7 +1084,7 @@ const TotalRequestsComponent = () => {
                               {item.isNew && (
                                 <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
                               )}
-                              {item.id || "N/A"}
+                              {item.orderId || "N/A"}
                               {item.isNew && (
                                 <span className="ml-2 text-xs bg-green-100 text-green-800 px-1 rounded">
                                   New
@@ -1136,11 +1093,11 @@ const TotalRequestsComponent = () => {
                             </div>
                           </td>
                           <td className="border px-2 py-2 md:px-4">
+                            {item.id || "N/A"}
+                          </td>
+                          <td className="border px-2 py-2 md:px-4">
                             {item.user?.name || "N/A"}
                           </td>
-                          {/* <td className="border px-2 py-2 md:px-4">
-                            {item.user?.phone || "N/A"}
-                          </td> */}
                           <td className="border px-2 py-2 md:px-4">
                             {item?.mobileNumber || "N/A"}
                           </td>
@@ -1302,7 +1259,6 @@ const TotalRequestsComponent = () => {
               </button>
             </div>
           )}
-
         </div>
       </Dialog>
 
