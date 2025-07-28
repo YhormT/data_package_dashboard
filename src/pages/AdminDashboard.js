@@ -384,7 +384,7 @@ const handleRefundAmount = async () => {
   };
 
   const handleEditClick = (user) => {
-    setSelectedUser(user); // Set user data for editing
+    setSelectedUser({ ...user, password: '' }); // Clear password on edit to prevent resending old hash
     setShowModal(true); // Open modal
     setSelectedUserTF(true);
   };
@@ -1260,7 +1260,7 @@ const filteredOrders = useMemo(() => {
             placeholder="Name"
             value={selectedUser ? selectedUser.name : newUser.name}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2 uppercase"
+            className="w-full p-2 border rounded mb-2"
           />
 
           <input
@@ -1269,7 +1269,7 @@ const filteredOrders = useMemo(() => {
             placeholder="Email"
             value={selectedUser ? selectedUser.email : newUser.email}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2 uppercase"
+            className="w-full p-2 border rounded mb-2"
           />
 
           <input
@@ -1278,7 +1278,7 @@ const filteredOrders = useMemo(() => {
             placeholder="Phone"
             value={selectedUser ? selectedUser.phone : newUser.phone}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-2 uppercase"
+            className="w-full p-2 border rounded mb-2"
           />
 
           <label className="flex items-center mb-2">
@@ -1303,12 +1303,12 @@ const filteredOrders = useMemo(() => {
 
           <div className="flex items-center space-x-2">
             <input
-              type="text"
+              type="password"
               name="password"
-              placeholder="Password"
-              value={selectedUser ? selectedUser.password : newUser.password}
+              placeholder="Enter new password..."
+              value={(selectedUser && selectedUser.password) || ''}
               onChange={handleInputChange}
-              className="w-full p-2 border rounded mb-2 uppercase"
+              className="w-full p-2 border rounded mb-2"
             />
             <button
               onClick={generateRandomPassword}
@@ -1322,7 +1322,7 @@ const filteredOrders = useMemo(() => {
             name="role"
             value={selectedUser ? selectedUser.role : newUser.role}
             onChange={handleInputChange}
-            className="w-full p-2 border rounded mb-4 uppercase"
+            className="w-full p-2 border rounded mb-4"
           >
             <option value="">Select Role</option>
             <option value="ADMIN">ADMIN</option>

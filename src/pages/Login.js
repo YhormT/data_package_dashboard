@@ -62,10 +62,8 @@ const Login = () => {
       localStorage.setItem("userId", user.id);
       localStorage.setItem("isLoggedIn", true);
 
-      setTimeout(() => {
-        setUserRole(user.role);
-        setLoading(false);
-      }, 500);
+      // Reload the page to apply the new state
+      window.location.reload();
     } catch (err) {
       setLoading(false);
 
