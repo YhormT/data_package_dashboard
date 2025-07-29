@@ -27,6 +27,8 @@ import {
   BadgeCent,
   Save,
   Check,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import ProductDialog from "../components/ProductDialog";
@@ -43,6 +45,7 @@ import AuditLog from "../components/AuditLog";
 
 const AdminDashboard = ({ setUserRole }) => {
   const [showAuditLog, setShowAuditLog] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -312,7 +315,11 @@ const handleRefundAmount = async () => {
       .toString(36)
       .substring(2, 7)
       .toUpperCase();
-    setNewUser({ ...newUser, password: randomPassword });
+    if (selectedUserTF) {
+      setSelectedUser({ ...selectedUser, password: randomPassword });
+    } else {
+      setNewUser({ ...newUser, password: randomPassword });
+    }
   };
 
   const handleAddUser = async () => {
@@ -974,16 +981,16 @@ const filteredOrders = useMemo(() => {
 
   return (
     <div className="flex min-h-screen min-w-full bg-gray-100 overflow-hidden">
-      {/* Sidebar */}
-      {/* Sidebar Overlay for mobile */}
-{isOpen && (
-  <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden" onClick={() => setIsOpen(false)}></div>
-)}
-<aside
-  className={`bg-gray-700 text-white w-64 p-5 z-50 fixed h-full transition-transform transform ${
-    isOpen ? "translate-x-0" : "-translate-x-64"
-  } md:translate-x-0 shadow-lg ${isOpen ? '' : 'hidden md:block'}`}
->
+        {/* Sidebar */}
+        {/* Sidebar Overlay for mobile */}
+        {isOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden" onClick={() => setIsOpen(false)}></div>
+        )}
+        <aside
+          className={`bg-gray-700 text-white w-64 p-5 z-50 fixed h-full transition-transform transform ${
+            isOpen ? "translate-x-0" : "-translate-x-64"
+          } md:translate-x-0 shadow-lg ${isOpen ? '' : 'hidden md:block'}`}
+        >
 
         <div className="flex items-center justify-between mb-5">
           {/* Image Logo */}
@@ -1303,13 +1310,20 @@ const filteredOrders = useMemo(() => {
 
           <div className="flex items-center space-x-2">
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               name="password"
               placeholder="Enter new password..."
-              value={(selectedUser && selectedUser.password) || ''}
+              value={selectedUser ? selectedUser.password : newUser.password}
               onChange={handleInputChange}
               className="w-full p-2 border rounded mb-2"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="p-2 focus:outline-none"
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </button>
             <button
               onClick={generateRandomPassword}
               className="bg-gray-300 hover:bg-gray-400 text-black px-3 py-2 rounded-full"
