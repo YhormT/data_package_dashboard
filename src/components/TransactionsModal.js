@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Dialog } from "@headlessui/react";
 // import { X, Filter, Upload, FileStack } from "lucide-react";
 import { Filter, FileStack } from "lucide-react";
+import { toast } from "react-toastify";
 import axios from "axios";
 import _ from "lodash";
 import BASE_URL from "../endpoints/endpoints";
@@ -28,7 +29,7 @@ export default function TransactionsModal() {
   const [showTopUp, setShowTopUp] = useState(false);
   const [transactionIdInput, setTransactionIdInput] = useState("");
   const [topUpLoading, setTopUpLoading] = useState(false);
-  const [topUpMessage, setTopUpMessage] = useState(null);
+
 
   // Get user ID from local storage on component mount
   useEffect(() => {
@@ -152,30 +153,49 @@ export default function TransactionsModal() {
   // Handle Top Up verification
   const handleTopUpVerify = async () => {
     if (!transactionIdInput.trim()) {
-      setTopUpMessage({ type: 'error', text: 'Please enter a transaction ID.' });
+      toast.error("Please enter a valid Transaction ID.");
       return;
     }
 
     setTopUpLoading(true);
-    setTopUpMessage(null);
-    
+
     try {
-      const response = await axios.post(`${BASE_URL}/api/topup/verify`, {
-        userId,
-        transactionId: transactionIdInput,
+      const data = {
+        userId: parseInt(userId, 10),
+        referenceId: transactionIdInput,
+      };
+
+      const response = await axios.post(`${BASE_URL}/api/verify-sms`, data, {
+        headers: { "Content-Type": "application/json" },
       });
-      
+
       if (response.data.success) {
-        setTopUpMessage({ type: 'success', text: response.data.message || 'Top-up successful!' });
+        toast.success(
+          `🎉 Top-Up Successful!\nAmount: GHS ${response.data.amount}\nNew Balance: GHS ${response.data.newBalance}`,
+          {
+            position: "top-right",
+            autoClose: 8000,
+          }
+        );
         fetchTransactions(); // Refresh transactions
         setTransactionIdInput("");
+        setShowTopUp(false); // Close the top-up section
       } else {
-        setTopUpMessage({ type: 'error', text: response.data.message || 'Verification failed.' });
+        toast.error(
+          response.data.message || "Transaction could not be verified.",
+          {
+            position: "top-right",
+            autoClose: 5000,
+          }
+        );
       }
     } catch (err) {
-      setTopUpMessage({ 
-        type: 'error', 
-        text: err.response?.data?.message || 'Error verifying transaction.' 
+      const errorMessage =
+        err.response?.data?.message ||
+        "Something went wrong. Please try again.";
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
       });
     } finally {
       setTopUpLoading(false);
@@ -269,15 +289,15 @@ export default function TransactionsModal() {
             <div className="flex justify-between items-center p-4 border-b">
               <Dialog.Title className="text-xl font-semibold">Transaction History</Dialog.Title>
               <div className="flex items-center gap-2">
-                {/* <button
+                <button
                   onClick={() => setShowTopUp(true)}
                   className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
                 >
                   Top Up
-                </button> */}
+                </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+                  className="bg-red-500 text-gray-800 px-4 py-2 rounded hover:bg-red-300"
                 >
                   Close
                 </button>
@@ -308,18 +328,12 @@ export default function TransactionsModal() {
                     onClick={() => { 
                       setShowTopUp(false); 
                       setTransactionIdInput(""); 
-                      setTopUpMessage(null); 
                     }}
                     className="ml-2 text-gray-600 hover:text-gray-900"
                   >
                     Cancel
                   </button>
                 </div>
-                {topUpMessage && (
-                  <div className={`mt-2 ${topUpMessage.type === 'success' ? 'text-green-600' : 'text-red-600'}`}>
-                    {topUpMessage.text}
-                  </div>
-                )}
               </div>
             )}
 
@@ -528,12 +542,12 @@ export default function TransactionsModal() {
 
             {/* Modal Footer */}
             <div className="flex justify-end p-4 border-t">
-              <button
+              {/* <button
                 onClick={() => setIsOpen(false)}
                 className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
               >
                 Close
-              </button>
+              </button> */}
             </div>
           </Dialog.Panel>
         </div>

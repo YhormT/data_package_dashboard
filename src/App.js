@@ -1,85 +1,115 @@
-import { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { io } from "socket.io-client";
-import BASE_URL from "./endpoints/endpoints";
-import Login from "./pages/Login";
-import AdminDashboard from "./pages/AdminDashboard";
-import UserDashboard from "./pages/UserDashboard";
-import Superagent from "./pages/SuperAgent";
-import Normalagent from "./pages/NormalAgent";
-import Analytics from "./components/AnalyticsPage";
-import Settings from "./components/SettingsPage";
-import { ToastContainer, toast } from "react-toastify";
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { io } from 'socket.io-client';
+import Swal from 'sweetalert2';
+
+// Import Pages
+import Login from './pages/Login';
+import AdminDashboard from './pages/AdminDashboard';
+import UserDashboard from './pages/UserDashboard';
+import Premium from './pages/Premium';
+import Superagent from './pages/SuperAgent';
+import Normalagent from './pages/NormalAgent';
+import OtherDashboard from './pages/OtherDashboard';
+import KelishubLanding from './pages/KelishubLanding';
+import BASE_URL from './endpoints/endpoints';
+
+// PrivateRoute Component for Role-Based Access
+const PrivateRoute = ({ allowedRoles }) => {
+  const token = localStorage.getItem('token');
+  const userRole = localStorage.getItem('role');
+
+  if (!token) {
+    // If no token, redirect to login
+    return <Navigate to="/login" replace />;
+  }
+
+  if (!allowedRoles.includes(userRole)) {
+    // If role is not allowed, redirect to landing page
+    Swal.fire('Access Denied', 'You do not have permission to access this page.', 'error');
+    return <Navigate to="/" replace />;
+  }
+
+  // If token and role are valid, render the child routes
+  return <Outlet />;
+};
 
 function App() {
-  const [, setSocket] = useState(null);
-
   useEffect(() => {
-    const userId = localStorage.getItem("userId");
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-    if (userId && isLoggedIn === 'true') {
-      console.log(`[Socket Debug] Found user ID: ${userId}. Attempting to connect to WebSocket at ${BASE_URL}`);
-      const newSocket = io(BASE_URL);
-      setSocket(newSocket);
-
-      newSocket.on('connect', () => {
-        console.log(`[Socket Debug] Successfully connected to WebSocket with socket ID: ${newSocket.id}`);
-        console.log(`[Socket Debug] Emitting 'register' event for user ID: ${userId}`);
-        newSocket.emit("register", parseInt(userId, 10));
-      });
-
-      newSocket.on("role-updated", ({ newRole }) => {
-        console.log(`[Socket Debug] Received 'role-updated' event. New role: ${newRole}`);
-        toast.info("Your user role has been updated. The page will now reload.");
-        localStorage.setItem('role', newRole);
-        setTimeout(() => {
-          window.location.reload();
-        }, 3000); // Wait 3 seconds for the user to read the toast
-      });
-
-      newSocket.on('force-logout', (data) => {
-        console.log(`[Socket Debug] Received 'force-logout' event. Reason: ${data.message}`);
-        toast.warn(data.message || 'You have been logged out by an administrator.');
-        
-        // Clear all session data
-        localStorage.clear();
-        
-        setTimeout(() => {
-          window.location.href = '/'; // Redirect to login page
-        }, 4000); // Wait 4 seconds for user to read message
-      });
-
-      newSocket.on('connect_error', (error) => {
-        console.error('[Socket Debug] Connection Error:', error);
-      });
-
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from WebSocket server');
-      });
-
-      // Cleanup on component unmount
-      return () => {
-        console.log('[Socket Debug] Disconnecting socket.');
-        newSocket.disconnect();
-      };
+    const userId = localStorage.getItem('userId');
+    if (!userId) {
+      return; // Only connect if a user is logged in
     }
+
+    // Connect to the socket server
+    const socket = io(BASE_URL, {
+      transports: ['websocket'],
+      reconnectionAttempts: 5,
+    });
+
+    // Register user with the server
+    socket.on('connect', () => {
+      console.log('Socket connected:', socket.id);
+      socket.emit('register', userId);
+      console.log(`[Socket] Emitted 'register' for userId: ${userId}`);
+    });
+
+    // Listen for force-logout event
+    socket.on('force-logout', (data) => {
+      console.log(`[Socket] Received 'force-logout':`, data.message);
+      Swal.fire({
+        title: 'Session Terminated',
+        text: data.message || 'Your session has been terminated by an administrator. Please log in again.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+      }).then(() => {
+        localStorage.clear();
+        window.location.href = '/login';
+      });
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log('Socket disconnected:', reason);
+    });
+
+    // Cleanup on component unmount
+    return () => {
+      if (socket.connected) {
+        socket.disconnect();
+      }
+    };
   }, []);
+
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/user" element={<UserDashboard />} />
-        <Route path="/superagent" element={<Superagent />} />
-        <Route path="/normalagent" element={<Normalagent />} />
-        {/* Dashboard routes */}
-        <Route path="/dashboard/analytics" element={<Analytics />} />
-        <Route path="/dashboard/settings" element={<Settings />} />
-        {/* Redirect unknown routes */}
-        <Route path="*" element={<Navigate to="/" />} />
+        {/* Public Routes */}
+        <Route path="/" element={<KelishubLanding />} />
+        <Route path="/login" element={<Login />} />
+
+        {/* Protected Routes */}
+        <Route element={<PrivateRoute allowedRoles={['ADMIN']} />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+        </Route>
+        <Route element={<PrivateRoute allowedRoles={['USER']} />}>
+          <Route path="/user" element={<UserDashboard />} />
+        </Route>
+        <Route element={<PrivateRoute allowedRoles={['PREMIUM']} />}>
+          <Route path="/premium" element={<Premium />} />
+        </Route>
+        <Route element={<PrivateRoute allowedRoles={['SUPER']} />}>
+          <Route path="/superagent" element={<Superagent />} />
+        </Route>
+        <Route element={<PrivateRoute allowedRoles={['NORMAL']} />}>
+          <Route path="/normalagent" element={<Normalagent />} />
+        </Route>
+        <Route element={<PrivateRoute allowedRoles={['Other']} />}>
+          <Route path="/otherdashboard" element={<OtherDashboard />} />
+        </Route>
+
+        {/* Fallback Route */}
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
-      <ToastContainer position="top-right" autoClose={3000} />
     </Router>
   );
 }

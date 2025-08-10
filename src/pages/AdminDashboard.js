@@ -43,7 +43,7 @@ import Announcement from "../components/Announcement"; // New Announcement modal
 import AuditLog from "../components/AuditLog";
 // import OrderDialog from "../components/OrderDialog.js";
 
-const AdminDashboard = ({ setUserRole }) => {
+const AdminDashboard = () => {
   const [showAuditLog, setShowAuditLog] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -137,7 +137,7 @@ const [isRefunding, setIsRefunding] = useState(false); // Prevent double refund
 
     // Clean up interval on component unmount
     return () => clearInterval(interval);
-  }, [setUserRole, justCount]);
+  }, [justCount]);
 
   const showLoan = (user) => {
     setShowLoanModal(true);
@@ -501,7 +501,6 @@ const filteredOrders = useMemo(() => {
       const token = localStorage.getItem("token");
 
       if (userId && token) {
-        // Prepare the logout API call
         const data = JSON.stringify({
           userId: parseInt(userId, 10),
         });
@@ -517,21 +516,23 @@ const filteredOrders = useMemo(() => {
           data: data,
         };
 
-        // Call the logout API
         await axios.request(config);
-        console.log("User logged out successfully from server");
       }
     } catch (error) {
       console.error("Error during server logout:", error);
-      // Continue with client-side logout even if server call fails
     } finally {
-      // Always perform client-side cleanup
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userId");
-      setUserRole(null); // Reset state to show login screen
+      // Clear all user-related data from localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('role');
+      localStorage.removeItem('name');
+      localStorage.removeItem('email');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('isLoggedIn');
+
+      // Redirect to the login page
+      navigate('/login');
     }
-  }, [setUserRole]);
+  }, [navigate]);
 
   // Reset the timer whenever there's user activity
   const resetInactivityTimer = useCallback(() => {

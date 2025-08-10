@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, EyeOff, ArrowRight, User, Lock, Shield, Globe } from "lucide-react";
 import AnnouncementBanner from "./AnnouncementBanner";
 import { motion } from "framer-motion";
@@ -15,6 +16,7 @@ import Normalagent from "./NormalAgent";
 import Logo from "../assets/logo-icon.png";
 import { toast } from "react-toastify";
 import { Dialog } from "@headlessui/react";
+import { Navigate } from "react-router-dom";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -26,6 +28,7 @@ const Login = () => {
   const [focusedField, setFocusedField] = useState("");
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedRole = localStorage.getItem("role");
@@ -62,8 +65,29 @@ const Login = () => {
       localStorage.setItem("userId", user.id);
       localStorage.setItem("isLoggedIn", true);
 
-      // Reload the page to apply the new state
-      window.location.reload();
+      // Redirect based on role
+      switch (user.role) {
+        case "ADMIN":
+          navigate("/admin");
+          break;
+        case "USER":
+          navigate("/user");
+          break;
+        case "PREMIUM":
+          navigate("/premium");
+          break;
+        case "SUPER":
+          navigate("/superagent");
+          break;
+        case "NORMAL":
+          navigate("/normalagent");
+          break;
+        case "Other":
+          navigate("/otherdashboard");
+          break;
+        default:
+          navigate("/login"); // Fallback to landing page
+      }
     } catch (err) {
       setLoading(false);
 
@@ -80,21 +104,6 @@ const Login = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-
-  // Route to appropriate dashboard based on user role
-  if (userRole === "ADMIN") {
-    return <AdminDashboard setUserRole={setUserRole} />;
-  } else if (userRole === "USER") {
-    return <UserDashboard setUserRole={setUserRole} userRole={userRole} />;
-  } else if (userRole === "PREMIUM") {
-    return <Premium setUserRole={setUserRole} userRole={userRole} />;
-  } else if (userRole === "SUPER") {
-    return <Superagent setUserRole={setUserRole} userRole={userRole} />;
-  } else if (userRole === "NORMAL") {
-    return <Normalagent setUserRole={setUserRole} userRole={userRole} />;
-  } else if (userRole === "Other") {
-    return <OtherDashboard setUserRole={setUserRole} userRole={userRole} />;
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex">
@@ -334,7 +343,7 @@ const Login = () => {
               <section>
                 <h3 className="font-semibold text-lg text-gray-800 mb-2">3. REFERRALS</h3>
                 <ul className="list-disc list-inside space-y-1">
-                  <li>To refer a friend, simply share the link: <a href="https://www.kelishub.com" className="text-indigo-500 underline">www.kelishub.com</a>.</li>
+                  <li>To refer a friend, simply share the link: <a href="https://www.kelishub.vercel.app" className="text-indigo-500 underline">www.kelishub.com</a>.</li>
                   <li>New users will be guided to contact the official registration agent.</li>
                   <li>Only recommend hardworking and trustworthy individuals to maintain community quality.</li>
                 </ul>

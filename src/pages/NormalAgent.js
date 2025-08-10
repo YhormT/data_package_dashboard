@@ -17,7 +17,8 @@ import PasteOrders from "../components/PasteOrders";
 import TransactionsModal from "../components/TransactionsModal";
 import OtherProducts from "../components/OtherProducts";
 
-const Normalagent = ({ setUserRole, userRole }) => {
+const NormalAgent = () => {
+  const userRole = localStorage.getItem("role");
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -46,48 +47,23 @@ const Normalagent = ({ setUserRole, userRole }) => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const logoutUser = useCallback(async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      const token = localStorage.getItem("token");
+  const logoutUser = useCallback(() => {
+    // Clear all user-related data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('role');
+    localStorage.removeItem('name');
+    localStorage.removeItem('email');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('isLoggedIn');
 
-      if (userId && token) {
-        // Prepare the logout API call
-        const data = JSON.stringify({
-          userId: parseInt(userId, 10),
-        });
-
-        const config = {
-          method: "post",
-          maxBodyLength: Infinity,
-          url: `${BASE_URL}/api/auth/logout`,
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          data: data,
-        };
-
-        // Call the logout API
-        await axios.request(config);
-        console.log("User logged out successfully from server");
-      }
-    } catch (error) {
-      console.error("Error during server logout:", error);
-      // Continue with client-side logout even if server call fails
-    } finally {
-      // Always perform client-side cleanup
-      localStorage.removeItem("token");
-      localStorage.removeItem("role");
-      localStorage.removeItem("userId");
-      setUserRole(null); // Reset state to show login screen
-    }
-  }, [setUserRole]);
+    // Redirect to the login page
+    navigate('/login');
+  }, [navigate]);
 
   useEffect(() => {
     const role = localStorage.getItem("role");
-    if (role !== "USER") {
-      navigate("/");
+        if (role !== "NORMAL") {
+      navigate("/login");
     }
   }, [navigate]);
 
@@ -123,7 +99,7 @@ const Normalagent = ({ setUserRole, userRole }) => {
       isComponentMounted = false;
       if (interval) clearInterval(interval);
     };
-  }, [userRole]);
+    }, []);
 
   const fetchFreshBalance = async (userId) => {
     try {
@@ -164,7 +140,7 @@ const Normalagent = ({ setUserRole, userRole }) => {
         return;
       }
 
-      const response = await fetch(`${BASE_URL}/cart/${userId}`);
+      const response = await fetch(`${BASE_URL}/api/cart/${userId}`);
       const data = await response.json();
 
       console.log("Fetched Cart Data:", data);
@@ -278,6 +254,39 @@ const Normalagent = ({ setUserRole, userRole }) => {
       // Clear error and update state if valid
       setError((prev) => ({ ...prev, [id]: "" }));
       setMobileNumbers((prev) => ({ ...prev, [id]: value }));
+    }
+  };
+
+  const clearCart = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      Swal.fire("Error", "User not found. Please log in again.", "error");
+      return;
+    }
+
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This will remove all items from your cart.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, clear it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const response = await axios.delete(`${BASE_URL}/api/cart/${userId}/clear`);
+        if (response.data.success) {
+          setCart([]); // Clear the cart in the state
+          Swal.fire("Cleared!", "Your cart has been emptied.", "success");
+        } else {
+          Swal.fire("Error", response.data.error || "Could not clear the cart.", "error");
+        }
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+        Swal.fire("Error", "An error occurred while clearing the cart.", "error");
+      }
     }
   };
 
@@ -608,7 +617,7 @@ const Normalagent = ({ setUserRole, userRole }) => {
       const config = {
         method: "post",
         maxBodyLength: Infinity,
-        url: `${BASE_URL}/cart/add/`,
+        url: `${BASE_URL}/api/cart/add`,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`, // Add auth
@@ -1065,7 +1074,7 @@ const Normalagent = ({ setUserRole, userRole }) => {
                         key={product.id}
                         className={`border p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-cover bg-center 
                         ${
-                          product.name === "MTN - NORMAL"
+                          product.name.includes("MTN - NORMAL")
                             ? "bg-[url('https://img.freepik.com/premium-vector/trendy-abstract-background-design-with-yellow-background-used-texture-design-bright-poster_293525-2997.jpg')]"
                             : product.name === "TELECEL - NORMAL"
                             ? "bg-[url('https://cdn.vectorstock.com/i/500p/37/28/abstract-background-design-modern-red-and-gold-vector-49733728.jpg')]"
@@ -1220,11 +1229,18 @@ const Normalagent = ({ setUserRole, userRole }) => {
             </div>
           )}
 
-          {/* Submit Button */}
-          <div className="flex justify-end mt-4">
+          {/* Action Buttons */}
+          <div className="flex justify-between items-center mt-4">
+            <button
+              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-300"
+              onClick={clearCart}
+              disabled={cart.length === 0}
+            >
+              Clear All
+            </button>
             <button
               className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
-              disabled={isSubmitting}
+              disabled={isSubmitting || cart.length === 0}
               onClick={submitCart}
             >
               {isSubmitting ? "Submitting..." : "Submit Cart"}
@@ -1244,4 +1260,4 @@ const Normalagent = ({ setUserRole, userRole }) => {
   );
 };
 
-export default Normalagent;
+export default NormalAgent;
