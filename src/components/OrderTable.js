@@ -662,6 +662,21 @@ const TotalRequestsComponent = () => {
 
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
 
+  const getRowColor = (productName) => {
+    if (!productName) return "";
+    const name = productName.toUpperCase();
+    if (name.includes("AIRTEL TIGO")) {
+      return "bg-blue-300";
+    }
+    if (name.includes("MTN")) {
+      return "bg-yellow-300";
+    }
+    if (name.includes("TELECEL")) {
+      return "bg-red-300";
+    }
+    return "";
+  };
+
   // Calculate statistics
   const pendingCount = allItems.filter(
     (item) => item.order?.items?.[0]?.status === "Pending"
@@ -1068,12 +1083,12 @@ const TotalRequestsComponent = () => {
                       paginatedItems.map((item, index) => (
                         <tr
                           key={index}
-                          className={`hover:bg-gray-100 ${
+                          className={`hover:bg-gray-100 text-black ${
                             item.order?.items?.[0]?.status === "Cancelled"
-                              ? "bg-red-100 text-red-800"
+                              ? "bg-red-700 text-white"
                               : item.isNew
                               ? "bg-green-50 animate-pulse border-l-4 border-green-500"
-                              : ""
+                              : getRowColor(item.product?.name)
                           }`}
                         >
                           <td className="border px-2 py-2 md:px-4 relative">
