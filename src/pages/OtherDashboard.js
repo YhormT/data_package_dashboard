@@ -366,7 +366,7 @@ const OtherDashboard = () => {
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          await axios.delete(`${BASE_URL}/cart/remove/${cartItemId}`);
+          await axios.delete(`${BASE_URL}/api/cart/remove/${cartItemId}`);
           setCart((prevCart) =>
             prevCart.filter((item) => item.id !== cartItemId)
           ); // Update UI
