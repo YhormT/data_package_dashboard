@@ -669,7 +669,7 @@ const TotalRequestsComponent = () => {
       return "bg-blue-300";
     }
     if (name.includes("MTN")) {
-      return "bg-yellow-300";
+      return "bg-yellow-100";
     }
     if (name.includes("TELECEL")) {
       return "bg-red-300";
