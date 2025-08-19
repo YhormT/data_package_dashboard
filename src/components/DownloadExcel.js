@@ -103,8 +103,6 @@ const DownloadExcel = () => {
               Data Preview
             </Dialog.Title>
 
-            
-
             {/* Data Table */}
             <div className="mt-4 overflow-x-auto">
               <div className="max-h-80 overflow-y-auto">

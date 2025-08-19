@@ -115,8 +115,6 @@ const TotalRequestsComponent = () => {
     setLoading(true);
     try {
       const response = await axios.get(`${BASE_URL}/order/admin/allorder`);
-
-
       const currentTime = new Date();
 
       // Process the data
@@ -132,7 +130,7 @@ const TotalRequestsComponent = () => {
                   ...order,
                   items: [item], // Only include the current item to avoid status mix-ups
                 },
-                isNew: new Date(order.createdAt) > new Date(Date.now() - 5 * 60 * 1000),
+                isNew: new Date(order.createdAt) > new Date(Date.now() - 5 * 1000),
               }))
             : []
         );
@@ -830,7 +828,7 @@ const TotalRequestsComponent = () => {
               className="form-checkbox h-5 w-5 text-blue-600"
             />
             <label htmlFor="newRequestsToggle" className="ml-2 font-medium">
-              Show only new requests (last 5 minutes)
+              Show only new requests (last 5 mins)
             </label>
           </div>
 
