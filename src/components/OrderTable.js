@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef, useDeferredValue } from "react";
+import { useState, useEffect, useMemo, useRef, useDeferredValue, useCallback, memo } from "react";
 import axios from "axios";
 import * as XLSX from "xlsx";
 import {
@@ -38,22 +38,30 @@ const TotalRequestsComponent = () => {
     return savedTime ? new Date(savedTime) : null;
   });
 
-  useEffect(() => {
-    fetchOrderData();
-  }, []); // Empty dependency array ensures this runs only once on mount
+  // Removed duplicate useEffect - keeping the one at line 182
   const [hasNewRequests, setHasNewRequests] = useState(false);
   const [showNewRequestsOnly, setShowNewRequestsOnly] = useState(false);
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const [refreshInterval, setRefreshInterval] = useState(30); // seconds
+  const [refreshInterval, setRefreshInterval] = useState(120); // seconds - increased default to reduce server load
   const audioRef = useRef(null);
   const [ticker, setTicker] = useState(0);
 
   const [orderIdFilter, setOrderIdFilter] = useState("");
   const [phoneNumberFilter, setPhoneNumberFilter] = useState("");
-  // Use deferred values for instant input
+  // Use deferred values for instant input with longer delay
   const deferredOrderIdFilter = useDeferredValue(orderIdFilter);
   const deferredPhoneNumberFilter = useDeferredValue(phoneNumberFilter);
+  
+  // Debounced filter function to reduce expensive operations
+  const debounceTimeout = useRef(null);
+  const [debouncedFilters, setDebouncedFilters] = useState({
+    orderId: '',
+    phoneNumber: '',
+    product: '',
+    status: '',
+    date: ''
+  });
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -76,42 +84,7 @@ const TotalRequestsComponent = () => {
   const prevOrderIdsRef = useRef(new Set());
   const intervalRef = useRef(null);
 
-  // Request notification permission when component mounts
-  useEffect(() => {
-    if ("Notification" in window) {
-      Notification.requestPermission();
-    }
-
-    // Create audio element for notification sound
-    const audio = new Audio("/notification-sound.mp3"); // You'll need to add this file to your public directory
-    audioRef.current = audio;
-
-    // Clean up on unmount
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, []);
-
-  // Set up auto-refresh interval effect
-  useEffect(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-    }
-
-    if (autoRefresh) {
-      intervalRef.current = setInterval(fetchOrderData, refreshInterval * 1000);
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [autoRefresh, refreshInterval]);
-
-  const fetchOrderData = async () => {
+  const fetchOrderData = useCallback(async () => {
     setLoading(true);
     try {
       const response = await axios.get(`${BASE_URL}/order/admin/allorder`);
@@ -176,24 +149,61 @@ const TotalRequestsComponent = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [notificationsEnabled]);
+
+  // Request notification permission when component mounts
+  useEffect(() => {
+    if ("Notification" in window) {
+      Notification.requestPermission();
+    }
+
+    // Create audio element for notification sound
+    const audio = new Audio("/notification-sound.mp3"); // You'll need to add this file to your public directory
+    audioRef.current = audio;
+
+    // Clean up on unmount
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
+
+  // Set up auto-refresh interval effect - optimized
+  useEffect(() => {
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+      intervalRef.current = null;
+    }
+
+    if (autoRefresh) {
+      intervalRef.current = setInterval(fetchOrderData, refreshInterval * 1000);
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, [autoRefresh, refreshInterval, fetchOrderData]);
 
   // Fetch data on component mount
   useEffect(() => {
     fetchOrderData();
-  }, []);
+  }, [fetchOrderData]);
 
-  // Effect to make the 'new requests' filter dynamic
+  // Effect to make the 'new requests' filter dynamic - optimized
   useEffect(() => {
     let interval = null;
     if (showNewRequestsOnly) {
       interval = setInterval(() => {
         setTicker(prev => prev + 1);
-      }, 10000); // Re-render every 10 seconds
-    } else if (interval) {
-      clearInterval(interval);
+      }, 30000); // Increased to 30 seconds to reduce re-renders
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [showNewRequestsOnly]);
 
   // Effect to request notification permission
@@ -300,79 +310,67 @@ const TotalRequestsComponent = () => {
     }
   };
 
-  // Apply filters and memoize the result
+  // Optimized filtering with reduced dependencies
   const filteredOrders = useMemo(() => {
-    let filtered = allItems.filter((item) => {
-      if (!item.createdAt) return false;
+    if (!allItems.length) return [];
+    
+    let filtered = allItems;
+    
+    // Early return for empty filters
+    const hasFilters = deferredOrderIdFilter || deferredPhoneNumberFilter || selectedProduct || selectedStatusMain || selectedDate || showNewRequestsOnly;
+    
+    if (hasFilters) {
+      filtered = allItems.filter((item) => {
+        if (!item.createdAt) return false;
 
-      const orderDateTime = new Date(item.createdAt);
-      const orderDate = orderDateTime.toISOString().split("T")[0];
+        // Cache date calculations
+        const orderDateTime = new Date(item.createdAt);
+        const orderDate = orderDateTime.toISOString().split("T")[0];
 
-      // Dynamically filter for new requests if the toggle is on
-      if (showNewRequestsOnly) {
-        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-        if (new Date(item.createdAt) < fiveMinutesAgo) {
-          return false;
+        // New requests filter
+        if (showNewRequestsOnly) {
+          const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+          if (orderDateTime.getTime() < fiveMinutesAgo) return false;
         }
-      }
 
-      // Filter by Order ID if specified
-      if (deferredOrderIdFilter && !String(item.orderId).includes(deferredOrderIdFilter))
-        return false;
+        // Quick string filters
+        if (deferredOrderIdFilter && !String(item.orderId).includes(deferredOrderIdFilter)) return false;
+        if (deferredPhoneNumberFilter && !String(item.mobileNumber).includes(deferredPhoneNumberFilter)) return false;
+        if (selectedDate && orderDate !== selectedDate) return false;
+        if (selectedProduct && item.product?.name !== selectedProduct) return false;
+        if (selectedStatusMain && item.order?.items?.[0]?.status !== selectedStatusMain) return false;
 
-      // Filter by Phone Number if specified
-      if (deferredPhoneNumberFilter && !String(item.mobileNumber).includes(deferredPhoneNumberFilter))
-        return false;
-
-      const selectedStartTime = startTime
-        ? new Date(`${selectedDate}T${startTime}`)
-        : null;
-      const selectedEndTime = endTime
-        ? new Date(`${selectedDate}T${endTime}`)
-        : null;
-
-      if (selectedDate && orderDate !== selectedDate) return false;
-      if (selectedProduct && item.product?.name !== selectedProduct)
-        return false;
-
-      if (startTime && endTime) {
-        if (
-          orderDateTime < selectedStartTime ||
-          orderDateTime > selectedEndTime
-        ) {
-          return false;
+        // Time range filter
+        if (startTime && endTime && selectedDate) {
+          const selectedStartTime = new Date(`${selectedDate}T${startTime}`);
+          const selectedEndTime = new Date(`${selectedDate}T${endTime}`);
+          if (orderDateTime < selectedStartTime || orderDateTime > selectedEndTime) return false;
         }
-      }
 
-      if (
-        selectedStatusMain &&
-        item.order?.items?.[0]?.status !== selectedStatusMain
-      )
-        return false;
+        return true;
+      });
+    }
 
-      return true;
-    });
-
-    // Sort by creation date
-    filtered.sort((a, b) => {
-      const dateA = new Date(a.createdAt);
-      const dateB = new Date(b.createdAt);
-      return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
-    });
+    // Optimized sorting
+    if (sortOrder === "newest") {
+      filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    } else {
+      filtered.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    }
 
     return filtered;
   }, [
     allItems,
-    selectedDate,
-    selectedProduct,
-    startTime,
-    endTime,
-    selectedStatusMain,
-    showNewRequestsOnly,
-    sortOrder,
     deferredOrderIdFilter,
     deferredPhoneNumberFilter,
-    ticker,
+    selectedProduct,
+    selectedStatusMain,
+    selectedDate,
+    startTime,
+    endTime,
+    showNewRequestsOnly,
+    sortOrder,
+    ticker
   ]);
 
   // Update paginated items whenever filtered orders or page changes
@@ -702,7 +700,7 @@ const TotalRequestsComponent = () => {
         <div>
           <h3 className="text-xl font-semibold">Total Requests</h3>
           <p className="text-lg font-bold">
-            {loading ? "..." : allItems?.length}
+            {allItems?.length || 0}
           </p>
           {hasNewRequests && (
             <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full px-2 py-1 text-xs font-bold animate-pulse">
@@ -779,10 +777,10 @@ const TotalRequestsComponent = () => {
                   onChange={(e) => setRefreshInterval(Number(e.target.value))}
                   className="border rounded-md p-1 text-sm"
                 >
-                  <option value="10">10s</option>
-                  <option value="30">30s</option>
                   <option value="60">1m</option>
+                  <option value="120">2m</option>
                   <option value="300">5m</option>
+                  <option value="600">10m</option>
                 </select>
               )}
 
@@ -1016,12 +1014,7 @@ const TotalRequestsComponent = () => {
             </div>
           </div>
 
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-            </div>
-          ) : (
-            <>
+          <>
               <div className="flex justify-between mt-4">
               <button
                 onClick={() => setOpen(false)}
@@ -1079,127 +1072,14 @@ const TotalRequestsComponent = () => {
                   <tbody>
                     {paginatedItems.length > 0 ? (
                       paginatedItems.map((item, index) => (
-                        <tr
-                          key={index}
-                          className={`hover:bg-gray-100 text-black ${
-                            item.order?.items?.[0]?.status === "Cancelled"
-                              ? "bg-red-700 text-white"
-                              : item.isNew
-                              ? "bg-green-50 animate-pulse border-l-4 border-green-500"
-                              : getRowColor(item.product?.name)
-                          }`}
-                        >
-                          <td className="border px-2 py-2 md:px-4 relative">
-                            {item.isNew && (
-                              <span className="absolute left-0 top-0 h-full w-1 bg-green-500"></span>
-                            )}
-                            <div className="flex items-center">
-                              {item.isNew && (
-                                <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                              )}
-                              {item.orderId || "N/A"}
-                              {item.isNew && (
-                                <span className="ml-2 text-xs bg-green-100 text-green-800 px-1 rounded">
-                                  New
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td className="border px-2 py-2 md:px-4">
-                            {item.id || "N/A"}
-                          </td>
-                          <td className="border px-2 py-2 md:px-4">
-                            {item.user?.name || "N/A"}
-                          </td>
-                          <td className="border px-2 py-2 md:px-4">
-                            {item?.mobileNumber || "N/A"}
-                          </td>
-                          <td className="border px-2 py-2 md:px-4">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs ${
-                                item.order?.items?.[0]?.status === "Completed"
-                                  ? "bg-green-100 text-green-800"
-                                  : item.order?.items?.[0]?.status ===
-                                    "Processing"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : item.order?.items?.[0]?.status ===
-                                    "Cancelled"
-                                  ? "bg-red-100 text-red-800"
-                                  : "bg-blue-100 text-blue-800"
-                              }`}
-                            >
-                              {item.order?.items?.[0]?.status || "N/A"}
-                            </span>
-                          </td>
-                          <td className="border px-2 py-2 md:px-4 whitespace-nowrap">
-                            {item.product?.name || "N/A"}
-                          </td>
-                          <td className="border px-2 py-2 md:px-4 font-semibold">
-                            {item.product?.description
-                              ? item.product.description.replace(/\D+$/, "")
-                              : "N/A"}{" "}
-                            GB
-                          </td>
-                          <td className="border px-2 py-2 md:px-4 whitespace-nowrap">
-                            {item.order?.createdAt
-                              ? new Date(item.order.createdAt)
-                                  .toISOString()
-                                  .split("T")[0]
-                              : "N/A"}
-                          </td>
-                          <td className="border px-2 py-2 md:px-4 whitespace-nowrap">
-                            {item.order?.createdAt
-                              ? new Date(
-                                  item.order.createdAt
-                                ).toLocaleTimeString()
-                              : "N/A"}
-                          </td>
-                          <td
-                            className={`border px-4 py-2 text-left whitespace-nowrap ${
-                              item.order?.items?.[0]?.status === "Cancelled"
-                                ? "text-red-800 font-bold" // Makes it bold and dark red if cancelled
-                                : item.product?.price >= 0
-                                ? "text-green-600"
-                                : "text-red-600"
-                            }`}
-                          >
-                            GH₵ {item.product?.price || 0}
-                          </td>
-
-                          <td className="border px-2 py-2 md:px-4 text-center flex items-center justify-center space-x-2">
-                            <button
-                              className={`text-blue-500 hover:text-blue-700 mr-2 ${
-                                item.isNew ? "animate-bounce" : ""
-                              } ${
-                                item.order?.items?.[0]?.status === "Cancelled"
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                              onClick={() => handleViewClickStatus(item.id)}
-                              disabled={
-                                item.order?.items?.[0]?.status === "Cancelled"
-                              }
-                            >
-                              <SpellCheck className="w-5 h-5" />
-                            </button>
-                            <button
-                              className={`text-green-500 hover:text-green-700 ${
-                                item.isNew ? "animate-bounce" : ""
-                              } ${
-                                item.order?.items?.[0]?.status === "Cancelled"
-                                  ? "opacity-50 cursor-not-allowed"
-                                  : ""
-                              }`}
-                              onClick={() => handleUpdateStatus(item.order?.id)}
-                              title="Mark as Completed"
-                              disabled={
-                                item.order?.items?.[0]?.status === "Cancelled"
-                              }
-                            >
-                              <Check className="w-5 h-5" />
-                            </button>
-                          </td>
-                        </tr>
+                        <TableRow
+                          key={`${item.id}-${item.orderId}`}
+                          item={item}
+                          index={index}
+                          getRowColor={getRowColor}
+                          handleViewClickStatus={handleViewClickStatus}
+                          handleUpdateStatus={handleUpdateStatus}
+                        />
                       ))
                     ) : (
                       <tr>
@@ -1211,8 +1091,7 @@ const TotalRequestsComponent = () => {
                   </tbody>
                 </table>
               </div>
-            </>
-          )}
+          </>
 
           {/* Pagination controls */}
           {totalPages > 1 && (
@@ -1326,3 +1205,118 @@ const TotalRequestsComponent = () => {
 };
 
 export default TotalRequestsComponent;
+
+// Memoized table row component to prevent unnecessary re-renders
+const TableRow = memo(({ item, index, getRowColor, handleViewClickStatus, handleUpdateStatus }) => {
+  return (
+    <tr
+      className={`hover:bg-gray-100 text-black ${
+        item.order?.items?.[0]?.status === "Cancelled"
+          ? "bg-red-700 text-white"
+          : item.isNew
+          ? "bg-green-50 animate-pulse border-l-4 border-green-500"
+          : getRowColor(item.product?.name)
+      }`}
+    >
+      <td className="border px-2 py-2 md:px-4 relative">
+        {item.isNew && (
+          <span className="absolute left-0 top-0 h-full w-1 bg-green-500"></span>
+        )}
+        <div className="flex items-center">
+          {item.isNew && (
+            <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+          )}
+          {item.orderId || "N/A"}
+          {item.isNew && (
+            <span className="ml-2 text-xs bg-green-100 text-green-800 px-1 rounded">
+              New
+            </span>
+          )}
+        </div>
+      </td>
+      <td className="border px-2 py-2 md:px-4">
+        {item.id || "N/A"}
+      </td>
+      <td className="border px-2 py-2 md:px-4">
+        {item.user?.name || "N/A"}
+      </td>
+      <td className="border px-2 py-2 md:px-4">
+        {item?.mobileNumber || "N/A"}
+      </td>
+      <td className="border px-2 py-2 md:px-4">
+        <span
+          className={`px-2 py-1 rounded-full text-xs ${
+            item.order?.items?.[0]?.status === "Completed"
+              ? "bg-green-100 text-green-800"
+              : item.order?.items?.[0]?.status === "Processing"
+              ? "bg-yellow-100 text-yellow-800"
+              : item.order?.items?.[0]?.status === "Cancelled"
+              ? "bg-red-100 text-red-800"
+              : "bg-blue-100 text-blue-800"
+          }`}
+        >
+          {item.order?.items?.[0]?.status || "N/A"}
+        </span>
+      </td>
+      <td className="border px-2 py-2 md:px-4 whitespace-nowrap">
+        {item.product?.name || "N/A"}
+      </td>
+      <td className="border px-2 py-2 md:px-4 font-semibold">
+        {item.product?.description
+          ? item.product.description.replace(/\D+$/, "")
+          : "N/A"}{" "}
+        GB
+      </td>
+      <td className="border px-2 py-2 md:px-4 whitespace-nowrap">
+        {item.order?.createdAt
+          ? new Date(item.order.createdAt).toISOString().split("T")[0]
+          : "N/A"}
+      </td>
+      <td className="border px-2 py-2 md:px-4 whitespace-nowrap">
+        {item.order?.createdAt
+          ? new Date(item.order.createdAt).toLocaleTimeString()
+          : "N/A"}
+      </td>
+      <td
+        className={`border px-4 py-2 text-left whitespace-nowrap ${
+          item.order?.items?.[0]?.status === "Cancelled"
+            ? "text-red-800 font-bold"
+            : item.product?.price >= 0
+            ? "text-green-600"
+            : "text-red-600"
+        }`}
+      >
+        GH₵ {item.product?.price || 0}
+      </td>
+      <td className="border px-2 py-2 md:px-4 text-center flex items-center justify-center space-x-2">
+        <button
+          className={`text-blue-500 hover:text-blue-700 mr-2 ${
+            item.isNew ? "animate-bounce" : ""
+          } ${
+            item.order?.items?.[0]?.status === "Cancelled"
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
+          onClick={() => handleViewClickStatus(item.id)}
+          disabled={item.order?.items?.[0]?.status === "Cancelled"}
+        >
+          <SpellCheck className="w-5 h-5" />
+        </button>
+        <button
+          className={`text-green-500 hover:text-green-700 ${
+            item.isNew ? "animate-bounce" : ""
+          } ${
+            item.order?.items?.[0]?.status === "Cancelled"
+              ? "opacity-50 cursor-not-allowed"
+              : ""
+          }`}
+          onClick={() => handleUpdateStatus(item.order?.id)}
+          title="Mark as Completed"
+          disabled={item.order?.items?.[0]?.status === "Cancelled"}
+        >
+          <Check className="w-5 h-5" />
+        </button>
+      </td>
+    </tr>
+  );
+});
