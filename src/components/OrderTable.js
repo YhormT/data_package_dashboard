@@ -87,7 +87,19 @@ const TotalRequestsComponent = () => {
   const fetchOrderData = useCallback(async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${BASE_URL}/order/admin/allorder`);
+      console.log('Fetching orders from:', `${BASE_URL}/order/admin/allorder`);
+      const response = await axios.get(`${BASE_URL}/order/admin/allorder`, {
+        timeout: 30000, // 30 second timeout
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        params: {
+          limit: 100,
+          offset: 0
+        }
+      });
+      console.log('API Response:', response.data);
       const currentTime = new Date();
 
       // Process the data
@@ -146,6 +158,24 @@ const TotalRequestsComponent = () => {
       }
     } catch (error) {
       console.error("Error fetching order data:", error);
+      console.error("Error details:", {
+        message: error.message,
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: `${BASE_URL}/order/admin/allorder`
+      });
+      
+      // Show user-friendly error message
+      if (error.code === 'ECONNABORTED') {
+        console.error('Request timeout - API is taking too long to respond');
+      } else if (error.response?.status === 404) {
+        console.error('API endpoint not found');
+      } else if (error.response?.status >= 500) {
+        console.error('Server error - API is down or having issues');
+      } else if (!error.response) {
+        console.error('Network error - unable to reach API');
+      }
     } finally {
       setLoading(false);
     }
