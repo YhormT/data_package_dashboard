@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import * as XLSX from "xlsx";
-import { saveAs } from "file-saver";
+//import { saveAs } from "file-saver";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import {
@@ -12,21 +12,12 @@ import {
   LogOut,
   Plus,
   User,
-  CheckCircle,
   Clock,
-  FileText,
   Edit,
   Trash,
-  Download,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  View,
-  SpellCheck,
   Banknote,
   BadgeCent,
   Save,
-  Check,
   Eye,
   EyeOff,
 } from "lucide-react";
@@ -35,11 +26,11 @@ import ProductDialog from "../components/ProductDialog";
 import BASE_URL from "../endpoints/endpoints";
 import TopupsOrdered from "../components/TopupsOrdered";
 import Logo from "../assets/logo-icon.png";
-import DownloadExcel from "../components/DownloadExcel";
+//import DownloadExcel from "../components/DownloadExcel";
 import TransactionalAdminModal from "../components/TransactionalAdminModal";
 import PaymentModal from "../components/PaymentModal";
 import TotalRequestsComponent from "../components/OrderTable";
-import Announcement from "../components/Announcement"; // New Announcement modal component
+import Announcement from "../components/Announcement";
 import AuditLog from "../components/AuditLog";
 // import OrderDialog from "../components/OrderDialog.js";
 
@@ -1230,22 +1221,82 @@ const filteredOrders = useMemo(() => {
                 ))}
               </tbody>
             </table>
-            <div className="flex justify-center mt-4">
-              {[...Array(Math.ceil(users.length / usersPerPage)).keys()].map(
-                (number) => (
-                  <button
-                    key={number}
-                    onClick={() => paginate(number + 1)}
-                    className={`px-4 py-2 mx-1 border ${
-                      currentPage === number + 1
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-200"
-                    }`}
-                  >
-                    {number + 1}
-                  </button>
-                )
-              )}
+            <div className="flex items-center justify-center gap-2 mt-6">
+              {/* Previous Arrow */}
+              <button
+                onClick={() => paginate(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+                          transition-all duration-200 ease-in-out
+                          bg-blue-500 text-white border border-blue-500 hover:bg-blue-600 hover:border-blue-600
+                          disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500 disabled:hover:border-blue-500"
+              >
+                ←
+              </button>
+
+              {/* Page Numbers with Smart Truncation */}
+              {(() => {
+                const totalPages = Math.ceil(users.length / usersPerPage);
+                const pages = [];
+                
+                if (totalPages <= 7) {
+                  // Show all pages if 7 or fewer
+                  for (let i = 1; i <= totalPages; i++) {
+                    pages.push(i);
+                  }
+                } else {
+                  // Smart truncation logic
+                  if (currentPage <= 4) {
+                    // Show first 5 pages, dots, last page
+                    pages.push(1, 2, 3, 4, 5, '...', totalPages);
+                  } else if (currentPage >= totalPages - 3) {
+                    // Show first page, dots, last 5 pages
+                    pages.push(1, '...', totalPages - 4, totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+                  } else {
+                    // Show first page, dots, current-1, current, current+1, dots, last page
+                    pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
+                  }
+                }
+
+                return pages.map((page, index) => (
+                  page === '...' ? (
+                    <span
+                      key={`dots-${index}`}
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium text-gray-400"
+                    >
+                      •••
+                    </span>
+                  ) : (
+                    <button
+                      key={page}
+                      onClick={() => paginate(page)}
+                        className={`
+                        w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+                        transition-all duration-200 ease-in-out
+                        ${
+                          currentPage === page
+                            ? "bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg shadow-blue-500/25 scale-105"
+                            : "bg-blue-500 text-white border border-blue-500 hover:bg-blue-600 hover:border-blue-600"
+                        }
+                      `}
+                    >
+                      {page}
+                    </button>
+                  )
+                ));
+              })()}
+
+              {/* Next Arrow */}
+              <button
+                onClick={() => paginate(currentPage + 1)}
+                disabled={currentPage === Math.ceil(users.length / usersPerPage)}
+                className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-medium
+                          transition-all duration-200 ease-in-out
+                          bg-blue-500 text-white border border-blue-500 hover:bg-blue-600 hover:border-blue-600
+                          disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-500 disabled:hover:border-blue-500"
+              >
+                →
+              </button>
             </div>
           </div>
         </main>
