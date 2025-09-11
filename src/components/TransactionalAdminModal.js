@@ -491,6 +491,7 @@ const TransactionalAdminModal = () => {
     
     let filtered = allTransactions;
 
+    // Search filter
     if (debouncedSearch) {
       const searchLower = debouncedSearch.toLowerCase();
       filtered = filtered.filter((tx) =>
@@ -498,14 +499,33 @@ const TransactionalAdminModal = () => {
       );
     }
 
+    // Type filter
+    if (typeFilter) {
+      filtered = filtered.filter((tx) => tx.type === typeFilter);
+    }
+
+    // Amount filter
     if (amountFilter !== "all") {
       filtered = amountFilter === "positive" 
         ? filtered.filter((tx) => tx.amount >= 0)
         : filtered.filter((tx) => tx.amount < 0);
     }
 
+    // Date range filter
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      start.setHours(0, 0, 0, 0);
+      end.setHours(23, 59, 59, 999);
+      
+      filtered = filtered.filter((tx) => {
+        const txDate = new Date(tx.createdAt);
+        return txDate >= start && txDate <= end;
+      });
+    }
+
     return filtered;
-  }, [allTransactions, debouncedSearch, amountFilter]);
+  }, [allTransactions, debouncedSearch, typeFilter, amountFilter, startDate, endDate]);
 
   // Paginated transactions for table display
   const paginatedTransactions = useMemo(() => {
@@ -791,7 +811,7 @@ const TransactionalAdminModal = () => {
       title,
       data
     });
-  }, [filteredTransactions, transactions, debouncedSearch, typeFilter, amountFilter, startDate, endDate]);
+  }, [filteredTransactions]);
 
   // Close stats popup
   const closeStatsPopup = useCallback(() => {
@@ -821,19 +841,6 @@ const TransactionalAdminModal = () => {
   }, []);
 
   const closeModal = useCallback(() => setIsOpen(false), []);
-
-  const resetFilters = useCallback(() => {
-    const today = new Date().toISOString().split("T")[0];
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-
-    setSearch("");
-    setTypeFilter("");
-    setStartDate(thirtyDaysAgo.toISOString().split("T")[0]);
-    setEndDate(today);
-    setAmountFilter("all");
-    setCurrentPage(1);
-  }, []);
 
   const exportToCSV = useCallback(async () => {
     setExportLoading(true);
