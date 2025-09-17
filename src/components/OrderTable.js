@@ -64,9 +64,9 @@ const TotalRequestsComponent = () => {
     date: ''
   });
 
-  // Pagination - Optimized for 500 items with virtual scrolling
+  // Pagination - Fixed at 250 items per page with virtual scrolling
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(500);
+  const [itemsPerPage] = useState(250);
   const [totalPages, setTotalPages] = useState(1);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 }); // Virtual scrolling
 
