@@ -30,7 +30,7 @@ const Sidebar = ({
     <aside
       className={`bg-white w-64 p-5 fixed h-full transition-transform transform ${
         isOpen ? "translate-x-0" : "-translate-x-64"
-      } md:translate-x-0 shadow-lg flex flex-col justify-between`}
+      } md:translate-x-0 shadow-lg flex flex-col`}
       style={{
         backgroundImage: `url(${bgImage})`,
         backgroundSize: "contain",
@@ -48,7 +48,7 @@ const Sidebar = ({
 
         <hr />
 
-        <nav>
+        <nav className="flex-grow overflow-y-auto">
           <ul className="space-y-4">
             
             {/* Home */}

@@ -1087,7 +1087,7 @@ const filteredOrders = useMemo(() => {
         <aside
           className={`bg-gray-700 text-white w-64 p-5 z-50 fixed h-full transition-transform transform ${
             isOpen ? "translate-x-0" : "-translate-x-64"
-          } md:translate-x-0 shadow-lg ${isOpen ? '' : 'hidden md:block'}`}
+          } md:translate-x-0 shadow-lg ${isOpen ? '' : 'hidden md:block'} flex flex-col`}
         >
 
         <div className="flex items-center justify-between mb-5">
@@ -1097,7 +1097,7 @@ const filteredOrders = useMemo(() => {
             <X className="w-6 h-6" />
           </button>
         </div>
-        <nav>
+        <nav className="flex-grow overflow-y-auto">
           <ul className="space-y-4">
             <li
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
