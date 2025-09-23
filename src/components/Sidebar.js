@@ -40,13 +40,11 @@ const Sidebar = ({
     >
       <div>
         <div className="flex items-center justify-between mb-5">
-          <img src={Logo} height={150} width={150} alt="Logo" />
+          <img src={Logo} height={100} width={100} alt="Logo" />
           <button className="md:hidden" onClick={() => setIsOpen(false)}>
             X
           </button>
         </div>
-
-        <hr />
 
         <nav className="flex-grow overflow-y-auto">
           <ul className="space-y-4">

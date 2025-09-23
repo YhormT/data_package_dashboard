@@ -735,13 +735,11 @@ const Premium = () => {
           {/* Sidebar Header */}
           <div className="flex items-center justify-between mb-5">
             {/* <h2 className="text-xl font-bold">Dashboard</h2> */}
-            <img src={Logo} height={150} width={150} />
+            <img src={Logo} height={100} width={100} />
             <button className="md:hidden" onClick={() => setIsOpen(false)}>
               <X className="w-6 h-6" />
             </button>
           </div>
-
-          <hr />
 
           {/* Navigation Links */}
           <nav className="flex-grow overflow-y-auto">
@@ -761,9 +759,6 @@ const Premium = () => {
                 <Home className="w-5 h-5" />
                 <span>Home</span>
               </li>
-
-              <hr />
-
               <li
                 className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
                   selectedCategory === "MTN"
