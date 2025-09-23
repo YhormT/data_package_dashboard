@@ -1092,7 +1092,7 @@ const filteredOrders = useMemo(() => {
 
         <div className="flex items-center justify-between mb-5">
           {/* Image Logo */}
-          <img src={Logo} height={150} width={150} />
+          <img src={Logo} height={120} width={120} />
           <button className="md:hidden" onClick={() => setIsOpen(false)}>
             <X className="w-6 h-6" />
           </button>
@@ -1190,7 +1190,7 @@ const filteredOrders = useMemo(() => {
       {/* Main Content */}
       <div className="flex-1 w-full min-w-0 flex flex-col ml-0 md:ml-64">
         {/* Header */}
-        <header className="bg-white shadow-md p-4 flex items-center w-full relative">
+        {/* <header className="bg-white shadow-md p-4 flex items-center w-full relative">
           <button className="md:hidden" onClick={() => setIsOpen(true)}>
             <Menu className="w-6 h-6" />
           </button>
@@ -1198,7 +1198,7 @@ const filteredOrders = useMemo(() => {
             Admin Dashboard
           </h1>
           <AuditLog isOpen={showAuditLog} onClose={() => setShowAuditLog(false)} />
-        </header>
+        </header> */}
 
         {/* Admin Info Card */}
         <div className="p-6 w-[100%] sm:w-full">
