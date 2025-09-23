@@ -1,9 +1,11 @@
 // Sidebar.js
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Home,
   LogOut,
   History,
+  User,
 } from "lucide-react";
 import TransactionsModal from "./TransactionsModal";
 import UploadExcel from "./UploadExcel";
@@ -22,6 +24,7 @@ const Sidebar = ({
   setDailySalesOpen,
   onUploadSuccess
 }) => {
+  const navigate = useNavigate();
   const [showAuditLog, setShowAuditLog] = React.useState(false);
   return (
     <aside
@@ -158,6 +161,18 @@ const Sidebar = ({
               <History className="w-5 h-5" />
               <span>Daily Sales</span>
             </li> */}
+
+            {/* Profile */}
+            <li
+              className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer"
+              onClick={() => {
+                navigate("/profile");
+                setIsOpen(false);
+              }}
+            >
+              <User className="w-5 h-5" />
+              <span>Profile</span>
+            </li>
 
             {/* Logout */}
             <li

@@ -842,6 +842,17 @@ const Premium = () => {
               {/* <hr className="my-5" /> */}
 
               <li
+                className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer"
+                onClick={() => {
+                  navigate("/profile");
+                  setIsOpen(false);
+                }}
+              >
+                <User className="w-5 h-5" />
+                <span>Profile</span>
+              </li>
+
+              <li
                 className="flex items-center space-x-3 p-2 rounded-md hover:bg-red-700 cursor-pointer text-black-500"
                 onClick={logoutUser}
               >

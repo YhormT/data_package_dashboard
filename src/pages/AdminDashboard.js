@@ -21,6 +21,7 @@ import {
   Eye,
   EyeOff,
   Search,
+  RotateCcw,
 } from "lucide-react";
 import { Dialog } from "@headlessui/react";
 import ProductDialog from "../components/ProductDialog";
@@ -57,6 +58,7 @@ const [isRefunding, setIsRefunding] = useState(false); // Prevent double refund
   const [hasLoan, setHasLoan] = useState(false); // Checkbox state
 
   const [justCount, setJustCount] = useState("");
+  const [isResetting, setIsResetting] = useState(false);
 
   const sidebarRef = useRef(null);
 
@@ -603,6 +605,91 @@ const filteredOrders = useMemo(() => {
     }
   }, [navigate]);
 
+  const handleResetDatabase = async () => {
+    // First confirmation
+    const firstConfirm = await Swal.fire({
+      title: 'Are you absolutely sure?',
+      text: 'This will permanently delete ALL data except users and products!',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Yes, I understand',
+      cancelButtonText: 'Cancel'
+    });
+
+    if (!firstConfirm.isConfirmed) return;
+
+    // Second confirmation with typing requirement
+    const { value: confirmText } = await Swal.fire({
+      title: 'Final Confirmation',
+      html: `
+        <p class="mb-4 text-red-600 font-semibold">This action cannot be undone!</p>
+        <p class="mb-4">This will delete:</p>
+        <ul class="text-left mb-4 text-sm">
+          <li>• All orders and order items</li>
+          <li>• All carts and cart items</li>
+          <li>• All transactions</li>
+          <li>• All top-ups</li>
+          <li>• All uploads</li>
+          <li>• All announcements</li>
+          <li>• All SMS messages</li>
+        </ul>
+        <p class="mb-4 text-green-600 font-semibold">Will be preserved:</p>
+        <ul class="text-left mb-4 text-sm">
+          <li>• All user data (including balances)</li>
+          <li>• All product data</li>
+        </ul>
+        <p class="mb-4">Type <strong>RESET DATABASE</strong> to confirm:</p>
+      `,
+      input: 'text',
+      inputPlaceholder: 'Type RESET DATABASE',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Reset Database',
+      cancelButtonText: 'Cancel',
+      inputValidator: (value) => {
+        if (value !== 'RESET DATABASE') {
+          return 'You must type "RESET DATABASE" exactly as shown'
+        }
+      }
+    });
+
+    if (!confirmText) return;
+
+    setIsResetting(true);
+
+    try {
+      const adminId = localStorage.getItem('userId');
+      const response = await axios.post(`${BASE_URL}/api/reset/database`, {
+        adminId: parseInt(adminId)
+      });
+
+      if (response.data.success) {
+        await Swal.fire({
+          title: 'Database Reset Complete!',
+          text: response.data.message,
+          icon: 'success',
+          confirmButtonText: 'OK'
+        });
+
+        // Refresh the page to show updated data
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Reset database error:', error);
+      await Swal.fire({
+        title: 'Reset Failed',
+        text: error.response?.data?.message || 'An error occurred while resetting the database',
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   const [searchQuery, setSearchQuery] = useState("");
 
   // Filter users based on search query
@@ -1048,6 +1135,49 @@ const filteredOrders = useMemo(() => {
 
             <hr />
             <li
+              className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
+              onClick={() => {
+                navigate("/profile");
+                setIsOpen(false);
+              }}
+            >
+              <User className="w-5 h-5" />
+              <span>Profile</span>
+            </li>
+
+            <hr />
+
+            <li
+              className="flex items-center space-x-3 p-2 rounded-md hover:bg-blue-700 cursor-pointer text-blue-500"
+              onClick={() => {
+                setShowAuditLog(true);
+                setIsOpen(false);
+              }}
+            >
+              <Eye className="w-5 h-5" />
+              <span>Audit Log</span>
+            </li>
+
+            <li
+              className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer text-red-500 ${
+                isResetting 
+                  ? 'opacity-50 cursor-not-allowed' 
+                  : 'hover:bg-red-700'
+              }`}
+              onClick={() => {
+                if (!isResetting) {
+                  handleResetDatabase();
+                  setIsOpen(false);
+                }
+              }}
+            >
+              <RotateCcw className="w-5 h-5" />
+              <span>{isResetting ? 'Resetting...' : 'Reset Database'}</span>
+            </li>
+
+            <hr />
+
+            <li
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-red-700 cursor-pointer text-red-500"
               onClick={logoutAdmin}
             >
@@ -1067,13 +1197,6 @@ const filteredOrders = useMemo(() => {
           <h1 className="text-base md:text-xl font-semibold flex-1 truncate">
             Admin Dashboard
           </h1>
-          <button
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow ml-auto"
-            onClick={() => setShowAuditLog(true)}
-            style={{ minWidth: 120 }}
-          >
-            Audit Log
-          </button>
           <AuditLog isOpen={showAuditLog} onClose={() => setShowAuditLog(false)} />
         </header>
 

@@ -14,6 +14,7 @@ import Superagent from './pages/SuperAgent';
 import Normalagent from './pages/NormalAgent';
 import OtherDashboard from './pages/OtherDashboard';
 import KelishubLanding from './pages/KelishubLanding';
+import Profile from './pages/Profile';
 import BASE_URL from './endpoints/endpoints';
 
 // PrivateRoute Component for Role-Based Access
@@ -107,6 +108,11 @@ function App() {
         </Route>
         <Route element={<PrivateRoute allowedRoles={['Other']} />}>
           <Route path="/otherdashboard" element={<OtherDashboard />} />
+        </Route>
+
+        {/* Profile Routes - Available to all authenticated users */}
+        <Route element={<PrivateRoute allowedRoles={['ADMIN', 'USER', 'PREMIUM', 'SUPER', 'NORMAL', 'Other']} />}>
+          <Route path="/profile" element={<Profile />} />
         </Route>
 
         {/* Fallback Route */}

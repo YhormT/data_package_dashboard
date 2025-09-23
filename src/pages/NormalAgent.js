@@ -795,6 +795,17 @@ const NormalAgent = () => {
               {/* <hr className="my-5" /> */}
 
               <li
+                className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer"
+                onClick={() => {
+                  navigate("/profile");
+                  setIsOpen(false);
+                }}
+              >
+                <User className="w-5 h-5" />
+                <span>Profile</span>
+              </li>
+
+              <li
                 className="flex items-center space-x-3 p-2 rounded-md hover:bg-red-700 cursor-pointer text-black-500"
                 onClick={logoutUser}
               >
@@ -1053,21 +1064,21 @@ const NormalAgent = () => {
                         : true
                     )
                     .sort((a, b) => {
-  const extractGB = (description) => {
-    const match = description?.match(/(\d+(?:\.\d+)?)\s*GB/i);
-    return match ? parseFloat(match[1]) : Number.MAX_VALUE; // fallback to large number
-  };
+                        const extractGB = (description) => {
+                          const match = description?.match(/(\d+(?:\.\d+)?)\s*GB/i);
+                          return match ? parseFloat(match[1]) : Number.MAX_VALUE; // fallback to large number
+                        };
 
-  // First, group by product.name (e.g., "MTN - NORMAL")
-  if (a.name < b.name) return -1;
-  if (a.name > b.name) return 1;
+                        // First, group by product.name (e.g., "MTN - NORMAL")
+                        if (a.name < b.name) return -1;
+                        if (a.name > b.name) return 1;
 
-  // Then, sort by smallest GIG size
-  const gbA = extractGB(a.description);
-  const gbB = extractGB(b.description);
+                        // Then, sort by smallest GIG size
+                        const gbA = extractGB(a.description);
+                        const gbB = extractGB(b.description);
 
-  return gbA - gbB; // ascending order: 1GB → 2GB → 10GB
-})
+                        return gbA - gbB; // ascending order: 1GB → 2GB → 10GB
+                  })
 
                     .map((product) => (
                       <div
