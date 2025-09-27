@@ -28,13 +28,13 @@ import ProductDialog from "../components/ProductDialog";
 import BASE_URL from "../endpoints/endpoints";
 import TopupsOrdered from "../components/TopupsOrdered";
 import Logo from "../assets/logo-icon.png";
-//import DownloadExcel from "../components/DownloadExcel";
 import TransactionalAdminModal from "../components/TransactionalAdminModal";
 import PaymentModal from "../components/PaymentModal";
 import TotalRequestsComponent from "../components/OrderTable";
 import Announcement from "../components/Announcement";
-import AuditLog from "../components/AuditLog";
+// import AuditLog from "../components/AuditLog";
 // import OrderDialog from "../components/OrderDialog.js";
+// import DownloadExcel from "../components/DownloadExcel";
 
 const AdminDashboard = () => {
   const [showAuditLog, setShowAuditLog] = useState(false);
@@ -1147,7 +1147,7 @@ const filteredOrders = useMemo(() => {
 
             <hr />
 
-            <li
+            {/* <li
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-blue-700 cursor-pointer text-blue-500"
               onClick={() => {
                 setShowAuditLog(true);
@@ -1156,7 +1156,8 @@ const filteredOrders = useMemo(() => {
             >
               <Eye className="w-5 h-5" />
               <span>Audit Log</span>
-            </li>
+              <AuditLog />
+            </li> */}
 
             <li
               className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer text-red-500 ${
@@ -1189,16 +1190,6 @@ const filteredOrders = useMemo(() => {
 
       {/* Main Content */}
       <div className="flex-1 w-full min-w-0 flex flex-col ml-0 md:ml-64">
-        {/* Header */}
-        {/* <header className="bg-white shadow-md p-4 flex items-center w-full relative">
-          <button className="md:hidden" onClick={() => setIsOpen(true)}>
-            <Menu className="w-6 h-6" />
-          </button>
-          <h1 className="text-base md:text-xl font-semibold flex-1 truncate">
-            Admin Dashboard
-          </h1>
-          <AuditLog isOpen={showAuditLog} onClose={() => setShowAuditLog(false)} />
-        </header> */}
 
         {/* Admin Info Card */}
         <div className="p-6 w-[100%] sm:w-full">
