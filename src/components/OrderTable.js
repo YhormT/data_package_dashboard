@@ -93,7 +93,7 @@ const TotalRequestsComponent = () => {
     // Show loading state immediately for better UX
     setPaginatedItems([]);
     try {
-      console.log('Fetching orders from:', `${BASE_URL}/order/admin/allorder`);
+      //console.log('Fetching orders from:', `${BASE_URL}/order/admin/allorder`);
       
       // Build query parameters for server-side filtering
       const params = {
@@ -125,7 +125,7 @@ const TotalRequestsComponent = () => {
         },
         params
       });
-      console.log('API Response:', response.data);
+      //console.log('API Response:', response.data);
       const currentTime = new Date();
 
       // Handle the new paginated response structure
@@ -295,7 +295,7 @@ const TotalRequestsComponent = () => {
       (item) => item.order?.items?.[0]?.status === "Processing"
     );
 
-    console.log("Processing Items:", processingItems);
+    //console.log("Processing Items:", processingItems);
 
     // If no processing orders, show a message
     if (processingItems.length === 0) {
@@ -312,7 +312,7 @@ const TotalRequestsComponent = () => {
       ...new Set(processingItems.map((item) => item.order?.id)),
     ].filter(Boolean);
 
-    console.log("Unique Order IDs:", orderIds);
+    //console.log("Unique Order IDs:", orderIds);
 
     // Confirm with the user
     const { isConfirmed } = await Swal.fire({
@@ -392,11 +392,11 @@ const TotalRequestsComponent = () => {
   // Server handles pagination, so we don't need this effect
   useEffect(() => {
     if (allItems.length > 0) {
-      console.log("Inspecting the first item in allItems:", allItems[0]);
+      //console.log("Inspecting the first item in allItems:", allItems[0]);
     }
   }, [allItems]);
 
-  // console.log("All Orders", paginatedItems)
+  // //console.log("All Orders", paginatedItems)
 
   const handleViewClickStatus = (orderItemId) => {
     // Find the item to check if it's cancelled
@@ -410,7 +410,7 @@ const TotalRequestsComponent = () => {
       return;
     }
 
-    console.log("Order Item", orderItemId);
+    //console.log("Order Item", orderItemId);
     setSelectedOrderId(orderItemId);
     setIsOpenStatus(true);
   };
@@ -498,7 +498,7 @@ const TotalRequestsComponent = () => {
       return;
     }
 
-    console.log("Selected Order ID:", selectedOrderId);
+    //console.log("Selected Order ID:", selectedOrderId);
 
     try {
       Swal.fire({
@@ -521,7 +521,7 @@ const TotalRequestsComponent = () => {
         }
       );
 
-      console.log("API Response:", response.data);
+      //console.log("API Response:", response.data);
       console.log("Request payload:", {
         orderItemId: selectedOrderId,
         status: selectedStatus,

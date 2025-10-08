@@ -27,7 +27,7 @@ const DownloadExcel = () => {
       const userId = parseInt(id, 10); // Ensure userId is an integer
       const url = `${BASE_URL}/api/users/download/${filename}`;
 
-      console.log("Requesting:", url, userId);
+      //console.log("Requesting:", url, userId);
 
       // Show loading alert
       Swal.fire({

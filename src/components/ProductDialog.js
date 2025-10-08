@@ -333,7 +333,7 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
           };
           
           const response = await axios.request(config);
-          console.log(JSON.stringify(response.data));
+          //console.log(JSON.stringify(response.data));
           
           // Update local state - set all products stock to the specified value
           setProducts(products.map(product => ({ ...product, stock: stockValue })));
@@ -435,7 +435,7 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
 
         {/* Form Section */}
         <div className="mb-6 grid gap-4 sm:grid-cols-2">
-          <input type="hidden" value={productId} />
+          <input type="hidden" value={productId || ""} />
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Product Name</label>
             <input

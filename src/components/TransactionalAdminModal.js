@@ -41,13 +41,24 @@ const useVirtualization = (items, containerHeight = 400, itemHeight = 50) => {
   );
 
   const totalHeight = items.length * itemHeight;
-  const offsetY = startIndex * itemHeight;
+  const topSpacerHeight = startIndex * itemHeight;
+  const bottomSpacerHeight = Math.max(
+    totalHeight - topSpacerHeight - visibleItems.length * itemHeight,
+    0
+  );
 
   const onScroll = useCallback((e) => {
     setScrollTop(e.target.scrollTop);
   }, []);
 
-  return { visibleItems, totalHeight, offsetY, onScroll, startIndex };
+  return {
+    visibleItems,
+    onScroll,
+    startIndex,
+    topSpacerHeight,
+    bottomSpacerHeight,
+    itemHeight,
+  };
 };
 
 // Pre-calculate format functions to avoid recreation
@@ -824,9 +835,14 @@ const TransactionalAdminModal = () => {
   }, []);
 
   // Optimized virtualization for paginated data
-  const { visibleItems, totalHeight, offsetY, onScroll, startIndex } = useVirtualization(
-    paginatedTransactions, 400, 50
-  );
+  const {
+    visibleItems,
+    onScroll,
+    startIndex,
+    topSpacerHeight,
+    bottomSpacerHeight,
+    itemHeight,
+  } = useVirtualization(paginatedTransactions, 400, 50);
 
   const openModal = useCallback(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -1060,7 +1076,7 @@ const TransactionalAdminModal = () => {
                                     <th className="px-4 py-2 border w-48">Date & Time</th>
                                   </tr>
                                 </thead>
-                                <tbody style={{ position: "relative", height: `${totalHeight}px` }}>
+                                <tbody>
                                   {loading ? (
                                     <tr>
                                       <td colSpan="7" className="text-center py-12 text-gray-500">
@@ -1069,22 +1085,38 @@ const TransactionalAdminModal = () => {
                                     </tr>
                                   ) : (
                                     <>
-                                      <div style={{ 
-                                        position: 'absolute', 
-                                        top: 0, 
-                                        left: 0, 
-                                        width: '100%', 
-                                        transform: `translateY(${offsetY}px)` 
-                                      }}>
-                                        {visibleItems.map((tx, index) => (
-                                          <TransactionRow
-                                            key={`${tx.id}-${startIndex + index}`}
-                                            tx={tx}
-                                            index={startIndex + index}
-                                            style={{ height: '50px' }}
+                                      {topSpacerHeight > 0 && (
+                                        <tr aria-hidden="true">
+                                          <td
+                                            colSpan="7"
+                                            style={{
+                                              padding: 0,
+                                              border: "none",
+                                              height: `${topSpacerHeight}px`,
+                                            }}
                                           />
-                                        ))}
-                                      </div>
+                                        </tr>
+                                      )}
+                                      {visibleItems.map((tx, index) => (
+                                        <TransactionRow
+                                          key={`${tx.id}-${startIndex + index}`}
+                                          tx={tx}
+                                          index={startIndex + index}
+                                          style={{ height: `${itemHeight}px` }}
+                                        />
+                                      ))}
+                                      {bottomSpacerHeight > 0 && (
+                                        <tr aria-hidden="true">
+                                          <td
+                                            colSpan="7"
+                                            style={{
+                                              padding: 0,
+                                              border: "none",
+                                              height: `${bottomSpacerHeight}px`,
+                                            }}
+                                          />
+                                        </tr>
+                                      )}
                                       {!filteredTransactions.length && !loading && (
                                         <tr>
                                           <td colSpan="7" className="text-center py-8 text-gray-500">

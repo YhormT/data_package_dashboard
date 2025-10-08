@@ -479,19 +479,19 @@ const KelishubLanding = () => {
       </footer>
 
       {/* Custom CSS for 3D animations */}
-      <style jsx>{`
+      <style>{`
         .perspective-1000 {
           perspective: 1000px;
         }
-        
+
         .transform-gpu {
           transform-style: preserve-3d;
         }
-        
+
         .rotate-y-12:hover {
           transform: rotateY(12deg);
         }
-        
+
         @keyframes float {
           0%, 100% {
             transform: translateY(0px);
@@ -500,11 +500,11 @@ const KelishubLanding = () => {
             transform: translateY(-20px);
           }
         }
-        
+
         .animate-float {
           animation: float 6s ease-in-out infinite;
         }
-        
+
         @keyframes spin-slow {
           from {
             transform: rotate(0deg);
@@ -513,11 +513,11 @@ const KelishubLanding = () => {
             transform: rotate(360deg);
           }
         }
-        
+
         .animate-spin-slow {
           animation: spin-slow 8s linear infinite;
         }
-        
+
         @keyframes fade-in-up {
           from {
             opacity: 0;
@@ -528,7 +528,7 @@ const KelishubLanding = () => {
             transform: translateY(0);
           }
         }
-        
+
         .animate-fade-in-up {
           animation: fade-in-up 1s ease-out;
         }

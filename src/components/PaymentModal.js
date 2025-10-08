@@ -149,31 +149,31 @@ const PaymentModal = () => {
 
   // Pagination handlers
   const goToPage = (page) => {
-    console.log('Going to page:', page); // Debug log
+    //console.log('Going to page:', page); // Debug log
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
   const goToFirst = () => {
-    console.log('Going to first page');
+    //console.log('Going to first page');
     setCurrentPage(1);
   };
 
   const goToLast = () => {
-    console.log('Going to last page:', totalPages);
+    //console.log('Going to last page:', totalPages);
     setCurrentPage(totalPages);
   };
 
   const goToPrevious = () => {
-    console.log('Going to previous page, current:', currentPage); // Debug log
+    //console.log('Going to previous page, current:', currentPage); // Debug log
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
   const goToNext = () => {
-    console.log('Going to next page, current:', currentPage); // Debug log
+    //console.log('Going to next page, current:', currentPage); // Debug log
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }

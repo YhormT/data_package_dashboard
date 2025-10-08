@@ -141,7 +141,7 @@ const OtherDashboard = () => {
       const response = await fetch(`${BASE_URL}/api/cart/${userId}`);
       const data = await response.json();
 
-      console.log("Fetched Cart Data:", data);
+      //console.log("Fetched Cart Data:", data);
 
       setCart(Array.isArray(data.items) ? data.items : []);
     } catch (error) {
@@ -150,7 +150,7 @@ const OtherDashboard = () => {
     }
   };
 
-  console.log("Cart:", cart);
+  //console.log("Cart:", cart);
 
   useEffect(() => {
     fetchCart();
@@ -226,13 +226,13 @@ const OtherDashboard = () => {
       // Get restricted prefixes
       const restrictedPatterns = restrictions[normalizedProductName] || [];
 
-      console.log("User Input:", value);
-      console.log(
+      //console.log("User Input:", value);
+      /* console.log(
         "Restricted Prefixes for",
         normalizedProductName,
         ":",
         restrictedPatterns
-      );
+      ); */
 
       // Check if the number starts with a restricted pattern
       const isRestricted = restrictedPatterns.some((pattern) =>
@@ -518,7 +518,7 @@ const OtherDashboard = () => {
 
       const walletBalance = Math.abs(parseFloat(loanBalance.loanBalance));
 
-      // console.log("Total Amount:", walletBalance, loanBalance);
+      // //console.log("Total Amount:", walletBalance, loanBalance);
 
       // Ensure loanBalance is a valid number
       if (isNaN(walletBalance)) {
@@ -561,7 +561,7 @@ const OtherDashboard = () => {
       };
 
       const response = await axios.request(config);
-      console.log("Order submitted:", response.data);
+      //console.log("Order submitted:", response.data);
 
       Swal.fire({
         icon: "success",
@@ -607,7 +607,7 @@ const OtherDashboard = () => {
     }
   };
 
-  console.log("orderHistory", orderHistory);
+  //console.log("orderHistory", orderHistory);
 
   return (
     <div className="flex h-screen bg-gray-100">

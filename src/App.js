@@ -52,14 +52,14 @@ function App() {
 
     // Register user with the server
     socket.on('connect', () => {
-      console.log('Socket connected:', socket.id);
+      //console.log('Socket connected:', socket.id);
       socket.emit('register', userId);
-      console.log(`[Socket] Emitted 'register' for userId: ${userId}`);
+      //console.log(`[Socket] Emitted 'register' for userId: ${userId}`);
     });
 
     // Listen for force-logout event
     socket.on('force-logout', (data) => {
-      console.log(`[Socket] Received 'force-logout':`, data.message);
+      //console.log(`[Socket] Received 'force-logout':`, data.message);
       Swal.fire({
         title: 'Session Terminated',
         text: data.message || 'Your session has been terminated by an administrator. Please log in again.',
@@ -72,7 +72,7 @@ function App() {
     });
 
     socket.on('disconnect', (reason) => {
-      console.log('Socket disconnected:', reason);
+      //console.log('Socket disconnected:', reason);
     });
 
     // Cleanup on component unmount

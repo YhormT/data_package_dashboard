@@ -73,7 +73,7 @@ export default function TransactionsModal() {
       };
 
       const response = await axios.request(config);
-      console.log("API Response:", response.data);
+      //console.log("API Response:", response.data);
       
       if (response.data.success) {
         setTransactions(response.data.data || []);
