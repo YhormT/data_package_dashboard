@@ -66,7 +66,7 @@ const TotalRequestsComponent = () => {
 
   // Pagination - Fixed at 250 items per page with virtual scrolling
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(250);
+  const [itemsPerPage] = useState(500);
   const [totalPages, setTotalPages] = useState(1);
   const [visibleRange, setVisibleRange] = useState({ start: 0, end: 50 }); // Virtual scrolling
 
