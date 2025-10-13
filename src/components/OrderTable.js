@@ -463,6 +463,11 @@ const TotalRequestsComponent = () => {
         text: "Order status has been updated to Completed",
         timer: 2000,
       });
+      
+      // Auto-refresh the table to ensure UI shows updated status
+      setTimeout(() => {
+        fetchOrderData();
+      }, 100);
     } catch (error) {
       console.error("Error updating order status:", error);
       Swal.fire({
@@ -555,6 +560,11 @@ const TotalRequestsComponent = () => {
       });
 
       setIsOpenStatus(false);
+      
+      // Auto-refresh the table to ensure UI shows updated status
+      setTimeout(() => {
+        fetchOrderData();
+      }, 100);
     } catch (error) {
       console.error("Error updating order:", error);
       Swal.fire({
@@ -566,31 +576,60 @@ const TotalRequestsComponent = () => {
   };
 
   const handleDownloadExcel = async () => {
-    // Export both PENDING and PROCESSING orders
-    const pendingItems = filteredOrders.filter(
-      (item) => item.order?.items?.[0]?.status === "Pending"
-    );
-    const processingItems = filteredOrders.filter(
-      (item) => item.order?.items?.[0]?.status === "Processing"
-    );
+    // Check if there's a specific status filter applied
+    const hasStatusFilter = selectedStatusMain && selectedStatusMain !== "";
     
-    const itemsToExport = [...pendingItems, ...processingItems];
+    let itemsToExport;
+    let statusUpdateNeeded = false;
+    let pendingOrderIds = [];
+
+    if (hasStatusFilter) {
+      // If a specific status is filtered, export only those orders
+      itemsToExport = filteredOrders.filter(
+        (item) => item.order?.items?.[0]?.status === selectedStatusMain
+      );
+      
+      // Only update status if we're downloading Pending orders
+      if (selectedStatusMain === "Pending") {
+        statusUpdateNeeded = true;
+        pendingOrderIds = [
+          ...new Set(itemsToExport.map((item) => item.order?.id)),
+        ].filter(Boolean);
+      }
+    } else {
+      // If no status filter, export both PENDING and PROCESSING orders (original behavior)
+      const pendingItems = filteredOrders.filter(
+        (item) => item.order?.items?.[0]?.status === "Pending"
+      );
+      const processingItems = filteredOrders.filter(
+        (item) => item.order?.items?.[0]?.status === "Processing"
+      );
+      
+      itemsToExport = [...pendingItems, ...processingItems];
+      
+      // Update status for pending orders only
+      if (pendingItems.length > 0) {
+        statusUpdateNeeded = true;
+        pendingOrderIds = [
+          ...new Set(pendingItems.map((item) => item.order?.id)),
+        ].filter(Boolean);
+      }
+    }
 
     if (!itemsToExport.length) {
+      const statusText = hasStatusFilter 
+        ? `No ${selectedStatusMain.toLowerCase()} orders available for download.`
+        : "No pending or processing orders available for download.";
+      
       Swal.fire({
         icon: "warning",
         title: "No Orders Available",
-        text: "No pending or processing orders available for download.",
+        text: statusText,
       });
       return;
     }
 
-    // Only get IDs of pending orders for status update (processing orders stay unchanged)
-    const pendingOrderIds = [
-      ...new Set(pendingItems.map((item) => item.order?.id)),
-    ].filter(Boolean);
-
-    // Export phone number and data size for all items (pending + processing)
+    // Export phone number and data size for all filtered items
     const dataToExport = itemsToExport.map((item) => {
       const phoneNumber = item?.mobileNumber || "N/A";
       const dataSize = item.product?.description
@@ -607,14 +646,15 @@ const TotalRequestsComponent = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orders");
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    XLSX.writeFile(wb, `Orders_${timestamp}.xlsx`);
+    const statusSuffix = hasStatusFilter ? `_${selectedStatusMain}` : "";
+    XLSX.writeFile(wb, `Orders${statusSuffix}_${timestamp}.xlsx`);
 
-    // After successful download, update the status of pending items to processing
-    if (pendingOrderIds.length > 0) {
+    // After successful download, update the status of pending items to processing (only if needed)
+    if (statusUpdateNeeded && pendingOrderIds.length > 0) {
       try {
         Swal.fire({
           title: "Processing...",
-          text: `Updating ${pendingOrderIds.length} pending orders to "Processing" status. Processing orders remain unchanged.`,
+          text: `Updating ${pendingOrderIds.length} pending orders to "Processing" status.`,
           allowOutsideClick: false,
           didOpen: () => {
             Swal.showLoading();
@@ -694,6 +734,14 @@ const TotalRequestsComponent = () => {
           text: "Failed to update some order statuses. Please check the console for details.",
         });
       }
+    } else {
+      // If no status update is needed (e.g., downloading completed orders), just show success
+      Swal.fire({
+        icon: "success",
+        title: "Download Complete",
+        text: `Successfully downloaded ${itemsToExport.length} orders.`,
+        timer: 2000,
+      });
     }
   };
 
