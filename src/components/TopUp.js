@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import BASE_URL from "../endpoints/endpoints";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 
 const TopUp = ({ setTopUp }) => {
   const [loading, setLoading] = useState(false);
@@ -53,38 +54,49 @@ const TopUp = ({ setTopUp }) => {
       });
 
       if (response.data.success) {
-        // Show success toast with response data
-        toast.success(
-          `🎉 Top-Up Successful!\nAmount: GHS ${response.data.amount}\nNew Balance: GHS ${response.data.newBalance}\nReference: ${response.data.reference}\nTop-Up ID: ${response.data.topUpId}`,
-          {
-            position: "top-right",
-            autoClose: 8000,
-            hideProgressBar: false,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-          }
-        );
+        // Show success modal in the center of the page
+        await Swal.fire({
+          icon: "success",
+          title: "🎉 Top-Up Successful!",
+          html: `
+            <div class="text-left space-y-2">
+              <p><strong>Amount:</strong> GHS ${response.data.amount}</p>
+              <p><strong>Reference:</strong> ${response.data.reference}</p>
+              <p><strong>Top-Up ID:</strong> ${response.data.topUpId}</p>
+            </div>
+          `,
+          confirmButtonText: "OK",
+          confirmButtonColor: "#3b82f6",
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        });
 
-        // Close modal and reset form
+        // Close modal and reset form after user clicks OK
         setTopUp(false);
         setFormData({ referenceId: "" });
       } else {
         // Handle unsuccessful verification
-        toast.error(
-          response.data.message || "Transaction could not be verified.",
-          {
-            position: "top-right",
-            autoClose: 5000,
-          }
-        );
+        await Swal.fire({
+          icon: "error",
+          title: "Verification Failed",
+          text: response.data.message || "Transaction could not be verified.",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#dc2626",
+          allowOutsideClick: false,
+          allowEscapeKey: false
+        });
       }
     } catch (error) {
-      // Show error toast
+      // Show error modal
       const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
+      await Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+        confirmButtonColor: "#dc2626",
+        allowOutsideClick: false,
+        allowEscapeKey: false
       });
     } finally {
       setLoading(false);
