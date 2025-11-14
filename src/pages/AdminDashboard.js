@@ -1196,12 +1196,21 @@ const filteredOrders = useMemo(() => {
 
         {/* Admin Info Card */}
         <div className="p-6 w-[100%] sm:w-full">
-          <div className="bg-sky-700 text-white p-5 rounded-lg shadow-md flex items-center space-x-4">
-            <User className="w-10 h-10" />
-            <div>
-              <h2 className="text-xl font-bold">Welcome, Admin</h2>
-              <p>Manage users and settings from your dashboard.</p>
+          <div className="bg-sky-700 text-white p-5 rounded-lg shadow-md flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <User className="w-10 h-10" />
+              <div>
+                <h2 className="text-xl font-bold">Welcome, Admin</h2>
+                <p>Manage users and settings from your dashboard.</p>
+              </div>
             </div>
+            <button 
+              className="md:hidden p-2 hover:bg-sky-600 rounded-lg transition-colors"
+              onClick={() => setIsOpen(!isOpen)}
+              aria-label="Toggle sidebar"
+            >
+              <Menu className="w-6 h-6" />
+            </button>
           </div>
         </div>
 
