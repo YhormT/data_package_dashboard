@@ -15,6 +15,7 @@ import Normalagent from './pages/NormalAgent';
 import OtherDashboard from './pages/OtherDashboard';
 import KelishubLanding from './pages/KelishubLanding';
 import Profile from './pages/Profile';
+import Shop from './pages/Shop';
 import BASE_URL from './endpoints/endpoints';
 
 // PrivateRoute Component for Role-Based Access
@@ -89,6 +90,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/" element={<KelishubLanding />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/shop" element={<Shop />} />
 
         {/* Protected Routes */}
         <Route element={<PrivateRoute allowedRoles={['ADMIN']} />}>

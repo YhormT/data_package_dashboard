@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
-import { Edit, Trash, AlertCircle, RotateCcw, Filter } from "lucide-react";
+import { Edit, Trash, AlertCircle, RotateCcw, Filter, Store } from "lucide-react";
 import Swal from 'sweetalert2';
 import BASE_URL from "../endpoints/endpoints";
 
@@ -156,6 +156,40 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
     });
   };
   
+  // Toggle shop visibility for a product
+  const handleToggleShopVisibility = async (productId, currentValue) => {
+    setIsLoading(true);
+    try {
+      await axios.put(`${BASE_URL}/products/toggle-shop/${productId}`, {
+        showInShop: !currentValue
+      }, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      // Update local state
+      setProducts(products.map(product => 
+        product.id === productId ? { ...product, showInShop: !currentValue } : product
+      ));
+      
+      Swal.fire({
+        title: "Updated!",
+        text: `Product ${!currentValue ? 'added to' : 'removed from'} shop.`,
+        icon: "success",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error!",
+        text: `Failed to update shop visibility: ${error.message}`,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Set single product stock to zero
   const handleSetStockToZero = async (productId, productName) => {
     Swal.fire({
@@ -529,13 +563,14 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
                   <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                  <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Shop</th>
                   <th className="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {products.length === 0 ? (
                   <tr>
-                    <td colSpan="6" className="px-3 py-4 text-center text-sm text-gray-500">
+                    <td colSpan="7" className="px-3 py-4 text-center text-sm text-gray-500">
                       {isLoading ? (
                         <div className="flex justify-center items-center gap-2">
                           <svg className="animate-spin h-5 w-5 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -583,6 +618,22 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
                         }`}>
                           {product.stock}
                         </span>
+                      </td>
+                      <td className="px-3 py-3 text-sm text-center">
+                        <button
+                          onClick={() => handleToggleShopVisibility(product.id, product.showInShop)}
+                          disabled={isLoading}
+                          className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 ${
+                            product.showInShop ? 'bg-teal-600' : 'bg-gray-300'
+                          }`}
+                          title={product.showInShop ? 'Remove from shop' : 'Add to shop'}
+                        >
+                          <span
+                            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              product.showInShop ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                          />
+                        </button>
                       </td>
                       <td className="px-3 py-3 text-sm text-center">
                         <div className="flex justify-center gap-3">

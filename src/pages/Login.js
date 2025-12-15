@@ -28,6 +28,8 @@ const Login = () => {
   const [focusedField, setFocusedField] = useState("");
   const [showTermsModal, setShowTermsModal] = useState(false);
   const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [showFaqModal, setShowFaqModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -288,13 +290,13 @@ const Login = () => {
             </div>
 
             {/* Footer Links */}
-            <div className="flex justify-center items-center space-x-6 text-sm text-gray-500">
+            <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-2 text-sm text-gray-500">
               <button
                 type="button"
                 onClick={() => setShowTermsModal(true)}
                 className="hover:text-indigo-600 transition-colors"
               >
-                Terms of Use
+                Terms & Conditions
               </button>
               <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
               <button
@@ -303,6 +305,22 @@ const Login = () => {
                 className="hover:text-indigo-600 transition-colors"
               >
                 Privacy Policy
+              </button>
+              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+              <button
+                type="button"
+                onClick={() => setShowRefundModal(true)}
+                className="hover:text-indigo-600 transition-colors"
+              >
+                Refund Policy
+              </button>
+              <div className="w-1 h-1 bg-gray-300 rounded-full"></div>
+              <button
+                type="button"
+                onClick={() => setShowFaqModal(true)}
+                className="hover:text-indigo-600 transition-colors"
+              >
+                FAQs
               </button>
             </div>
           </form>
@@ -314,77 +332,164 @@ const Login = () => {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
           <Dialog.Panel className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[90vh]">
             <Dialog.Title className="text-2xl font-bold text-indigo-600 mb-4 text-center">
-              KELISHUB – TERMS OF USE
+              KELISHUB TERMS AND CONDITIONS & REFUND POLICY
             </Dialog.Title>
+
+            <p className="text-center text-sm text-gray-500 mb-6">
+              <span className="italic">Effective Date:</span> 16th December 2025
+            </p>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Welcome to KelisHub. By using our services, purchasing our products, or accessing our platforms, you agree to be bound by the following Terms and Conditions. Please read them carefully.
+            </p>
 
             <div className="space-y-6 text-sm text-gray-700">
               <section>
-                <h3 className="font-semibold text-lg text-gray-800 mb-2">1. DEPOSIT</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>The minimum deposit amount is <span className="font-medium">GHS 50</span>. Deposits below this amount will not be approved.</li>
-                  <li>All payments should be made to:</li>
-                  <ul className="ml-6">
-                    <li>Number: <span className="text-indigo-600">0596316991</span></li>
-                    <li>Name: <span className="text-purple-600">Yesu Yhorm Kafui Azago</span></li>
-                  </ul>
-                  <li>If your top-up does not reflect within 10 minutes, kindly contact an admin for immediate assistance.</li>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">1. ABOUT KELISHUB</h3>
+                <p className="mb-2">KelisHub is a digital and service-based business that provides:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Data bundles and airtime for all networks</li>
+                  <li>Electronics and related devices</li>
+                  <li>SIM registration, business registration, birth certificate processing, and other documentation services</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="font-semibold text-lg text-gray-800 mb-2">2. LOAN</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>You are eligible to request a loan up to the total amount you've deposited.</li>
-                  <li>Only one loan request is permitted per day.</li>
-                  <li>A loan that is cleared within the day cannot be requested again on the same day.</li>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">2. ACCEPTANCE OF TERMS</h3>
+                <p className="mb-2">By making a purchase or requesting any service from KelisHub, you confirm that:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>You are legally capable of entering into a binding agreement.</li>
+                  <li>You have read, understood, and agreed to these Terms and Conditions.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="font-semibold text-lg text-gray-800 mb-2">3. REFERRALS</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>To refer a friend, simply share the link: <a href="https://www.kelishub.vercel.app" className="text-indigo-500 underline">www.kelishub.com</a>.</li>
-                  <li>New users will be guided to contact the official registration agent.</li>
-                  <li>Only recommend hardworking and trustworthy individuals to maintain community quality.</li>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">3. PRICING & PAYMENTS</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>All prices are stated in Ghana Cedis (GHS) unless otherwise specified.</li>
+                  <li>Full payment must be made before service delivery or processing.</li>
+                  <li>KelisHub reserves the right to change prices at any time without prior notice.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="font-semibold text-lg text-gray-800 mb-2">4. WORKING HOURS</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Operating hours are from <span className="font-medium">7:30 AM to 8:50 PM</span>, Monday to Saturday.</li>
-                  <li>Orders can be placed anytime but will be processed only during working hours.</li>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">4. SERVICE DELIVERY</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Digital services (data, airtime, etc.) are delivered electronically and are usually processed instantly or within a reasonable time.</li>
+                  <li>Physical products will be delivered or handed over as agreed at the time of purchase.</li>
+                  <li>Service-based transactions begin once payment is confirmed.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="font-semibold text-lg text-gray-800 mb-2">5. PROMOTIONS</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Promotions may be introduced at any time for:</li>
-                  <ul className="ml-6 list-disc space-y-1">
-                    <li>100GB bundles</li>
-                    <li>Tigo non-expiry packages</li>
-                    <li>MTN bundles</li>
-                  </ul>
-                  <li>Check the site regularly for updates on deals and prices.</li>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">5. CUSTOMER RESPONSIBILITY</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Customers are responsible for providing accurate details (phone number, network, personal data, documents, etc.).</li>
+                  <li>KelisHub will not be held liable for errors resulting from incorrect information provided by the customer.</li>
                 </ul>
               </section>
 
               <section>
-                <h3 className="font-semibold text-lg text-gray-800 mb-2">6. REFUNDS</h3>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Refund requests are handled only on Sundays.</li>
-                  <li>You must present the following details:</li>
-                  <ul className="ml-6 list-disc space-y-1">
-                    <li>Order ID</li>
-                    <li>Data size</li>
-                  </ul>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">6. REFUND POLICY</h3>
+                
+                <div className="ml-4 space-y-3">
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.1 Digital Products & Services</h4>
+                    <p className="text-gray-600 text-xs mb-1">This includes data bundles, airtime, and other digital services.</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Digital products are non-refundable once successfully delivered.</li>
+                      <li>Refunds will only be considered if:</li>
+                      <ul className="list-disc list-inside ml-6 space-y-1">
+                        <li>Payment was successful but the service was not delivered.</li>
+                        <li>A verified system error occurred on KelisHub's side.</li>
+                      </ul>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.2 Incorrect Details</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>KelisHub is not responsible for transactions completed using incorrect details provided by the customer.</li>
+                      <li>Such transactions are not eligible for refunds.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.3 Delayed Transactions</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Delays caused by network providers or third-party systems do not automatically qualify for refunds.</li>
+                      <li>Refunds will only be processed if the transaction fails completely and is reversed.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.4 Physical Products (Electronics & Devices)</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Physical items may be eligible for a refund or replacement within 24 hours of purchase if:</li>
+                      <ul className="list-disc list-inside ml-6 space-y-1">
+                        <li>The item is confirmed to be defective at delivery.</li>
+                        <li>It is returned in its original condition and packaging.</li>
+                      </ul>
+                      <li>Items damaged due to misuse, mishandling, or negligence are not refundable.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.5 Service-Based Transactions</h4>
+                    <p className="text-gray-600 text-xs mb-1">This includes SIM registration, business certificates, birth certificates, and documentation services.</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Once processing has begun, no refunds will be issued.</li>
+                      <li>Refunds may only be considered if KelisHub is unable to initiate the service.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.6 Refund Processing</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Approved refunds will be processed within 24 hours.</li>
+                      <li>Refunds will be made via the original payment method used.</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">7. LIMITATION OF LIABILITY</h3>
+                <p className="mb-2">KelisHub shall not be liable for:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Network failures or third-party service interruptions.</li>
+                  <li>Losses resulting from customer negligence or incorrect information.</li>
+                  <li>Indirect or consequential damages beyond the value of the purchased service or product.</li>
                 </ul>
               </section>
 
-              <p className="italic text-gray-500 border-t pt-4">
-                If you need clarification on any of these rules, feel free to contact an admin. Thank you for being a valued member of the Kelishub community.
-              </p>
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">8. FRAUD & MISUSE</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Any fraudulent activity, chargeback abuse, or misuse of our services will result in immediate suspension and possible legal action.</li>
+                  <li>KelisHub reserves the right to refuse service to anyone found violating these terms.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">9. MODIFICATIONS TO TERMS</h3>
+                <p>KelisHub reserves the right to modify these Terms and Conditions at any time. Continued use of our services constitutes acceptance of the updated terms.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">10. GOVERNING LAW</h3>
+                <p>These Terms and Conditions are governed by and interpreted in accordance with the laws of the Republic of Ghana.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">11. CONTACT INFORMATION</h3>
+                <p className="mb-2">For inquiries, complaints, or refund-related issues, contact us via:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Website: <a href="https://kelishub.vercel.app/" className="text-indigo-500 underline">https://kelishub.vercel.app/</a></li>
+                  <li>Customer Support: <span className="text-indigo-600">+233596316991</span></li>
+                  <li>Complaints: <span className="text-indigo-600">+23324883004</span> (WhatsApp only)</li>
+                </ul>
+              </section>
             </div>
 
             <div className="mt-6 text-center">
@@ -488,6 +593,183 @@ const Login = () => {
             <div className="mt-6 text-center">
               <button
                 onClick={() => setShowPrivacyModal(false)}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Refund Policy Modal */}
+      <Dialog open={showRefundModal} onClose={() => setShowRefundModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <Dialog.Panel className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[90vh]">
+            <Dialog.Title className="text-2xl font-bold text-indigo-600 mb-4 text-center">
+              Refund Policy for KelisHub
+            </Dialog.Title>
+
+            <p className="text-center text-sm text-gray-500 mb-6">
+              <span className="italic">Effective Date:</span> 01/06/2025
+            </p>
+
+            <div className="space-y-6 text-sm text-gray-700">
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">1. Overview</h3>
+                <p>At KelisHub, we strive to provide reliable and efficient data bundle services. We understand that issues may occasionally arise, and we are committed to resolving them fairly. This Refund Policy outlines the conditions under which refunds may be granted.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">2. Eligibility for Refunds</h3>
+                <p className="mb-2">Refunds may be considered under the following circumstances:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li><strong>Failed Transactions:</strong> If payment was deducted but the data bundle was not delivered due to a system error on our end.</li>
+                  <li><strong>Duplicate Payments:</strong> If you were charged multiple times for the same order.</li>
+                  <li><strong>Service Unavailability:</strong> If the service was unavailable and we were unable to fulfill your order within a reasonable timeframe.</li>
+                  <li><strong>Incorrect Order:</strong> If you received a different data bundle than what was ordered (subject to verification).</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">3. Non-Refundable Situations</h3>
+                <p className="mb-2">Refunds will NOT be granted in the following cases:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Data bundles that have been successfully delivered and activated.</li>
+                  <li>Orders placed with incorrect phone numbers provided by the customer.</li>
+                  <li>Change of mind after a successful transaction.</li>
+                  <li>Network issues on the customer's mobile carrier that prevent data usage.</li>
+                  <li>Expired data bundles due to non-usage within the validity period.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">4. Refund Request Process</h3>
+                <p className="mb-2">To request a refund:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li><strong>Timing:</strong> Refund requests are processed on <strong>Sundays only</strong>.</li>
+                  <li><strong>Required Information:</strong> You must provide your Order ID, data size, mobile number, and a brief description of the issue.</li>
+                  <li><strong>Contact:</strong> Submit your request via WhatsApp at <span className="text-indigo-600">0244450003</span> or email <a href="mailto:kelisdata22@gmail.com" className="text-indigo-500 underline">kelisdata22@gmail.com</a>.</li>
+                  <li><strong>Processing Time:</strong> Approved refunds will be processed within 3-5 business days.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">5. Refund Methods</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li><strong>Account Credit:</strong> Refunds are typically credited to your KelisHub account balance for future purchases.</li>
+                  <li><strong>Mobile Money:</strong> In exceptional cases, refunds may be sent to your registered mobile money number.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">6. Dispute Resolution</h3>
+                <p>If you are not satisfied with the outcome of your refund request, you may escalate the matter by contacting our support team. We will review your case and provide a final decision within 7 business days.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">7. Changes to This Policy</h3>
+                <p>KelisHub reserves the right to modify this Refund Policy at any time. Changes will be posted on this page with an updated effective date.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">8. Contact Us</h3>
+                <p>For refund inquiries or assistance:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Email: <a href="mailto:kelisdata22@gmail.com" className="text-indigo-500 underline">kelisdata22@gmail.com</a></li>
+                  <li>WhatsApp: <span className="text-indigo-600">0244450003</span></li>
+                </ul>
+              </section>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowRefundModal(false)}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* FAQs Modal */}
+      <Dialog open={showFaqModal} onClose={() => setShowFaqModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <Dialog.Panel className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[90vh]">
+            <Dialog.Title className="text-2xl font-bold text-indigo-600 mb-4 text-center">
+              Frequently Asked Questions (FAQs)
+            </Dialog.Title>
+
+            <div className="space-y-6 text-sm text-gray-700">
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">1. What is KelisHub?</h3>
+                <p>KelisHub is a trusted online platform for purchasing affordable data bundles for MTN, AirtelTigo, and Telecel networks in Ghana. We provide fast, reliable, and secure data bundle services.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">2. How do I purchase data bundles?</h3>
+                <p>Simply log into your KelisHub account, select the data bundle you want, enter the recipient's phone number, and complete the payment. Your data will be delivered instantly.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">3. What payment methods do you accept?</h3>
+                <p>We accept Mobile Money (MTN MoMo, AirtelTigo Money, Telecel Cash) and card payments through our secure payment gateway powered by Paystack.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">4. How long does it take to receive my data bundle?</h3>
+                <p>Data bundles are typically delivered within 1-5 minutes after successful payment. During peak hours, delivery may take up to 15 minutes.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">5. What if I don't receive my data bundle?</h3>
+                <p>If you don't receive your data within 15 minutes, please contact our support team via WhatsApp at 0244450003 with your Order ID and payment confirmation.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">6. Can I get a refund?</h3>
+                <p>Yes, refunds are available for failed transactions, duplicate payments, or service errors. Please refer to our Refund Policy for detailed information. Refund requests are processed on Sundays.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">7. Is my payment information secure?</h3>
+                <p>Absolutely! We use Paystack, a PCI-DSS compliant payment processor, to handle all transactions. We never store your card details or mobile money PIN on our servers.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">8. What are your operating hours?</h3>
+                <p>Our platform is available 24/7 for placing orders. Customer support is available from 7:30 AM to 8:50 PM, Monday to Saturday.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">9. How do I create an account?</h3>
+                <p>To create an account, contact our registration agent via WhatsApp at 0244450003. Account creation is by invitation to maintain service quality.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">10. How can I contact customer support?</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>WhatsApp: <span className="text-indigo-600">0244450003</span></li>
+                  <li>Email: <a href="mailto:kelisdata22@gmail.com" className="text-indigo-500 underline">kelisdata22@gmail.com</a></li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">11. Do you offer bulk data purchases?</h3>
+                <p>Yes! We offer special rates for bulk purchases and resellers. Contact our support team for more information on bulk pricing.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">12. Can I track my orders?</h3>
+                <p>Yes, you can track all your orders in your dashboard. Each order has a unique Order ID and status that you can monitor.</p>
+              </section>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowFaqModal(false)}
                 className="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
               >
                 Close

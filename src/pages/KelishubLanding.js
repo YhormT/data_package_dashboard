@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Menu, X, Phone, Mail, MapPin, Star, Shield, Zap, Clock, ChevronLeft, ChevronRight, Wifi, Globe, Smartphone } from 'lucide-react';
+import { Dialog } from "@headlessui/react";
 import Logo from "../assets/logo-icon.png";
 
 const KelishubLanding = () => {
@@ -7,6 +8,8 @@ const KelishubLanding = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [scrolled, setScrolled] = useState(false);
   const [currentTestimonial, setCurrentTestimonial] = useState(0);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showPrivacyModal, setShowPrivacyModal] = useState(false);
 
   useEffect(() => {
     // Smooth scrolling
@@ -132,6 +135,7 @@ const KelishubLanding = () => {
                 <button onClick={() => window.location.href = "#services"} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${scrolled ? 'text-black-700 hover:text-yellow-500' : 'text-black hover:text-yellow-200'}`}>Services</button>
                 <button onClick={() => window.location.href = "#packages"} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${scrolled ? 'text-black-700 hover:text-yellow-500' : 'text-black hover:text-yellow-200'}`}>Packages</button>
                 <button onClick={() => window.location.href = "#testimonials"} className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${scrolled ? 'text-black-700 hover:text-yellow-500' : 'text-black hover:text-yellow-200'}`}>Testimonials</button>
+                <a href="/shop" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${scrolled ? 'text-black-700 hover:text-yellow-500' : 'text-black hover:text-yellow-200'}`}>Shop</a>
                 <a href="https://wa.me/233244450003" target="_blank" rel="noopener noreferrer" className="bg-yellow-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-yellow-600 transition-colors">Contact</a>
               </div>
             </div>
@@ -157,6 +161,7 @@ const KelishubLanding = () => {
               <button onClick={() => window.location.href = "#services"} className="text-black-700 hover:text-yellow-500 block px-3 py-2 rounded-md text-base font-medium">Services</button>
               <button onClick={() => window.location.href = "#packages"} className="text-black-700 hover:text-yellow-500 block px-3 py-2 rounded-md text-base font-medium">Packages</button>
               <button onClick={() => window.location.href = "#testimonials"} className="text-black-700 hover:text-yellow-500 block px-3 py-2 rounded-md text-base font-medium">Testimonials</button>
+              <a href="/shop" className="text-black-700 hover:text-yellow-500 block px-3 py-2 rounded-md text-base font-medium">Shop</a>
               <a href="https://wa.me/233244450003" target="_blank" rel="noopener noreferrer" className="bg-yellow-500 text-white block px-3 py-2 rounded-md text-base font-medium hover:bg-yellow-600">Contact</a>
             </div>
           </div>
@@ -440,8 +445,8 @@ const KelishubLanding = () => {
               </p>
               <div className="flex space-x-4">
                 <a href="https://wa.me/233596316991" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors">WhatsApp</a>
-                <button onClick={() => window.location.href='#about'} className="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0">Terms of Service</button>
-                <button onClick={() => window.location.href='#about'} className="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0">Privacy Policy</button>
+                <button onClick={() => setShowTermsModal(true)} className="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0">Terms of Service</button>
+                <button onClick={() => setShowPrivacyModal(true)} className="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0">Privacy Policy</button>
                 <button onClick={() => window.location.href='#contact'} className="text-gray-400 hover:text-white transition-colors bg-transparent border-none cursor-pointer p-0">Contact Us</button>
               </div>
             </div>
@@ -533,6 +538,281 @@ const KelishubLanding = () => {
           animation: fade-in-up 1s ease-out;
         }
       `}</style>
+
+      {/* Terms of Service Modal */}
+      <Dialog open={showTermsModal} onClose={() => setShowTermsModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <Dialog.Panel className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[90vh]">
+            <Dialog.Title className="text-2xl font-bold text-yellow-600 mb-4 text-center">
+              KELISHUB TERMS AND CONDITIONS & REFUND POLICY
+            </Dialog.Title>
+
+            <p className="text-center text-sm text-gray-500 mb-6">
+              <span className="italic">Effective Date:</span> 16th December 2025
+            </p>
+
+            <p className="text-sm text-gray-600 mb-4">
+              Welcome to KelisHub. By using our services, purchasing our products, or accessing our platforms, you agree to be bound by the following Terms and Conditions. Please read them carefully.
+            </p>
+
+            <div className="space-y-6 text-sm text-gray-700">
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">1. ABOUT KELISHUB</h3>
+                <p className="mb-2">KelisHub is a digital and service-based business that provides:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Data bundles and airtime for all networks</li>
+                  <li>Electronics and related devices</li>
+                  <li>SIM registration, business registration, birth certificate processing, and other documentation services</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">2. ACCEPTANCE OF TERMS</h3>
+                <p className="mb-2">By making a purchase or requesting any service from KelisHub, you confirm that:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>You are legally capable of entering into a binding agreement.</li>
+                  <li>You have read, understood, and agreed to these Terms and Conditions.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">3. PRICING & PAYMENTS</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>All prices are stated in Ghana Cedis (GHS) unless otherwise specified.</li>
+                  <li>Full payment must be made before service delivery or processing.</li>
+                  <li>KelisHub reserves the right to change prices at any time without prior notice.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">4. SERVICE DELIVERY</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Digital services (data, airtime, etc.) are delivered electronically and are usually processed instantly or within a reasonable time.</li>
+                  <li>Physical products will be delivered or handed over as agreed at the time of purchase.</li>
+                  <li>Service-based transactions begin once payment is confirmed.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">5. CUSTOMER RESPONSIBILITY</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Customers are responsible for providing accurate details (phone number, network, personal data, documents, etc.).</li>
+                  <li>KelisHub will not be held liable for errors resulting from incorrect information provided by the customer.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">6. REFUND POLICY</h3>
+                
+                <div className="ml-4 space-y-3">
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.1 Digital Products & Services</h4>
+                    <p className="text-gray-600 text-xs mb-1">This includes data bundles, airtime, and other digital services.</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Digital products are non-refundable once successfully delivered.</li>
+                      <li>Refunds will only be considered if:</li>
+                      <ul className="list-disc list-inside ml-6 space-y-1">
+                        <li>Payment was successful but the service was not delivered.</li>
+                        <li>A verified system error occurred on KelisHub's side.</li>
+                      </ul>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.2 Incorrect Details</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>KelisHub is not responsible for transactions completed using incorrect details provided by the customer.</li>
+                      <li>Such transactions are not eligible for refunds.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.3 Delayed Transactions</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Delays caused by network providers or third-party systems do not automatically qualify for refunds.</li>
+                      <li>Refunds will only be processed if the transaction fails completely and is reversed.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.4 Physical Products (Electronics & Devices)</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Physical items may be eligible for a refund or replacement within 24 hours of purchase if:</li>
+                      <ul className="list-disc list-inside ml-6 space-y-1">
+                        <li>The item is confirmed to be defective at delivery.</li>
+                        <li>It is returned in its original condition and packaging.</li>
+                      </ul>
+                      <li>Items damaged due to misuse, mishandling, or negligence are not refundable.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.5 Service-Based Transactions</h4>
+                    <p className="text-gray-600 text-xs mb-1">This includes SIM registration, business certificates, birth certificates, and documentation services.</p>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Once processing has begun, no refunds will be issued.</li>
+                      <li>Refunds may only be considered if KelisHub is unable to initiate the service.</li>
+                    </ul>
+                  </div>
+
+                  <div>
+                    <h4 className="font-medium text-gray-800">6.6 Refund Processing</h4>
+                    <ul className="list-disc list-inside space-y-1 ml-2">
+                      <li>Approved refunds will be processed within 24 hours.</li>
+                      <li>Refunds will be made via the original payment method used.</li>
+                    </ul>
+                  </div>
+                </div>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">7. LIMITATION OF LIABILITY</h3>
+                <p className="mb-2">KelisHub shall not be liable for:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Network failures or third-party service interruptions.</li>
+                  <li>Losses resulting from customer negligence or incorrect information.</li>
+                  <li>Indirect or consequential damages beyond the value of the purchased service or product.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">8. FRAUD & MISUSE</h3>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Any fraudulent activity, chargeback abuse, or misuse of our services will result in immediate suspension and possible legal action.</li>
+                  <li>KelisHub reserves the right to refuse service to anyone found violating these terms.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">9. MODIFICATIONS TO TERMS</h3>
+                <p>KelisHub reserves the right to modify these Terms and Conditions at any time. Continued use of our services constitutes acceptance of the updated terms.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">10. GOVERNING LAW</h3>
+                <p>These Terms and Conditions are governed by and interpreted in accordance with the laws of the Republic of Ghana.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">11. CONTACT INFORMATION</h3>
+                <p className="mb-2">For inquiries, complaints, or refund-related issues, contact us via:</p>
+                <ul className="list-disc list-inside space-y-1 ml-4">
+                  <li>Website: <a href="https://kelishub.vercel.app/" className="text-yellow-500 underline">https://kelishub.vercel.app/</a></li>
+                  <li>Customer Support: <span className="text-yellow-600">+233596316991</span></li>
+                  <li>Complaints: <span className="text-yellow-600">+23324883004</span> (WhatsApp only)</li>
+                </ul>
+              </section>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowTermsModal(false)}
+                className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
+
+      {/* Privacy Policy Modal */}
+      <Dialog open={showPrivacyModal} onClose={() => setShowPrivacyModal(false)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <Dialog.Panel className="bg-white p-6 rounded-xl shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[90vh]">
+            <Dialog.Title className="text-2xl font-bold text-yellow-600 mb-4 text-center">
+              Privacy Policy for KelisHub
+            </Dialog.Title>
+
+            <p className="text-center text-sm text-gray-500 mb-6">
+              <span className="italic">Effective Date:</span> 01/06/2025
+            </p>
+
+            <div className="space-y-6 text-sm text-gray-700">
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">1. Information We Collect</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li><strong>Personal Information:</strong> Name, phone number, email address, and network provider.</li>
+                  <li><strong>Transaction Information:</strong> Data bundle purchases, payment methods (e.g., MoMo – not stored), and transaction history.</li>
+                  <li><strong>Device Information:</strong> IP address, device type, browser type, and location data (for security and optimization).</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">2. How We Use Your Information</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Process your data bundle orders.</li>
+                  <li>Communicate with you regarding purchases, updates, or issues.</li>
+                  <li>Improve our services and customer experience.</li>
+                  <li>Prevent fraud and ensure account security.</li>
+                  <li>Send promotional messages (optional; opt-out available).</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">3. Data Sharing</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>We don't sell or share your personal data, except:</li>
+                  <ul className="ml-6 list-disc space-y-1">
+                    <li>With trusted service providers (e.g., payment gateways).</li>
+                    <li>When legally required.</li>
+                    <li>To prevent fraud or protect users and our platform.</li>
+                  </ul>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">4. Data Security</h3>
+                <p>We use reasonable industry-standard practices to protect your data. While no system is perfectly secure, we do our best to keep your information safe.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">5. Your Rights</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Access, update, or delete your personal information.</li>
+                  <li>Opt-out of promotional messages.</li>
+                  <li>Request us to stop processing your data (with business/legal limitations).</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">6. Cookies & Tracking</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Used to enhance browsing, remember preferences, and track site traffic.</li>
+                  <li>You can disable cookies in your browser settings.</li>
+                </ul>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">7. Third-Party Links</h3>
+                <p>Links to third-party websites may exist. We are not responsible for their content or privacy practices.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">8. Changes to This Policy</h3>
+                <p>This policy may be updated periodically. Changes will be reflected with a revised effective date.</p>
+              </section>
+
+              <section>
+                <h3 className="font-semibold text-lg text-gray-800 mb-2">9. Contact Us</h3>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Email: <a href="mailto:kelisdata22@gmail.com" className="text-yellow-500 underline">kelisdata22@gmail.com</a></li>
+                  <li>Phone: <span className="text-yellow-600">0244450003</span></li>
+                </ul>
+              </section>
+            </div>
+
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowPrivacyModal(false)}
+                className="px-6 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </Dialog.Panel>
+        </div>
+      </Dialog>
     </div>
   );
 };
