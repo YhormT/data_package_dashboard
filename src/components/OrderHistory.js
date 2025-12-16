@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Dialog } from "@headlessui/react";
+import { MessageCircle } from "lucide-react";
 
 const OrderHistory = ({ isHistoryOpen, setIsHistoryOpen, orderHistory }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -152,21 +153,45 @@ const OrderHistory = ({ isHistoryOpen, setIsHistoryOpen, orderHistory }) => {
                       <strong>Bundle amount:</strong>{" "}
                       {item.product?.description || "Unknown"}
                     </p>
-                    <div className="flex items-center space-x-2">
-                      <strong>Status:</strong>
-                      <span
-                        className={`px-2 py-1 rounded text-white text-sm ${
-                          item.status === "Pending"
-                            ? "bg-yellow-500"
-                            : item.status === "Processing"
-                            ? "bg-blue-500"
-                            : item.status === "Completed"
-                            ? "bg-green-500"
-                            : "bg-gray-500"
-                        }`}
-                      >
-                        {item.status}
-                      </span>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <strong>Status:</strong>
+                        <span
+                          className={`px-2 py-1 rounded text-white text-sm ${
+                            item.status === "Pending"
+                              ? "bg-yellow-500"
+                              : item.status === "Processing"
+                              ? "bg-blue-500"
+                              : item.status === "Completed"
+                              ? "bg-green-500"
+                              : "bg-gray-500"
+                          }`}
+                        >
+                          {item.status}
+                        </span>
+                      </div>
+                      {item.status === "Completed" && (
+                        <a
+                          href={`https://wa.me/233540277583?text=${encodeURIComponent(
+                            `Hello, I have a complaint about my order:\n\n` +
+                            `Order ID: ${order.id}\n` +
+                            `Item ID: ${item.id}\n` +
+                            `Phone: ${item.mobileNumber || "N/A"}\n` +
+                            `Date: ${new Date(order.createdAt).toLocaleDateString()}\n` +
+                            `Time: ${new Date(order.createdAt).toLocaleTimeString()}\n` +
+                            `Item: ${item.product?.name || "Unknown"}\n` +
+                            `Bundle: ${item.product?.description || "Unknown"}\n` +
+                            `Status: ${item.status}\n\n` +
+                            `Please assist me with this order.`
+                          )}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center w-8 h-8 bg-green-500 hover:bg-green-600 rounded-full transition-colors"
+                          title="Report issue on WhatsApp"
+                        >
+                          <MessageCircle className="w-4 h-4 text-white" />
+                        </a>
+                      )}
                     </div>
                   </li>
                 ))

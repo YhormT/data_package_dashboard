@@ -267,20 +267,20 @@ const Shop = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-amber-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-teal-600 to-teal-700 text-white py-6 px-4 shadow-lg">
+      <header className="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-6 px-4 shadow-lg">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <a href="/" className="flex items-center gap-3 hover:opacity-90 transition-opacity">
             <ShoppingCart className="w-8 h-8" />
             <div>
               <h1 className="text-2xl font-bold">Kelishub Shop</h1>
-              <p className="text-teal-100 text-sm">Buy Data Bundles Instantly</p>
+              <p className="text-amber-100 text-sm">Buy Data Bundles Instantly</p>
             </div>
           </a>
           <button
             onClick={() => setShowTrackingModal(true)}
-            className="flex items-center gap-2 bg-white text-teal-700 px-4 py-2 rounded-lg font-medium hover:bg-teal-50 transition-colors"
+            className="flex items-center gap-2 bg-white text-amber-700 px-4 py-2 rounded-lg font-medium hover:bg-amber-50 transition-colors"
           >
             <Search className="w-5 h-5" />
             Track Order
@@ -301,8 +301,8 @@ const Shop = () => {
               onClick={() => setActiveFilter('all')}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 activeFilter === 'all'
-                  ? 'bg-teal-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-amber-50'
               }`}
             >
               All
@@ -311,8 +311,8 @@ const Shop = () => {
               onClick={() => setActiveFilter('mtn')}
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 activeFilter === 'mtn'
-                  ? 'bg-yellow-500 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-yellow-100'
+                  ? 'bg-amber-600 text-white'
+                  : 'bg-white text-gray-700 hover:bg-amber-50'
               }`}
             >
               MTN
@@ -322,7 +322,7 @@ const Shop = () => {
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 activeFilter === 'airtel'
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-blue-100'
+                  : 'bg-white text-gray-700 hover:bg-blue-100'
               }`}
             >
               Airtel Tigo
@@ -332,7 +332,7 @@ const Shop = () => {
               className={`px-4 py-2 rounded-full font-medium transition-colors ${
                 activeFilter === 'telecel'
                   ? 'bg-red-600 text-white'
-                  : 'bg-gray-200 text-gray-700 hover:bg-red-100'
+                  : 'bg-white text-gray-700 hover:bg-red-100'
               }`}
             >
               Telecel
@@ -342,7 +342,7 @@ const Shop = () => {
 
         {isLoading ? (
           <div className="flex justify-center items-center py-20">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600"></div>
           </div>
         ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20">
@@ -381,7 +381,7 @@ const Shop = () => {
                     disabled={product.stock <= 0}
                     className={`w-full py-3 rounded-lg font-semibold transition-colors ${
                       product.stock > 0
-                        ? 'bg-teal-500 hover:bg-teal-600 text-white'
+                        ? 'bg-gray-700 hover:bg-gray-900 text-white'
                         : 'bg-gray-400 cursor-not-allowed text-gray-200'
                     }`}
                   >
@@ -398,7 +398,7 @@ const Shop = () => {
       {showPaymentModal && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6">
+            <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-6">
               <h2 className="text-xl font-bold">
                 {paymentStep === 'initiate' && 'Complete Your Order'}
                 {paymentStep === 'waiting' && 'Complete Payment'}
@@ -406,7 +406,7 @@ const Shop = () => {
                 {paymentStep === 'success' && 'Payment Successful'}
                 {paymentStep === 'failed' && 'Payment Failed'}
               </h2>
-              <p className="text-teal-100 text-sm mt-1">
+              <p className="text-amber-100 text-sm mt-1">
                 {selectedProduct.name} - {selectedProduct.description}
               </p>
             </div>
@@ -415,7 +415,7 @@ const Shop = () => {
               <div className="bg-gray-50 rounded-lg p-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Amount to Pay:</span>
-                  <span className="text-2xl font-bold text-teal-600">
+                  <span className="text-2xl font-bold text-amber-600">
                     GHS {selectedProduct.price.toFixed(2)}
                   </span>
                 </div>
@@ -445,7 +445,7 @@ const Shop = () => {
                       value={mobileNumber}
                       onChange={(e) => setMobileNumber(e.target.value.replace(/\D/g, ''))}
                       placeholder="0XX XXX XXXX"
-                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                      className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                       maxLength={10}
                       disabled={isProcessingPayment}
                     />
@@ -458,7 +458,7 @@ const Shop = () => {
                     <button
                       onClick={initiatePayment}
                       disabled={isProcessingPayment}
-                      className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isProcessingPayment ? (
                         <>
@@ -498,7 +498,7 @@ const Shop = () => {
                     <button
                       onClick={verifyPayment}
                       disabled={isProcessingPayment}
-                      className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                      className="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                       {isProcessingPayment ? (
                         <>
@@ -527,7 +527,7 @@ const Shop = () => {
               {/* Step 3: Processing */}
               {paymentStep === 'processing' && (
                 <div className="text-center py-8">
-                  <Loader2 className="w-12 h-12 animate-spin text-teal-600 mx-auto mb-4" />
+                  <Loader2 className="w-12 h-12 animate-spin text-amber-600 mx-auto mb-4" />
                   <p className="text-gray-600">Please wait while we process your payment...</p>
                 </div>
               )}
@@ -539,7 +539,7 @@ const Shop = () => {
                   <p className="text-gray-600 mb-4">Your order has been placed successfully!</p>
                   <button
                     onClick={closePaymentModal}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                    className="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-semibold transition-colors"
                   >
                     Close
                   </button>
@@ -557,7 +557,7 @@ const Shop = () => {
                         setPaymentStep('initiate');
                         setPaymentMessage('');
                       }}
-                      className="w-full bg-teal-600 hover:bg-teal-700 text-white py-3 rounded-lg font-semibold transition-colors"
+                      className="w-full bg-gray-800 hover:bg-gray-900 text-white py-3 rounded-lg font-semibold transition-colors"
                     >
                       Try Again
                     </button>
@@ -572,7 +572,7 @@ const Shop = () => {
               )}
 
               <p className="text-xs text-gray-500 text-center mt-4">
-                Payments are securely processed by Moolre
+                Payments are securely processed by Paystack
               </p>
             </div>
           </div>
@@ -583,11 +583,11 @@ const Shop = () => {
       {showTrackingModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden">
-            <div className="bg-gradient-to-r from-teal-600 to-teal-700 text-white p-6">
+            <div className="bg-gradient-to-r from-amber-600 to-amber-700 text-white p-6">
               <div className="flex justify-between items-center">
                 <div>
                   <h2 className="text-xl font-bold">Track Your Order</h2>
-                  <p className="text-teal-100 text-sm mt-1">
+                  <p className="text-amber-100 text-sm mt-1">
                     Enter your mobile number to see order status
                   </p>
                 </div>
@@ -597,7 +597,7 @@ const Shop = () => {
                     setTrackedOrders([]);
                     setTrackingNumber('');
                   }}
-                  className="text-white hover:text-teal-200"
+                  className="text-white hover:text-amber-200"
                 >
                   <XCircle className="w-6 h-6" />
                 </button>
@@ -611,13 +611,13 @@ const Shop = () => {
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))}
                   placeholder="Enter mobile number"
-                  className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                  className="flex-1 border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500 focus:border-amber-500"
                   maxLength={10}
                 />
                 <button
                   onClick={trackOrder}
                   disabled={isTracking}
-                  className="bg-teal-600 hover:bg-teal-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors disabled:opacity-50"
                 >
                   {isTracking ? 'Searching...' : 'Track'}
                 </button>
@@ -670,10 +670,10 @@ const Shop = () => {
       )}
 
       {/* Fixed Footer */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-gray-800 text-white py-3 z-40">
+      <footer className="fixed bottom-0 left-0 right-0 bg-gradient-to-r from-amber-600 to-amber-700 text-white py-3 z-40">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <p className="text-gray-400 text-sm">
-            &copy; {new Date().getFullYear()} Kelishub. All rights reserved. Payments secured by Moolre
+          <p className="text-white text-sm">
+            &copy; {new Date().getFullYear()} Kelishub. All rights reserved. Payments secured by Paystack
           </p>
         </div>
       </footer>

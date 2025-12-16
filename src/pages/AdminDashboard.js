@@ -385,7 +385,7 @@ const handleRefundAmount = async () => {
   };
 
   const handleEditClick = (user) => {
-    setSelectedUser({ ...user, password: '' }); // Clear password on edit to prevent resending old hash
+    setSelectedUser({ ...user }); // Keep user's password so admin can view/modify it
     setShowModal(true); // Open modal
     setSelectedUserTF(true);
   };
