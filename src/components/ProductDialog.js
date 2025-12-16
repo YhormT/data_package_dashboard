@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { Dialog } from "@headlessui/react";
 import axios from "axios";
-import { Edit, Trash, AlertCircle, RotateCcw, Filter, Store } from "lucide-react";
+import { Edit, Trash, AlertCircle, RotateCcw, Filter, Store, Search } from "lucide-react";
 import Swal from 'sweetalert2';
 import BASE_URL from "../endpoints/endpoints";
 
@@ -14,6 +14,15 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
   const [stock, setStock] = useState("");
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filter products based on search query
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) return products;
+    return products.filter(product =>
+      product.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [products, searchQuery]);
 
   // Fetch products from API
   const fetchProducts = async () => {
@@ -535,7 +544,19 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
         {/* Products Table Section */}
         <div className="mt-6">
           <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-medium text-gray-800">Products List</h3>
+            <div className="flex items-center gap-4">
+              <h3 className="text-lg font-medium text-gray-800">Products List</h3>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search by name..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-md text-sm focus:ring-blue-500 focus:border-blue-500 w-48"
+                />
+              </div>
+            </div>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
                 <span className="inline-block w-3 h-3 rounded-full bg-yellow-400"></span>
@@ -549,8 +570,9 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
               </div>
               
               <div className="bg-gray-100 px-3 py-1 rounded-md">
-                <span className="text-sm text-gray-700">Total Items: </span>
-                <span className="font-bold text-blue-600">{products.length}</span>
+                <span className="text-sm text-gray-700">Showing: </span>
+                <span className="font-bold text-blue-600">{filteredProducts.length}</span>
+                <span className="text-sm text-gray-500"> / {products.length}</span>
               </div>
             </div>
           </div>
@@ -568,7 +590,7 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {products.length === 0 ? (
+                {filteredProducts.length === 0 ? (
                   <tr>
                     <td colSpan="7" className="px-3 py-4 text-center text-sm text-gray-500">
                       {isLoading ? (
@@ -579,6 +601,11 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
                           </svg>
                           <span>Loading products...</span>
                         </div>
+                      ) : searchQuery ? (
+                        <div className="py-8">
+                          <p className="text-gray-500 text-center">No products match "{searchQuery}"</p>
+                          <p className="text-sm text-gray-400 text-center mt-1">Try a different search term</p>
+                        </div>
                       ) : (
                         <div className="py-8">
                           <p className="text-gray-500 text-center">No products found</p>
@@ -588,7 +615,7 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
                     </td>
                   </tr>
                 ) : (
-                  products.map((product) => (
+                  filteredProducts.map((product) => (
                     <tr key={product.id} className="hover:bg-gray-50">
                       <td className="px-3 py-3 text-sm text-gray-500">0000{product.id}</td>
                       <td className="px-3 py-3 text-sm text-gray-900 whitespace-nowrap font-medium">
