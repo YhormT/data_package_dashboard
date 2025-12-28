@@ -50,14 +50,11 @@ const Shop = () => {
     setIsLoading(true);
     try {
       const response = await axios.get(`${BASE_URL}/api/shop/products`);
-      setProducts(response.data);
+      setProducts(response.data || []);
     } catch (error) {
       console.error('Error fetching shop products:', error);
-      Swal.fire({
-        title: 'Error',
-        text: 'Failed to load products. Please try again.',
-        icon: 'error',
-      });
+      // Set products to empty array instead of showing error
+      setProducts([]);
     } finally {
       setIsLoading(false);
     }
