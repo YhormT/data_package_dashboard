@@ -259,29 +259,43 @@ const Shop = () => {
 
   // Filter and sort products based on active filter
   const filteredProducts = useMemo(() => {
-    let filtered = products;
-    
-    if (activeFilter !== 'all') {
-      filtered = products.filter(product => {
-        const upperName = product.name?.toUpperCase() || '';
-        if (activeFilter === 'mtn') return upperName.includes('MTN');
-        if (activeFilter === 'airtel') return upperName.includes('AIRTEL') || upperName.includes('TIGO');
-        if (activeFilter === 'telecel') return upperName.includes('TELECEL');
-        return true;
-      });
-    }
-    
-    // Sort by network: MTN first, then Telecel, then Airtel Tigo, then others
+    const filtered =
+      activeFilter === 'all'
+        ? [...products]
+        : products.filter((product) => {
+            const upperName = product.name?.toUpperCase() || '';
+            if (activeFilter === 'mtn') return upperName.includes('MTN');
+            if (activeFilter === 'airtel') return upperName.includes('AIRTEL') || upperName.includes('TIGO');
+            if (activeFilter === 'telecel') return upperName.includes('TELECEL');
+            return true;
+          });
+
+    const getNetworkPriority = (name) => {
+      const upperName = name?.toUpperCase() || '';
+      if (upperName.includes('MTN')) return 1;
+      if (upperName.includes('TELECEL')) return 2;
+      if (upperName.includes('AIRTEL') || upperName.includes('TIGO')) return 3;
+      return 4;
+    };
+
+    const parseBundleSize = (text) => {
+      if (!text) return Number.MAX_SAFE_INTEGER;
+      const match = text.match(/([\d.]+)\s*(gb|mb|g|m)/i);
+      if (!match) return Number.MAX_SAFE_INTEGER;
+      const value = parseFloat(match[1]);
+      const unit = match[2].toLowerCase();
+      const multiplier = unit.startsWith('g') ? 1024 : 1; // normalize to MB for consistent sorting
+      return value * multiplier;
+    };
+
     return filtered.sort((a, b) => {
-      const getNetworkPriority = (name) => {
-        const upperName = name?.toUpperCase() || '';
-        if (upperName.includes('MTN')) return 1;
-        if (upperName.includes('TELECEL')) return 2;
-        if (upperName.includes('AIRTEL') || upperName.includes('TIGO')) return 3;
-        return 4;
-      };
-      
-      return getNetworkPriority(a.name) - getNetworkPriority(b.name);
+      const networkDiff = getNetworkPriority(a.name) - getNetworkPriority(b.name);
+      if (networkDiff !== 0) return networkDiff;
+
+      const sizeDiff = parseBundleSize(a.description) - parseBundleSize(b.description);
+      if (sizeDiff !== 0) return sizeDiff;
+
+      return (a.description || '').localeCompare(b.description || '', undefined, { sensitivity: 'base' });
     });
   }, [products, activeFilter]);
 
