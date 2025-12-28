@@ -1394,7 +1394,15 @@ const TableRow = memo(({ item, index, getRowColor, handleViewClickStatus, handle
         {item.user?.name || "N/A"}
       </td>
       <td className="border px-2 py-2 md:px-4">
-        {item?.mobileNumber || "N/A"}
+        {(() => {
+          const mobile = item?.mobileNumber;
+          if (!mobile) return "N/A";
+          // For shop orders (user name is "Shop"), format number to start with 0
+          if (item.user?.name === "Shop" && mobile.startsWith("233")) {
+            return "0" + mobile.substring(3);
+          }
+          return mobile;
+        })()}
       </td>
       <td className="border px-2 py-2 md:px-4">
         <span

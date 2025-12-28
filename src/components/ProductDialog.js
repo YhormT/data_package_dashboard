@@ -402,6 +402,77 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
     });
   };
 
+  // Toggle all products shop visibility (works with filtered results)
+  const handleToggleAllShopVisibility = async () => {
+    // Use filtered products if search is active, otherwise use all products
+    const productsToUpdate = filteredProducts.length > 0 ? filteredProducts : products;
+    
+    if (productsToUpdate.length === 0) {
+      Swal.fire({
+        title: "No Products",
+        text: "No products available to update.",
+        icon: "info",
+        confirmButtonText: "OK",
+      });
+      return;
+    }
+    
+    // Check if any of the filtered products are currently shown in shop
+    const anyShownInShop = productsToUpdate.some(product => product.showInShop);
+    const actionText = anyShownInShop ? "hide all products from" : "show all products in";
+    const newValue = !anyShownInShop;
+    const searchText = searchQuery ? ` matching "${searchQuery}"` : "";
+    
+    Swal.fire({
+      title: `${anyShownInShop ? 'Hide All from Shop' : 'Show All in Shop'}?`,
+      text: `Are you sure you want to ${actionText} the shop page? This will affect ${productsToUpdate.length} product${productsToUpdate.length !== 1 ? 's' : ''}${searchText}.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: anyShownInShop ? "#d33" : "#0d9488",
+      cancelButtonColor: "#6b7280",
+      confirmButtonText: `Yes, ${actionText}`,
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setIsLoading(true);
+        try {
+          // Update only the filtered products
+          const updatePromises = productsToUpdate.map(product => 
+            axios.put(`${BASE_URL}/products/toggle-shop/${product.id}`, {
+              showInShop: newValue
+            }, {
+              headers: { 'Content-Type': 'application/json' },
+            })
+          );
+          
+          await Promise.all(updatePromises);
+          
+          // Update local state - only update the products that were changed
+          setProducts(products.map(product => {
+            const wasUpdated = productsToUpdate.some(p => p.id === product.id);
+            return wasUpdated ? { ...product, showInShop: newValue } : product;
+          }));
+          
+          Swal.fire({
+            title: "Success!",
+            text: `${productsToUpdate.length} product${productsToUpdate.length !== 1 ? 's have' : ' has'} been ${anyShownInShop ? 'hidden from' : 'shown in'} the shop.`,
+            icon: "success",
+            confirmButtonText: "OK",
+          });
+        } catch (error) {
+          console.error(error);
+          Swal.fire({
+            title: "Error!",
+            text: `Failed to update shop visibility. Please try again.`,
+            icon: "error",
+            confirmButtonText: "OK",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    });
+  };
+
 
   return (
     <Dialog
@@ -438,6 +509,15 @@ const ProductDialog = ({ isDialogOpenProduct, setIsDialogOpenProduct }) => {
               >
                 <RotateCcw className="w-4 h-4" />
                 Set All to One
+              </button>
+              <button
+                onClick={handleToggleAllShopVisibility}
+                className={`flex items-center gap-1 ${products.some(p => p.showInShop) ? 'bg-red-600 hover:bg-red-700' : 'bg-teal-600 hover:bg-teal-700'} text-white px-3 py-2 rounded-md text-sm transition-colors`}
+                title={products.some(p => p.showInShop) ? "Hide all products from shop" : "Show all products in shop"}
+                disabled={isLoading}
+              >
+                <Store className="w-4 h-4" />
+                {products.some(p => p.showInShop) ? 'Hide All from Shop' : 'Show All in Shop'}
               </button>
             </div>
             
