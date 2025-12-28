@@ -4,6 +4,22 @@ import axios from "axios";
 import BASE_URL from "../endpoints/endpoints";
 import { ArrowRightLeft, Download, Search } from "lucide-react";
 
+// Helper function to format phone number from 233XXXXXXXXX to 0XXXXXXXXX
+const formatPhoneNumber = (phone) => {
+  if (!phone) return 'N/A';
+  const phoneStr = String(phone).replace(/\D/g, '');
+  if (phoneStr.startsWith('233') && phoneStr.length >= 12) {
+    return '0' + phoneStr.slice(3, 12);
+  }
+  if (phoneStr.length === 10 && phoneStr.startsWith('0')) {
+    return phoneStr;
+  }
+  if (phoneStr.length === 9) {
+    return '0' + phoneStr;
+  }
+  return phoneStr.slice(-10).padStart(10, '0');
+};
+
 // Memoized Tabs Component
 const Tabs = memo(({ tabs, activeTab, setActiveTab }) => (
   <div className="border-b border-gray-200">
@@ -342,6 +358,7 @@ const TransactionalAdminModal = () => {
     { id: 'transactions', name: 'Transactions' },
     { id: 'sales', name: 'Sales Summary' },
     { id: 'balance', name: 'Admin Balance Sheet' },
+    { id: 'shopOrders', name: 'Shop Orders' },
   ];
 
   const [isOpen, setIsOpen] = useState(false);
@@ -377,6 +394,18 @@ const TransactionalAdminModal = () => {
   // Search results state
   const [searchResults, setSearchResults] = useState([]);
   const [searchPagination, setSearchPagination] = useState(null);
+
+  // Shop Orders state
+  const [shopOrders, setShopOrders] = useState([]);
+  const [shopOrdersLoading, setShopOrdersLoading] = useState(false);
+  const [shopOrderFilters, setShopOrderFilters] = useState({
+    customerName: '',
+    phone: '',
+    product: '',
+    status: ''
+  });
+  const [shopOrdersPage, setShopOrdersPage] = useState(1);
+  const shopOrdersPerPage = 50;
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -459,12 +488,37 @@ const TransactionalAdminModal = () => {
     }
   }, [debouncedSearch, typeFilter, amountFilter, startDate, endDate, searchTransactions, fetchTransactions]);
 
+  // Fetch shop orders
+  const fetchShopOrders = useCallback(async () => {
+    setShopOrdersLoading(true);
+    try {
+      const response = await axios.get(`${BASE_URL}/api/shop/orders`);
+      if (response.data.success) {
+        setShopOrders(response.data.orders || []);
+      }
+    } catch (error) {
+      console.error('Error fetching shop orders:', error);
+      setShopOrders([]);
+    } finally {
+      setShopOrdersLoading(false);
+    }
+  }, []);
+
+  // Fetch shop orders when tab is opened
+  useEffect(() => {
+    if (isOpen && activeTab === 'shopOrders') {
+      fetchShopOrders();
+    }
+  }, [isOpen, activeTab, fetchShopOrders]);
+
   // Auto-refresh every 2 seconds
   useEffect(() => {
     if (!isOpen) return;
 
     const intervalId = setInterval(() => {
-      if (debouncedSearch.trim()) {
+      if (activeTab === 'shopOrders') {
+        fetchShopOrders();
+      } else if (debouncedSearch.trim()) {
         // Refresh search results
         searchTransactions(debouncedSearch, {
           typeFilter,
@@ -479,7 +533,7 @@ const TransactionalAdminModal = () => {
     }, 2000);
 
     return () => clearInterval(intervalId);
-  }, [isOpen, debouncedSearch, typeFilter, amountFilter, startDate, endDate, searchTransactions, fetchTransactions]);
+  }, [isOpen, activeTab, debouncedSearch, typeFilter, amountFilter, startDate, endDate, searchTransactions, fetchTransactions, fetchShopOrders]);
 
   // Fetch admin balance sheet data from new endpoint
   const fetchAdminBalanceData = useCallback(async () => {
@@ -1203,6 +1257,166 @@ const TransactionalAdminModal = () => {
 
                       {activeTab === "balance" && (
                         <AdminBalanceSheet balanceData={adminBalanceData} />
+                      )}
+
+                      {activeTab === "shopOrders" && (
+                        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+                          <h3 className="text-lg font-semibold mb-4 text-gray-900">Shop Orders</h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                            <input
+                              type="text"
+                              placeholder="Customer name..."
+                              value={shopOrderFilters.customerName}
+                              onChange={(e) => setShopOrderFilters(prev => ({ ...prev, customerName: e.target.value }))}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Phone..."
+                              value={shopOrderFilters.phone}
+                              onChange={(e) => setShopOrderFilters(prev => ({ ...prev, phone: e.target.value }))}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <input
+                              type="text"
+                              placeholder="Product..."
+                              value={shopOrderFilters.product}
+                              onChange={(e) => setShopOrderFilters(prev => ({ ...prev, product: e.target.value }))}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            />
+                            <select
+                              value={shopOrderFilters.status}
+                              onChange={(e) => setShopOrderFilters(prev => ({ ...prev, status: e.target.value }))}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                            >
+                              <option value="">All Status</option>
+                              <option value="Completed">Completed</option>
+                              <option value="Pending">Pending</option>
+                              <option value="Processing">Processing</option>
+                              <option value="Cancelled">Cancelled</option>
+                            </select>
+                          </div>
+
+                          {shopOrdersLoading ? (
+                            <div className="text-center py-8">
+                              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                              <p className="mt-2 text-gray-600">Loading orders...</p>
+                            </div>
+                          ) : (() => {
+                            const filteredShopOrders = shopOrders.filter(order => {
+                              const matchCustomer = !shopOrderFilters.customerName || order.customerName?.toLowerCase().includes(shopOrderFilters.customerName.toLowerCase());
+                              const matchPhone = !shopOrderFilters.phone || formatPhoneNumber(order.phone)?.includes(shopOrderFilters.phone);
+                              const matchProduct = !shopOrderFilters.product || order.product?.toLowerCase().includes(shopOrderFilters.product.toLowerCase());
+                              const matchStatus = !shopOrderFilters.status || order.status?.toLowerCase() === shopOrderFilters.status.toLowerCase();
+                              return matchCustomer && matchPhone && matchProduct && matchStatus;
+                            });
+                            const totalShopOrdersAmount = filteredShopOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+                            const totalShopOrdersPages = Math.ceil(filteredShopOrders.length / shopOrdersPerPage);
+                            const paginatedShopOrders = filteredShopOrders.slice((shopOrdersPage - 1) * shopOrdersPerPage, shopOrdersPage * shopOrdersPerPage);
+                            
+                            return (
+                              <>
+                                {/* Summary Cards */}
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                                    <div className="text-sm text-blue-800 font-medium">Total Orders</div>
+                                    <div className="text-2xl font-bold text-blue-600">{filteredShopOrders.length}</div>
+                                  </div>
+                                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                                    <div className="text-sm text-green-800 font-medium">Total Amount</div>
+                                    <div className="text-2xl font-bold text-green-600">GH₵ {totalShopOrdersAmount.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  </div>
+                                </div>
+
+                                <div className="overflow-x-auto">
+                                  <table className="min-w-full text-sm border-collapse">
+                                    <thead className="bg-gray-50">
+                                      <tr>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">ID</th>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">Customer</th>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">Phone</th>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">Product</th>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">Description</th>
+                                        <th className="px-4 py-3 text-right border font-semibold text-gray-700">Amount</th>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">Status</th>
+                                        <th className="px-4 py-3 text-left border font-semibold text-gray-700">Date</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {paginatedShopOrders.map((order, index) => (
+                                        <tr key={order.id} className={index % 2 === 0 ? "bg-white" : "bg-gray-50"}>
+                                          <td className="px-4 py-2 border font-medium">{order.id}</td>
+                                          <td className="px-4 py-2 border">{order.customerName}</td>
+                                          <td className="px-4 py-2 border">{formatPhoneNumber(order.phone)}</td>
+                                          <td className="px-4 py-2 border font-medium text-blue-600">{order.product}</td>
+                                          <td className="px-4 py-2 border text-gray-600">{order.description}</td>
+                                          <td className="px-4 py-2 border text-right font-semibold">GH₵ {order.amount?.toFixed(2)}</td>
+                                          <td className="px-4 py-2 border">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                              order.status?.toLowerCase() === 'completed' ? 'bg-green-100 text-green-800' :
+                                              order.status?.toLowerCase() === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                                              order.status?.toLowerCase() === 'processing' ? 'bg-blue-100 text-blue-800' :
+                                              'bg-red-100 text-red-800'
+                                            }`}>
+                                              {order.status}
+                                            </span>
+                                          </td>
+                                          <td className="px-4 py-2 border whitespace-nowrap text-gray-600">
+                                            {new Date(order.date).toLocaleString()}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                  {filteredShopOrders.length === 0 && (
+                                    <div className="text-center py-8 text-gray-500">No shop orders found</div>
+                                  )}
+                                </div>
+                                {filteredShopOrders.length > 0 && (
+                                  <div className="flex justify-between items-center mt-4">
+                                    <div className="text-sm text-gray-600">
+                                      Showing {((shopOrdersPage - 1) * shopOrdersPerPage) + 1} to {Math.min(shopOrdersPage * shopOrdersPerPage, filteredShopOrders.length)} of {filteredShopOrders.length} orders
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <button
+                                        onClick={() => setShopOrdersPage(1)}
+                                        disabled={shopOrdersPage === 1}
+                                        className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+                                      >
+                                        First
+                                      </button>
+                                      <button
+                                        onClick={() => setShopOrdersPage(prev => Math.max(1, prev - 1))}
+                                        disabled={shopOrdersPage === 1}
+                                        className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+                                      >
+                                        Previous
+                                      </button>
+                                      <span className="px-3 py-1 text-sm">
+                                        Page {shopOrdersPage} of {totalShopOrdersPages || 1}
+                                      </span>
+                                      <button
+                                        onClick={() => setShopOrdersPage(prev => Math.min(totalShopOrdersPages, prev + 1))}
+                                        disabled={shopOrdersPage === totalShopOrdersPages || totalShopOrdersPages === 0}
+                                        className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+                                      >
+                                        Next
+                                      </button>
+                                      <button
+                                        onClick={() => setShopOrdersPage(totalShopOrdersPages)}
+                                        disabled={shopOrdersPage === totalShopOrdersPages || totalShopOrdersPages === 0}
+                                        className="px-3 py-1 border rounded disabled:opacity-50 hover:bg-gray-50"
+                                      >
+                                        Last
+                                      </button>
+                                    </div>
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
                       )}
                     </div>
                   </div>

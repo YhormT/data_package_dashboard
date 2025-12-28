@@ -4,6 +4,22 @@ import { ShoppingCart, Search, Phone, CheckCircle, XCircle, Clock, Package, Filt
 import Swal from 'sweetalert2';
 import BASE_URL from '../endpoints/endpoints';
 
+// Helper function to format phone number from 233XXXXXXXXX to 0XXXXXXXXX
+const formatPhoneNumber = (phone) => {
+  if (!phone) return 'N/A';
+  const phoneStr = String(phone).replace(/\D/g, '');
+  if (phoneStr.startsWith('233') && phoneStr.length >= 12) {
+    return '0' + phoneStr.slice(3, 12);
+  }
+  if (phoneStr.length === 10 && phoneStr.startsWith('0')) {
+    return phoneStr;
+  }
+  if (phoneStr.length === 9) {
+    return '0' + phoneStr;
+  }
+  return phoneStr.slice(-10).padStart(10, '0');
+};
+
 const Shop = () => {
   const [products, setProducts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -147,8 +163,8 @@ const Shop = () => {
           html: `
             <div class="text-center">
               <p class="text-lg mb-2">Payment successful!</p>
-              <p class="text-gray-600">Order ID: <strong>#${response.data.order?.id || 'N/A'}</strong></p>
-              <p class="text-gray-600">Mobile: <strong>${mobileNumber}</strong></p>
+              <p class="text-gray-600 mb-1">Order ID: <strong>#${response.data.order?.id || 'N/A'}</strong></p>
+              <p class="text-gray-600 mb-3">Mobile: <strong>${formatPhoneNumber(mobileNumber || response.data.order?.mobileNumber)}</strong></p>
               <p class="text-sm text-gray-500 mt-4">Use your mobile number to track your order.</p>
             </div>
           `,
@@ -442,11 +458,11 @@ const Shop = () => {
                 
                 {/* Card Body */}
                 <div className="p-6">
-                  <p className="text-gray-600 mb-6 text-sm leading-relaxed">{product.description}</p>
+                  <p className="text-gray-900 mb-4 text-3xl font-bold leading-relaxed">{product.description}</p>
                   
                   {/* Price */}
                   <div className="flex items-end gap-2 mb-6">
-                    <span className="text-4xl font-bold text-gray-900">GHS {product.price.toFixed(2)}</span>
+                    <span className="text-2xl font-bold text-gray-900">GHS {product.price.toFixed(2)}</span>
                     <span className="text-gray-500 text-sm mb-1">/ bundle</span>
                   </div>
                   
@@ -505,7 +521,7 @@ const Shop = () => {
                   {paymentStep === 'success' && 'Payment Successful'}
                   {paymentStep === 'failed' && 'Payment Failed'}
                 </h2>
-                <p className="text-white/80 text-sm mt-2">
+                <p className="text-white/80 text-lg font-bold mt-2">
                   {selectedProduct.name} - {selectedProduct.description}
                 </p>
               </div>
@@ -538,7 +554,7 @@ const Shop = () => {
                   <div className="mb-6">
                     <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
                       <Phone className="w-4 h-4 text-yellow-600" />
-                      Mobile Money Number
+                      Data Bundle Number
                     </label>
                     <input
                       type="tel"
@@ -550,7 +566,13 @@ const Shop = () => {
                       disabled={isProcessingPayment}
                     />
                     <p className="text-xs text-gray-500 mt-2">
-                      Enter your MTN, AirtelTigo, or Telecel mobile money number
+                      {selectedProduct.name.toLowerCase().includes('mtn') 
+                        ? 'Enter your MTN number'
+                        : selectedProduct.name.toLowerCase().includes('telecel')
+                        ? 'Enter your Telecel number'
+                        : selectedProduct.name.toLowerCase().includes('airtel')
+                        ? 'Enter your AirtelTigo number'
+                        : 'Enter your mobile number'}
                     </p>
                   </div>
 
@@ -694,18 +716,18 @@ const Shop = () => {
 
       {/* Order Tracking Modal */}
       {showTrackingModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden border border-gray-200">
-            <div className="relative bg-gradient-to-r from-amber-500 to-orange-500 p-8">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-lg w-full max-h-[95vh] sm:max-h-[90vh] overflow-hidden border border-gray-200">
+            <div className="relative bg-gradient-to-r from-amber-500 to-orange-500 p-4 sm:p-8">
               <div className="absolute inset-0 bg-black/20" />
-              <div className="relative flex justify-between items-center">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Search className="w-5 h-5 text-white/80" />
-                    <span className="text-white/80 text-sm font-medium uppercase tracking-wider">Order Tracking</span>
+              <div className="relative flex justify-between items-start gap-3">
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <Search className="w-4 h-4 sm:w-5 sm:h-5 text-white/80 flex-shrink-0" />
+                    <span className="text-white/80 text-xs sm:text-sm font-medium uppercase tracking-wider">Order Tracking</span>
                   </div>
-                  <h2 className="text-2xl font-bold text-white">Track Your Order</h2>
-                  <p className="text-white/80 text-sm mt-1">
+                  <h2 className="text-xl sm:text-2xl font-bold text-white">Track Your Order</h2>
+                  <p className="text-white/80 text-xs sm:text-sm mt-1">
                     Enter your mobile number to see order status
                   </p>
                 </div>
@@ -715,27 +737,27 @@ const Shop = () => {
                     setTrackedOrders([]);
                     setTrackingNumber('');
                   }}
-                  className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
+                  className="p-1.5 sm:p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors flex-shrink-0"
                 >
-                  <XCircle className="w-6 h-6 text-white" />
+                  <XCircle className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
                 </button>
               </div>
             </div>
             
-            <div className="p-6">
-              <div className="flex gap-3 mb-6">
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 sm:mb-6">
                 <input
                   type="tel"
                   value={trackingNumber}
                   onChange={(e) => setTrackingNumber(e.target.value.replace(/\D/g, ''))}
                   placeholder="Enter mobile number"
-                  className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-4 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
+                  className="flex-1 bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 sm:py-4 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all text-base"
                   maxLength={10}
                 />
                 <button
                   onClick={trackOrder}
                   disabled={isTracking}
-                  className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-4 rounded-xl font-bold transition-all hover:shadow-lg disabled:opacity-50 flex items-center gap-2"
+                  className="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-6 py-3 sm:py-4 rounded-xl font-bold transition-all hover:shadow-lg disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isTracking ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -749,40 +771,40 @@ const Shop = () => {
               </div>
 
               {/* Tracked Orders List */}
-              <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+              <div className="max-h-[50vh] sm:max-h-[400px] overflow-y-auto custom-scrollbar">
                 {trackedOrders.length > 0 ? (
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {trackedOrders.map((order, orderIdx) => (
-                      <div key={`order-${order.orderId}-${orderIdx}`} className="bg-gray-50 rounded-2xl p-5 border border-gray-200">
-                        <div className="flex justify-between items-start mb-4 pb-4 border-b border-gray-200">
+                      <div key={`order-${order.orderId}-${orderIdx}`} className="bg-gray-50 rounded-xl sm:rounded-2xl p-3 sm:p-5 border border-gray-200">
+                        <div className="flex flex-wrap justify-between items-start gap-2 mb-3 sm:mb-4 pb-3 sm:pb-4 border-b border-gray-200">
                           <div>
                             <span className="text-xs text-gray-500 uppercase tracking-wider">Order ID</span>
-                            <p className="font-bold text-gray-900 text-lg">#{order.orderId}</p>
+                            <p className="font-bold text-gray-900 text-base sm:text-lg">#{order.orderId}</p>
                           </div>
-                          <span className="text-xs text-gray-600 bg-gray-200 px-3 py-1.5 rounded-full">
+                          <span className="text-xs text-gray-600 bg-gray-200 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full">
                             {new Date(order.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                         
                         {order.items.map((item, idx) => (
-                          <div key={`item-${order.orderId}-${item.id}-${idx}`} className="bg-white rounded-xl p-4 mb-3 border border-gray-200 shadow-sm">
-                            <div className="flex justify-between items-start gap-3">
-                              <div className="flex-1">
-                                <p className="font-semibold text-gray-900">{item.productName}</p>
-                                <p className="text-sm text-gray-600">{item.productDescription}</p>
-                                <p className="text-sm text-yellow-600 font-semibold mt-1">GHS {item.price?.toFixed(2)}</p>
+                          <div key={`item-${order.orderId}-${item.id}-${idx}`} className="bg-white rounded-lg sm:rounded-xl p-3 sm:p-4 mb-2 sm:mb-3 border border-gray-200 shadow-sm">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 sm:gap-3">
+                              <div className="flex-1 min-w-0">
+                                <p className="font-semibold text-gray-900 text-sm sm:text-base">{item.productName}</p>
+                                <p className="text-xs sm:text-sm text-gray-600 truncate">{item.productDescription}</p>
+                                <p className="text-xs sm:text-sm text-yellow-600 font-semibold mt-1">GHS {item.price?.toFixed(2)}</p>
                               </div>
-                              <div className="flex flex-col items-end gap-2">
-                                <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold ${getStatusColor(item.status)}`}>
+                              <div className="flex flex-row sm:flex-col items-center sm:items-end gap-2 flex-wrap">
+                                <div className={`flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-bold ${getStatusColor(item.status)}`}>
                                   {getStatusIcon(item.status)}
                                   {item.status}
                                 </div>
                                 {item.status?.toLowerCase() === 'completed' && (
                                   <a
-                                    href={`https://wa.me/233540277583?text=Hello, I placed an order (Order ID: ${order.orderId}) for ${item.productName} to ${order.mobileNumber || item.mobileNumber} the order status shows completed but I have not received the data. Please assist.`}
+                                    href={`https://wa.me/233540277583?text=Hello, I placed an order (Order ID: ${order.orderId}) for ${item.productName} to ${formatPhoneNumber(order.mobileNumber || item.mobileNumber)} the order status shows completed but I have not received the data. Please assist.`}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-colors"
+                                    className="flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-colors"
                                   >
                                     <MessageCircle className="w-3 h-3" />
                                     Report Issue
@@ -796,11 +818,11 @@ const Shop = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12">
-                    <div className="inline-flex p-4 bg-gray-100 rounded-full mb-4">
-                      <Search className="w-10 h-10 text-gray-400" />
+                  <div className="text-center py-8 sm:py-12">
+                    <div className="inline-flex p-3 sm:p-4 bg-gray-100 rounded-full mb-3 sm:mb-4">
+                      <Search className="w-8 h-8 sm:w-10 sm:h-10 text-gray-400" />
                     </div>
-                    <p className="text-gray-600">Enter your mobile number to track orders</p>
+                    <p className="text-gray-600 text-sm sm:text-base">Enter your mobile number to track orders</p>
                   </div>
                 )}
               </div>
