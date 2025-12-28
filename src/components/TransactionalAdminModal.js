@@ -386,12 +386,12 @@ const TransactionalAdminModal = () => {
   }, [search]);
 
 
-  // Fetch ALL transactions at once and store them
-  const fetchTransactions = useCallback(async () => {
+  // Fetch ALL transactions at once and store them (skip cache for auto-refresh)
+  const fetchTransactions = useCallback(async (skipCache = false) => {
     const cacheKey = 'all_transactions';
     
-    // Check cache first
-    if (dataCache.has(cacheKey)) {
+    // Check cache first (unless skipCache is true for auto-refresh)
+    if (!skipCache && dataCache.has(cacheKey)) {
       const cachedData = dataCache.get(cacheKey);
       setAllTransactions(cachedData.data);
       setTransactions(cachedData.data);
@@ -458,6 +458,28 @@ const TransactionalAdminModal = () => {
       fetchTransactions();
     }
   }, [debouncedSearch, typeFilter, amountFilter, startDate, endDate, searchTransactions, fetchTransactions]);
+
+  // Auto-refresh every 2 seconds
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const intervalId = setInterval(() => {
+      if (debouncedSearch.trim()) {
+        // Refresh search results
+        searchTransactions(debouncedSearch, {
+          typeFilter,
+          amountFilter: amountFilter !== 'all' ? amountFilter : null,
+          startDate,
+          endDate
+        });
+      } else {
+        // Refresh all transactions (skip cache to get fresh data)
+        fetchTransactions(true);
+      }
+    }, 2000);
+
+    return () => clearInterval(intervalId);
+  }, [isOpen, debouncedSearch, typeFilter, amountFilter, startDate, endDate, searchTransactions, fetchTransactions]);
 
   // Fetch admin balance sheet data from new endpoint
   const fetchAdminBalanceData = useCallback(async () => {
