@@ -654,9 +654,14 @@ const NormalAgent = () => {
   const [orderHistory, setOrderHistory] = useState([]);
 
   useEffect(() => {
+    let intervalId;
     if (isHistoryOpen) {
       fetchOrderHistory();
+      intervalId = setInterval(fetchOrderHistory, 1000);
     }
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [isHistoryOpen]);
 
   const fetchOrderHistory = async () => {
