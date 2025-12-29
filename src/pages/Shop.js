@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
 import { ShoppingCart, Search, Phone, CheckCircle, XCircle, Clock, Package, Filter, Loader2, MessageCircle, Shield, Zap, Wifi, Star, ArrowRight, Sparkles } from 'lucide-react';
 import Swal from 'sweetalert2';
@@ -38,6 +38,16 @@ const Shop = () => {
   const [externalRef, setExternalRef] = useState('');
   const [paymentMessage, setPaymentMessage] = useState('');
   const [selectedProductGradient, setSelectedProductGradient] = useState('from-amber-600 to-amber-700');
+  const filterRef = useRef(null);
+
+  const scrollToFilterBar = () => {
+    if (!filterRef.current) return;
+    const top = filterRef.current.getBoundingClientRect().top + window.scrollY;
+    window.scrollTo({
+      top: Math.max(top - 90, 0),
+      behavior: 'smooth'
+    });
+  };
 
   // Fetch shop products
   useEffect(() => {
@@ -390,7 +400,10 @@ const Shop = () => {
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full">
         {/* Filter Section */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 p-6 bg-white rounded-2xl border border-gray-200 shadow-lg">
+        <div
+          ref={filterRef}
+          className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-10 p-6 bg-white rounded-2xl border border-gray-200 shadow-lg"
+        >
           <div className="flex items-center gap-3">
             <div className="p-2 bg-yellow-100 rounded-lg">
               <Filter className="w-5 h-5 text-yellow-600" />
@@ -406,7 +419,10 @@ const Shop = () => {
             ].map((filter) => (
               <button
                 key={filter.id}
-                onClick={() => setActiveFilter(filter.id)}
+                onClick={() => {
+                  setActiveFilter(filter.id);
+                  scrollToFilterBar();
+                }}
                 className={`px-5 py-2.5 rounded-xl font-medium transition-all duration-300 ${
                   activeFilter === filter.id
                     ? filter.activeClass
