@@ -26,6 +26,7 @@ const TotalRequestsComponent = () => {
     setSortOrder("newest");
     setCurrentPage(1);
     setShowNewRequestsOnly(false);
+    setShopFilter("");
   };
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -50,6 +51,7 @@ const TotalRequestsComponent = () => {
 
   const [orderIdFilter, setOrderIdFilter] = useState("");
   const [phoneNumberFilter, setPhoneNumberFilter] = useState("");
+  const [shopFilter, setShopFilter] = useState(""); // Filter for shop orders
   // Use deferred values for instant input with longer delay
   const deferredOrderIdFilter = useDeferredValue(orderIdFilter);
   const deferredPhoneNumberFilter = useDeferredValue(phoneNumberFilter);
@@ -386,8 +388,24 @@ const TotalRequestsComponent = () => {
     }
   };
 
-  // Server handles filtering and sorting, so we just use allItems directly
-  const filteredOrders = allItems;
+  // Server handles most filtering, but we apply shop filter client-side
+  const filteredOrders = useMemo(() => {
+    if (!shopFilter) return allItems;
+    
+    return allItems.filter(item => {
+      const userName = item.user?.name?.toLowerCase() || '';
+      const userEmail = item.user?.email?.toLowerCase() || '';
+      
+      if (shopFilter === 'shop') {
+        // Show only shop orders (user name is 'shop' or email contains 'shop')
+        return userName === 'shop' || userEmail.includes('shop@');
+      } else if (shopFilter === 'dashboard') {
+        // Show only dashboard orders (user name is NOT 'shop')
+        return userName !== 'shop' && !userEmail.includes('shop@');
+      }
+      return true;
+    });
+  }, [allItems, shopFilter]);
 
   // Server handles pagination, so we don't need this effect
   useEffect(() => {
@@ -1043,6 +1061,30 @@ const TotalRequestsComponent = () => {
                 </select>
               </div>
 
+              {/* Shop Filter */}
+              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
+                <label
+                  htmlFor="shopFilter"
+                  className="font-medium text-gray-700"
+                >
+                  Source:
+                </label>
+                <select
+                  id="shopFilter"
+                  value={shopFilter}
+                  onChange={(e) => {
+                    setShopFilter(e.target.value);
+                    setCurrentPage(1); // Reset to first page on filter change
+                    setTimeout(() => fetchOrderData(), 0);
+                  }}
+                  className="border p-2 rounded-md w-full md:w-auto"
+                >
+                  <option value="">All Orders</option>
+                  <option value="shop">Shop Orders</option>
+                  <option value="dashboard">Dashboard Orders</option>
+                </select>
+              </div>
+
               <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
                 <label
                   htmlFor="dateFilter"
@@ -1149,12 +1191,13 @@ const TotalRequestsComponent = () => {
             </div>
 
               <div className="mt-4 text-sm text-gray-600">
-                Showing {itemsPerPage} of {paginatedItems.length} results (Page {currentPage} of {totalPages})
+                Showing {filteredOrders.length} of {paginatedItems.length} results (Page {currentPage} of {totalPages})
+                {shopFilter && <span className="ml-2 text-blue-600 font-medium">({shopFilter === 'shop' ? 'Shop Orders Only' : 'Dashboard Orders Only'})</span>}
               </div>
 
               <VirtualizedTable 
                 loading={loading}
-                items={paginatedItems}
+                items={filteredOrders}
                 visibleRange={visibleRange}
                 setVisibleRange={setVisibleRange}
                 getRowColor={getRowColor}

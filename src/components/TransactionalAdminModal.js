@@ -402,7 +402,9 @@ const TransactionalAdminModal = () => {
     customerName: '',
     phone: '',
     product: '',
-    status: ''
+    status: '',
+    startDate: '',
+    endDate: ''
   });
   const [shopOrdersPage, setShopOrdersPage] = useState(1);
   const shopOrdersPerPage = 50;
@@ -1263,7 +1265,7 @@ const TransactionalAdminModal = () => {
                         <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
                           <h3 className="text-lg font-semibold mb-4 text-gray-900">Shop Orders</h3>
                           
-                          <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                          <div className="grid grid-cols-1 md:grid-cols-6 gap-3 mb-4">
                             <input
                               type="text"
                               placeholder="Customer name..."
@@ -1296,6 +1298,20 @@ const TransactionalAdminModal = () => {
                               <option value="Processing">Processing</option>
                               <option value="Cancelled">Cancelled</option>
                             </select>
+                            <input
+                              type="date"
+                              value={shopOrderFilters.startDate}
+                              onChange={(e) => setShopOrderFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="Start Date"
+                            />
+                            <input
+                              type="date"
+                              value={shopOrderFilters.endDate}
+                              onChange={(e) => setShopOrderFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                              placeholder="End Date"
+                            />
                           </div>
 
                           {shopOrdersLoading ? (
@@ -1309,12 +1325,30 @@ const TransactionalAdminModal = () => {
                               const matchPhone = !shopOrderFilters.phone || formatPhoneNumber(order.phone)?.includes(shopOrderFilters.phone);
                               const matchProduct = !shopOrderFilters.product || order.product?.toLowerCase().includes(shopOrderFilters.product.toLowerCase());
                               const matchStatus = !shopOrderFilters.status || order.status?.toLowerCase() === shopOrderFilters.status.toLowerCase();
-                              return matchCustomer && matchPhone && matchProduct && matchStatus;
+                              
+                              // Date filter
+                              let matchDate = true;
+                              if (shopOrderFilters.startDate || shopOrderFilters.endDate) {
+                                const orderDate = new Date(order.date);
+                                if (shopOrderFilters.startDate) {
+                                  const start = new Date(shopOrderFilters.startDate);
+                                  start.setHours(0, 0, 0, 0);
+                                  if (orderDate < start) matchDate = false;
+                                }
+                                if (shopOrderFilters.endDate) {
+                                  const end = new Date(shopOrderFilters.endDate);
+                                  end.setHours(23, 59, 59, 999);
+                                  if (orderDate > end) matchDate = false;
+                                }
+                              }
+                              
+                              return matchCustomer && matchPhone && matchProduct && matchStatus && matchDate;
                             });
                             const totalShopOrdersAmount = filteredShopOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
                             const totalShopOrdersPages = Math.ceil(filteredShopOrders.length / shopOrdersPerPage);
                             const paginatedShopOrders = filteredShopOrders.slice((shopOrdersPage - 1) * shopOrdersPerPage, shopOrdersPage * shopOrdersPerPage);
                             
+
                             return (
                               <>
                                 {/* Summary Cards */}

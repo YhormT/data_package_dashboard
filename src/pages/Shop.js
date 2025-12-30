@@ -87,6 +87,18 @@ const Shop = () => {
   };
 
   const handleOrderClick = (product) => {
+    // Check if product is out of stock
+    if (product.stock <= 0) {
+      Swal.fire({
+        title: 'Out of Stock',
+        text: 'Sorry, this product is currently out of stock. Please check back later or choose another product.',
+        icon: 'warning',
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#f59e0b'
+      });
+      return;
+    }
+    
     setSelectedProduct(product);
     setSelectedProductGradient(getCarrierGradient(product.name));
     setShowPaymentModal(true);
@@ -512,11 +524,10 @@ const Shop = () => {
                   {/* CTA Button */}
                   <button
                     onClick={() => handleOrderClick(product)}
-                    disabled={product.stock <= 0}
                     className={`w-full py-4 rounded-xl font-bold text-base flex items-center justify-center gap-2 transition-all duration-300 ${
                       product.stock > 0
                         ? `bg-gradient-to-r ${getCarrierGradient(product.name)} text-white shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]`
-                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-gray-400 text-white cursor-pointer hover:bg-gray-500'
                     }`}
                   >
                     {product.stock > 0 ? (
@@ -524,7 +535,7 @@ const Shop = () => {
                         <span>Purchase Now</span>
                         <ArrowRight className="w-5 h-5" />
                       </>
-                    ) : 'Out of Stock'}
+                    ) : 'Out of Stock - Click for Info'}
                   </button>
                 </div>
               </div>
