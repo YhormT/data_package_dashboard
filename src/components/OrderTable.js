@@ -957,15 +957,24 @@ const TotalRequestsComponent = () => {
             </label>
           </div>
 
-          <div className="overflow-x-auto w-full">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between bg-white shadow-md rounded-lg p-4 space-y-3 md:space-y-0 md:space-x-4 flex-wrap">
-              {/* Order ID Filter - New Addition */}
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="orderIdFilter"
-                  className="font-medium text-gray-700"
-                >
-                  Order ID:
+          <div className="w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl shadow-lg p-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                </svg>
+                Filter Orders
+              </h3>
+              <button onClick={resetAllFilters} className="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 transition-colors">
+                <RotateCcw className="w-4 h-4" />
+                Reset All
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {/* Order ID Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="orderIdFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Order ID
                 </label>
                 <input
                   type="text"
@@ -973,20 +982,17 @@ const TotalRequestsComponent = () => {
                   value={orderIdFilter}
                   onChange={(e) => {
                     setOrderIdFilter(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  placeholder="Enter order ID"
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  placeholder="Search by ID..."
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
 
               {/* Phone Number Filter */}
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="phoneNumberFilter"
-                  className="font-medium text-gray-700"
-                >
-                  Phone:
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="phoneNumberFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Phone Number
                 </label>
                 <input
                   type="text"
@@ -994,29 +1000,26 @@ const TotalRequestsComponent = () => {
                   value={phoneNumberFilter}
                   onChange={(e) => {
                     setPhoneNumberFilter(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  placeholder="Enter phone number"
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  placeholder="Search by phone..."
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
 
               {/* Product Filter */}
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="productFilter"
-                  className="font-medium text-gray-700"
-                >
-                  Product:
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="productFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Product
                 </label>
                 <select
                   id="productFilter"
                   value={selectedProduct}
                   onChange={(e) => {
                     setSelectedProduct(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white text-sm"
                 >
                   <option value="">All Products</option>
                   <option value="MTN">MTN</option>
@@ -1037,21 +1040,19 @@ const TotalRequestsComponent = () => {
                 </select>
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="statusFilter"
-                  className="font-medium text-gray-700"
-                >
-                  Status:
+              {/* Status Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="statusFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Status
                 </label>
                 <select
                   id="statusFilter"
                   value={selectedStatusMain}
                   onChange={(e) => {
                     setSelectedStatusMain(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white text-sm"
                 >
                   <option value="">All Statuses</option>
                   <option value="Pending">Pending</option>
@@ -1061,23 +1062,20 @@ const TotalRequestsComponent = () => {
                 </select>
               </div>
 
-              {/* Shop Filter */}
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="shopFilter"
-                  className="font-medium text-gray-700"
-                >
-                  Source:
+              {/* Source Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="shopFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Source
                 </label>
                 <select
                   id="shopFilter"
                   value={shopFilter}
                   onChange={(e) => {
                     setShopFilter(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                     setTimeout(() => fetchOrderData(), 0);
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white text-sm"
                 >
                   <option value="">All Orders</option>
                   <option value="shop">Shop Orders</option>
@@ -1085,12 +1083,10 @@ const TotalRequestsComponent = () => {
                 </select>
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="dateFilter"
-                  className="font-medium text-gray-700"
-                >
-                  Date:
+              {/* Date Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="dateFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Date
                 </label>
                 <input
                   type="date"
@@ -1098,18 +1094,16 @@ const TotalRequestsComponent = () => {
                   value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="startTimeFilter"
-                  className="font-medium text-gray-700 whitespace-nowrap"
-                >
-                  Start Time:
+              {/* Start Time Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="startTimeFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Start Time
                 </label>
                 <input
                   type="time"
@@ -1117,18 +1111,16 @@ const TotalRequestsComponent = () => {
                   value={startTime}
                   onChange={(e) => {
                     setStartTime(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="endTimeFilter"
-                  className="font-medium text-gray-700 whitespace-nowrap"
-                >
-                  End Time:
+              {/* End Time Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="endTimeFilter" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  End Time
                 </label>
                 <input
                   type="time"
@@ -1136,28 +1128,26 @@ const TotalRequestsComponent = () => {
                   value={endTime}
                   onChange={(e) => {
                     setEndTime(e.target.value);
-                    setCurrentPage(1); // Reset to first page on filter change
+                    setCurrentPage(1);
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-sm"
                 />
               </div>
 
-              <div className="flex flex-col md:flex-row md:items-center space-y-1 md:space-y-0 md:space-x-3 w-full md:w-auto">
-                <label
-                  htmlFor="sortOrder"
-                  className="font-medium text-gray-700"
-                >
-                  Sort:
+              {/* Sort Order Filter */}
+              <div className="flex flex-col space-y-1.5">
+                <label htmlFor="sortOrder" className="text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                  Sort Order
                 </label>
                 <select
                   id="sortOrder"
                   value={sortOrder}
                   onChange={(e) => {
                     setSortOrder(e.target.value);
-                    setCurrentPage(1); // Reset to first page on sort change
-                fetchOrderData(); // Fetch new data with updated sort
+                    setCurrentPage(1);
+                    fetchOrderData();
                   }}
-                  className="border p-2 rounded-md w-full md:w-auto"
+                  className="px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all bg-white text-sm"
                 >
                   <option value="newest">Newest First</option>
                   <option value="oldest">Oldest First</option>

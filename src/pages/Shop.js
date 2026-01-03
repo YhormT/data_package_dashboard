@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
-import { ShoppingCart, Search, Phone, CheckCircle, XCircle, Clock, Package, Filter, Loader2, MessageCircle, Shield, Zap, Wifi, Star, ArrowRight, Sparkles } from 'lucide-react';
+import { ShoppingCart, Search, Phone, CheckCircle, XCircle, Clock, Package, Filter, Loader2, MessageCircle, Shield, Zap, Wifi, Star, ArrowRight} from 'lucide-react';
 import Swal from 'sweetalert2';
 import BASE_URL from '../endpoints/endpoints';
 
@@ -364,16 +364,12 @@ const Shop = () => {
       </nav>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
+      {/* <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-400/30 via-transparent to-transparent" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-orange-400/20 to-transparent rounded-full blur-3xl" />
         
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20">
           <div className="text-center max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/20 border border-yellow-500/30 rounded-full mb-6">
-              <Sparkles className="w-4 h-4 text-yellow-600" />
-              <span className="text-yellow-700 text-sm font-medium">Instant Data Delivery</span>
-            </div>
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
               Premium Data Bundles
               <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500">
@@ -384,8 +380,7 @@ const Shop = () => {
               Get connected instantly with our reliable data packages. Fast delivery, secure payments, and 24/7 support for all networks.
             </p>
             
-            {/* Trust Badges */}
-            <div className="flex flex-wrap justify-center gap-6 mb-12">
+            <div className="flex flex-wrap justify-center gap-6 mb-12 -mt-6">
               <div className="flex items-center gap-2 text-gray-700">
                 <div className="p-2 bg-green-100 rounded-lg">
                   <Shield className="w-5 h-5 text-green-600" />
@@ -407,10 +402,10 @@ const Shop = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* Main Content */}
-      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full">
+      <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full mt-5">
         {/* Filter Section */}
         <div
           ref={filterRef}
