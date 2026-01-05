@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import axios from 'axios';
-import { ShoppingCart, Search, Phone, CheckCircle, XCircle, Clock, Package, Filter, Loader2, MessageCircle, Shield, Zap, Wifi, Star, ArrowRight} from 'lucide-react';
+import { ShoppingCart, Search, Phone, CheckCircle, XCircle, Clock, Package, Filter, Loader2, MessageCircle, Shield, Zap, Wifi, Star, ArrowRight, MessageSquareWarning } from 'lucide-react';
 import Swal from 'sweetalert2';
 import BASE_URL from '../endpoints/endpoints';
+import ShopAnnouncementBanner from '../components/ShopAnnouncementBanner';
+import ComplaintModal from '../components/ComplaintModal';
 
 // Helper function to format phone number from 233XXXXXXXXX to 0XXXXXXXXX
 const formatPhoneNumber = (phone) => {
@@ -26,6 +28,7 @@ const Shop = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [showTrackingModal, setShowTrackingModal] = useState(false);
+  const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [mobileNumber, setMobileNumber] = useState('');
   const [trackingNumber, setTrackingNumber] = useState('');
   const [trackedOrders, setTrackedOrders] = useState([]);
@@ -336,73 +339,42 @@ const Shop = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-50 flex flex-col">
+      {/* Shop Announcement Banner */}
+      <ShopAnnouncementBanner />
+      
       {/* Premium Navbar */}
       <nav className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <a href="/" className="flex items-center gap-3 group">
+            <a href="/shop" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
-                <div className="relative bg-gradient-to-r from-amber-500 to-orange-500 p-2.5 rounded-xl">
-                  <ShoppingCart className="w-6 h-6 text-white" />
-                </div>
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Kelishub</h1>
                 <p className="text-xs text-yellow-600 font-medium tracking-wider uppercase">Data Shop</p>
               </div>
             </a>
-            <button
-              onClick={() => setShowTrackingModal(true)}
-              className="group flex items-center gap-2 px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 rounded-full text-white font-medium transition-all duration-300 shadow-md"
-            >
-              <Search className="w-4 h-4 text-white" />
-              <span>Track Order</span>
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      {/* <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-yellow-400/30 via-transparent to-transparent" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-gradient-to-b from-orange-400/20 to-transparent rounded-full blur-3xl" />
-        
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-20">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-gray-900 mb-6 leading-tight">
-              Premium Data Bundles
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-yellow-500 via-orange-500 to-yellow-500">
-                At Unbeatable Prices
-              </span>
-            </h2>
-            <p className="text-lg text-gray-600 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Get connected instantly with our reliable data packages. Fast delivery, secure payments, and 24/7 support for all networks.
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-6 mb-12 -mt-6">
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <Shield className="w-5 h-5 text-green-600" />
-                </div>
-                <span className="text-sm font-medium">Secure Payments</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Zap className="w-5 h-5 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium">Instant Delivery</span>
-              </div>
-              <div className="flex items-center gap-2 text-gray-700">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Wifi className="w-5 h-5 text-purple-600" />
-                </div>
-                <span className="text-sm font-medium">All Networks</span>
-              </div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowComplaintModal(true)}
+                className="group flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 rounded-full text-white font-medium transition-all duration-300 shadow-md"
+                title="File a Complaint"
+              >
+                <MessageSquareWarning className="w-4 h-4 text-white" />
+                <span className="hidden sm:inline">Complaint</span>
+              </button>
+              <button
+                onClick={() => setShowTrackingModal(true)}
+                className="group flex items-center gap-2 px-5 py-2.5 bg-yellow-500 hover:bg-yellow-600 rounded-full text-white font-medium transition-all duration-300 shadow-md"
+              >
+                <Search className="w-4 h-4 text-white" />
+                <span>Track Order</span>
+              </button>
             </div>
           </div>
         </div>
-      </div> */}
+      </nav>
 
       {/* Main Content */}
       <main className="flex-1 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full mt-5">
@@ -900,6 +872,12 @@ const Shop = () => {
           </div>
         </div>
       </footer>
+
+      {/* Complaint Modal */}
+      <ComplaintModal 
+        isOpen={showComplaintModal} 
+        onClose={() => setShowComplaintModal(false)} 
+      />
     </div>
   );
 };

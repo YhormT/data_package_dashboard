@@ -600,12 +600,15 @@ const TotalRequestsComponent = () => {
     let itemsToExport;
     let statusUpdateNeeded = false;
     let pendingOrderIds = [];
+    let downloadType = ""; // Track what type of orders we're downloading
 
     if (hasStatusFilter) {
       // If a specific status is filtered, export only those orders
       itemsToExport = filteredOrders.filter(
         (item) => item.order?.items?.[0]?.status === selectedStatusMain
       );
+      
+      downloadType = selectedStatusMain.toLowerCase();
       
       // Only update status if we're downloading Pending orders
       if (selectedStatusMain === "Pending") {
@@ -615,29 +618,40 @@ const TotalRequestsComponent = () => {
         ].filter(Boolean);
       }
     } else {
-      // If no status filter, export both PENDING and PROCESSING orders (original behavior)
+      // If no status filter, first check for pending orders
       const pendingItems = filteredOrders.filter(
         (item) => item.order?.items?.[0]?.status === "Pending"
       );
-      const processingItems = filteredOrders.filter(
-        (item) => item.order?.items?.[0]?.status === "Processing"
-      );
       
-      itemsToExport = [...pendingItems, ...processingItems];
-      
-      // Update status for pending orders only
       if (pendingItems.length > 0) {
+        // If there are pending orders, download pending orders and change status to processing
+        itemsToExport = pendingItems;
         statusUpdateNeeded = true;
+        downloadType = "pending";
         pendingOrderIds = [
           ...new Set(pendingItems.map((item) => item.order?.id)),
         ].filter(Boolean);
+      } else {
+        // If no pending orders, download completed orders
+        const completedItems = filteredOrders.filter(
+          (item) => item.order?.items?.[0]?.status === "Completed"
+        );
+        
+        if (completedItems.length > 0) {
+          itemsToExport = completedItems;
+          downloadType = "completed";
+          statusUpdateNeeded = false; // Don't update status for completed orders
+        } else {
+          // If neither pending nor completed orders exist, show error
+          itemsToExport = [];
+        }
       }
     }
 
     if (!itemsToExport.length) {
       const statusText = hasStatusFilter 
         ? `No ${selectedStatusMain.toLowerCase()} orders available for download.`
-        : "No pending or processing orders available for download.";
+        : "No pending or completed orders available for download.";
       
       Swal.fire({
         icon: "warning",
@@ -649,7 +663,13 @@ const TotalRequestsComponent = () => {
 
     // Export phone number and data size for all filtered items
     const dataToExport = itemsToExport.map((item) => {
-      const phoneNumber = item?.mobileNumber || "N/A";
+      let phoneNumber = item?.mobileNumber || "N/A";
+      
+      // Convert phone numbers starting with 233 to start with 0
+      if (phoneNumber && phoneNumber.startsWith("233")) {
+        phoneNumber = "0" + phoneNumber.substring(3);
+      }
+      
       const dataSize = item.product?.description
         ? item.product.description.replace(/\D+$/, "")
         : "N/A";
@@ -664,7 +684,7 @@ const TotalRequestsComponent = () => {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orders");
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
-    const statusSuffix = hasStatusFilter ? `_${selectedStatusMain}` : "";
+    const statusSuffix = hasStatusFilter ? `_${selectedStatusMain}` : `_${downloadType}`;
     XLSX.writeFile(wb, `Orders${statusSuffix}_${timestamp}.xlsx`);
 
     // After successful download, update the status of pending items to processing (only if needed)

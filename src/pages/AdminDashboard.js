@@ -32,6 +32,7 @@ import TransactionalAdminModal from "../components/TransactionalAdminModal";
 import PaymentModal from "../components/PaymentModal";
 import TotalRequestsComponent from "../components/OrderTable";
 import Announcement from "../components/Announcement";
+import ComplaintsViewer from "../components/ComplaintsViewer";
 // import AuditLog from "../components/AuditLog";
 // import OrderDialog from "../components/OrderDialog.js";
 // import DownloadExcel from "../components/DownloadExcel";
@@ -1120,6 +1121,8 @@ const filteredOrders = useMemo(() => {
               <Announcement />
             </div>
 
+            <ComplaintsViewer />
+
             <div
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
               onClick={() => setIsOpen(false)}
@@ -1128,7 +1131,7 @@ const filteredOrders = useMemo(() => {
             </div>
 
             <hr />
- 
+
             <div
               className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-700 cursor-pointer"
               onClick={() => setIsOpen(false)}

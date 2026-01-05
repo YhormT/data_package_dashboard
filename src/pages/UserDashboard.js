@@ -31,6 +31,7 @@ import TransactionsModal from "../components/TransactionsModal";
 import OtherProducts from "../components/OtherProducts";
 import DailySalesModal from "../components/DailySalesCard";
 import Sidebar from "../components/Sidebar";
+import AgentNotifications from "../components/AgentNotifications";
 
 const UserDashboard = () => {
   const userRole = localStorage.getItem("role");
@@ -830,6 +831,7 @@ const handleCategorySelect = (category) => {
                 <span>Loan Balance: GHS {loanBalance?.adminLoanBalance}</span>
               </div>
             )}
+            <AgentNotifications />
             <div
               className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 cursor-pointer md:flex items-center justify-center whitespace-nowrap"
               onClick={() => setTopUp(true)}
