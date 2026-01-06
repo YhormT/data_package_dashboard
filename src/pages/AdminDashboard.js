@@ -787,12 +787,21 @@ const filteredOrders = useMemo(() => {
       return;
     }
 
-    const dataToExport = filteredOrders.map((item) => ({
-      "User Phone Number": item?.mobileNumber || "N/A",
-      "Product Description": item.product?.description
-        ? item.product.description.replace(/\D+$/, "")
-        : "N/A",
-    }));
+    const dataToExport = filteredOrders.map((item) => {
+      let phoneNumber = item?.mobileNumber || "N/A";
+      
+      // Convert phone numbers starting with 233 to start with 0
+      if (phoneNumber && phoneNumber.startsWith("233")) {
+        phoneNumber = "0" + phoneNumber.substring(3);
+      }
+      
+      return {
+        "User Phone Number": phoneNumber,
+        "Product Description": item.product?.description
+          ? item.product.description.replace(/\D+$/, "")
+          : "N/A",
+      };
+    });
 
     const ws = XLSX.utils.json_to_sheet(dataToExport);
 

@@ -13,7 +13,8 @@ import {
   FileText,
   Loader2,
   RefreshCw,
-  Trash2
+  Trash2,
+  MessageCircle
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -155,6 +156,38 @@ const ComplaintsViewer = () => {
     }
   };
 
+  // Format phone number for WhatsApp (convert 0XX to 233XX)
+  const formatWhatsAppNumber = (phone) => {
+    if (!phone) return null;
+    const cleaned = phone.replace(/\D/g, "");
+    if (cleaned.startsWith("0") && cleaned.length === 10) {
+      return "233" + cleaned.slice(1);
+    }
+    if (cleaned.startsWith("233")) {
+      return cleaned;
+    }
+    return "233" + cleaned;
+  };
+
+  // Open WhatsApp with pre-filled message
+  const openWhatsApp = (complaint) => {
+    const whatsappNum = complaint.whatsappNumber || complaint.mobileNumber;
+    const formattedNumber = formatWhatsAppNumber(whatsappNum);
+    if (!formattedNumber) {
+      Swal.fire({
+        icon: "warning",
+        title: "No Number Available",
+        text: "This complaint doesn't have a valid contact number."
+      });
+      return;
+    }
+    
+    const message = `Hello! This is regarding your complaint (ID: ${complaint.id}) submitted on ${new Date(complaint.createdAt).toLocaleDateString()}.${complaint.orderId ? ` Order ID: ${complaint.orderId}` : ""}\n\nYour complaint: "${complaint.message.slice(0, 100)}${complaint.message.length > 100 ? "..." : ""}"\n\n`;
+    
+    const whatsappUrl = `https://wa.me/${formattedNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   return (
     <>
       {/* Full Clickable Complaints Button */}
@@ -283,11 +316,17 @@ const ComplaintsViewer = () => {
                                   </span>
                                 </div>
                                 
-                                <div className="flex items-center gap-4 mb-2 text-sm">
+                                <div className="flex flex-wrap items-center gap-3 mb-2 text-sm">
                                   <div className="flex items-center gap-1 text-gray-600">
                                     <Phone className="w-4 h-4" />
                                     <span>{complaint.mobileNumber}</span>
                                   </div>
+                                  {complaint.whatsappNumber && (
+                                    <div className="flex items-center gap-1 text-green-600">
+                                      <MessageCircle className="w-4 h-4" />
+                                      <span>WA: {complaint.whatsappNumber}</span>
+                                    </div>
+                                  )}
                                   {complaint.orderId && (
                                     <div className="flex items-center gap-1 text-gray-600">
                                       <FileText className="w-4 h-4" />
@@ -307,6 +346,14 @@ const ComplaintsViewer = () => {
                               </div>
                               
                               <div className="flex items-center gap-2 ml-4">
+                                {/* WhatsApp Reply Button */}
+                                <button
+                                  onClick={() => openWhatsApp(complaint)}
+                                  className="p-1.5 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors"
+                                  title="Reply via WhatsApp"
+                                >
+                                  <MessageCircle className="w-4 h-4" />
+                                </button>
                                 {complaint.status !== "resolved" && (
                                   <button
                                     onClick={() => {

@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import BASE_URL from "../endpoints/endpoints";
 import { Dialog, Transition } from "@headlessui/react";
-import { MessageSquareWarning, X, Send, Loader2, Phone, FileText } from "lucide-react";
+import { MessageSquareWarning, X, Send, Loader2, Phone, FileText, MessageCircle } from "lucide-react";
 import Swal from "sweetalert2";
 
 const ComplaintModal = ({ isOpen, onClose }) => {
   const [mobileNumber, setMobileNumber] = useState("");
+  const [whatsappNumber, setWhatsappNumber] = useState("");
   const [orderId, setOrderId] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,10 +31,20 @@ const ComplaintModal = ({ isOpen, onClose }) => {
       return;
     }
 
+    if (whatsappNumber && whatsappNumber.length < 10) {
+      Swal.fire({
+        icon: "warning",
+        title: "Invalid WhatsApp Number",
+        text: "Please enter a valid WhatsApp number or leave it empty.",
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       await axios.post(`${BASE_URL}/api/complaints`, {
         mobileNumber,
+        whatsappNumber: whatsappNumber || null,
         orderId: orderId || null,
         message,
       });
@@ -45,6 +56,7 @@ const ComplaintModal = ({ isOpen, onClose }) => {
       });
 
       setMobileNumber("");
+      setWhatsappNumber("");
       setOrderId("");
       setMessage("");
       onClose();
@@ -122,6 +134,24 @@ const ComplaintModal = ({ isOpen, onClose }) => {
                       disabled={loading}
                       maxLength={10}
                     />
+                  </div>
+
+                  {/* WhatsApp Number Input (Optional) */}
+                  <div>
+                    <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                      <MessageCircle className="w-4 h-4 text-green-600" />
+                      WhatsApp Number (Optional)
+                    </label>
+                    <input
+                      type="tel"
+                      className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:opacity-50 placeholder-gray-400"
+                      placeholder="Enter WhatsApp number for replies"
+                      value={whatsappNumber}
+                      onChange={(e) => setWhatsappNumber(e.target.value.replace(/\D/g, ""))}
+                      disabled={loading}
+                      maxLength={10}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">We'll use this to reply to your complaint</p>
                   </div>
 
                   {/* Order ID Input (Optional) */}

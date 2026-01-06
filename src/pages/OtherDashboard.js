@@ -23,11 +23,9 @@ import BASE_URL from "../endpoints/endpoints";
 import OrderHistory from "../components/OrderHistory";
 import Logo from "../assets/logo-icon.png";
 import TopUp from "../components/TopUp";
-import PasswordChange from "../components/PasswordChange";
 import UploadExcel from "../components/UploadExcel";
 import PasteOrders from "../components/PasteOrders";
 import TransactionsModal from "../components/TransactionsModal";
-import OtherProducts from "../components/OtherProducts";
 import AgentNotifications from "../components/AgentNotifications";
 
 const OtherDashboard = () => {
@@ -618,9 +616,10 @@ const OtherDashboard = () => {
   return (
     <div className="flex h-screen bg-gray-100">
       <aside
+        ref={sidebarRef}
         className={`bg-white w-64 p-5 fixed h-full transition-transform transform ${
           isOpen ? "translate-x-0" : "-translate-x-64"
-        } md:translate-x-0 shadow-lg flex flex-col`}
+        } md:translate-x-0 shadow-lg flex flex-col z-50`}
         style={{
           backgroundImage: `url(${bgImage})`,
           backgroundSize: "contain", // Fits image without stretching
@@ -755,102 +754,104 @@ const OtherDashboard = () => {
           </nav>
         </div>
 
-        {/* 🎥 Video Ad Section */}
-        {/* <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
-          <p className="text-xs text-gray-500">Sponsored Ad</p>
-          <video
-            className="mt-2 rounded-lg w-full hover:opacity-80 transition-opacity duration-300"
-            controls
-            autoPlay
-            loop
-            muted
-          >
-            <source
-              src="https://www.w3schools.com/html/mov_bbb.mp4"
-              type="video/mp4"
-            />
-            Your browser does not support the video tag.
-          </video>
-        </div> */}
       </aside>
 
+      {/* Header */}
       <div className="flex-1 flex flex-col ml-0 md:ml-64">
-        <header className="bg-white shadow-md p-4 flex justify-between items-center">
-          <button className="md:hidden" onClick={() => setIsOpen(true)}>
-            <Menu className="w-6 h-6" />
-          </button>
-
-          <p className="text-md font-semibold uppercase whitespace-nowrap">
-            <span className="">WELCOME</span> {loanBalance?.name}
-          </p>
-          
-          <div className="flex items-center space-x-4">
-            {loanBalance?.hasLoan && (
-              <div className="text-sm text-red-500 mt-2 animate-pulse  hidden md:block">
-                <span>Loan Balance: GHS {loanBalance?.adminLoanBalance}</span>
+        <header className="bg-gradient-to-r from-sky-600 to-sky-700 shadow-md p-3 md:p-4">
+          {/* Mobile Header - Top Row */}
+          <div className="flex items-center justify-between md:hidden mb-2">
+            <button 
+              className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors" 
+              onClick={() => setIsOpen(true)}
+            >
+              <Menu className="w-5 h-5 text-white" />
+            </button>
+            <p className="text-sm font-semibold text-white uppercase truncate max-w-[120px]">
+              {loanBalance?.name}
+            </p>
+            <div className="flex items-center space-x-2">
+              <AgentNotifications />
+              <div
+                className="relative cursor-pointer p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                onClick={() => setIsCartOpen(true)}
+              >
+                <ShoppingCart className="w-5 h-5 text-white" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cart.length}
+                  </span>
+                )}
               </div>
-            )}
-            <AgentNotifications />
+            </div>
+          </div>
+          
+          {/* Mobile Header - Bottom Row */}
+          <div className="flex items-center justify-between md:hidden">
             <div
-              className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold px-3 py-2 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 ease-in-out transform hover:-translate-y-1 cursor-pointer md:flex items-center justify-center whitespace-nowrap"
+              className="bg-white/20 text-white text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition-colors"
               onClick={() => setTopUp(true)}
             >
               Top Up
             </div>
+            <div
+              className="bg-white/20 text-white text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition-colors flex items-center space-x-1"
+              onClick={() => setIsHistoryOpen(true)}
+            >
+              <History className="w-4 h-4" />
+              <span>History</span>
+            </div>
+          </div>
 
-            <div className="bg-white p-2 rounded-lg shadow-md border border-gray-300 flex flex-col items-center hidden md:block cursor-pointer transition-all duration-300 ease-in-out transform hover:-translate-y-1">
-              <div className="flex items-center space-x-2">
+          {/* Desktop Header */}
+          <div className="hidden md:flex items-center justify-between">
+            <p className="text-lg font-semibold text-white uppercase whitespace-nowrap">
+              <span>WELCOME</span> {loanBalance?.name}
+            </p>
+            <div className="flex items-center space-x-4">
+              {loanBalance?.hasLoan && (
+                <div className="text-sm text-red-200 animate-pulse">
+                  <span>Loan Balance: GHS {loanBalance?.adminLoanBalance}</span>
+                </div>
+              )}
+              <AgentNotifications />
+              <div
+                className="bg-white text-sky-700 font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
+                onClick={() => setTopUp(true)}
+              >
+                Top Up
+              </div>
+
+              <div className="bg-white p-2 rounded-lg shadow-md flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:shadow-lg">
                 <h2 className="text-sm font-semibold text-gray-700 uppercase">
-                  Wallet :
+                  Wallet:
                 </h2>
-                <div className="text-2xl font-bold text-blue-600 whitespace-nowrap">
-                  GHS{" "}
-                  {parseFloat(Math.abs(loanBalance?.loanBalance)).toFixed(2)}
+                <div className="text-xl font-bold text-sky-700 whitespace-nowrap">
+                  GHS {parseFloat(Math.abs(loanBalance?.loanBalance)).toFixed(2)}
                 </div>
               </div>
-            </div>
 
-            {/* <div className="bg-white p-2 rounded-lg shadow-md border border-gray-300 flex flex-col items-center hidden md:block white space-nowrap">
-              <h2 className="text-sm font-semibold text-gray-700 uppercase">
-                wallet
-              </h2>
-              <div className="text-2xl font-bold text-blue-600 mt-2">
-                GHS {parseFloat(Math.abs(loanBalance?.loanBalance)).toFixed(2)}
+              {/* Shopping Cart */}
+              <div
+                className="relative cursor-pointer p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
+                onClick={() => setIsCartOpen(true)}
+              >
+                <ShoppingCart className="w-6 h-6 text-white" />
+                {cart.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                    {cart.length}
+                  </span>
+                )}
               </div>
-              
-            </div> */}
 
-            {/* Shopping Cart */}
-            <div
-              className="relative cursor-pointer"
-              onClick={() => setIsCartOpen(true)}
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {cart.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full px-2">
-                  {cart.length}
-                </span>
-              )}
-            </div>
-
-            {/* Order History Button */}
-            <div
-              onClick={() => setIsHistoryOpen(true)}
-              className="md:hidden block"
-            >
-              <History className="w-5 h-5" />
-            </div>
-            <div
-              className="bg-blue-500 text-white px-3 py-1 rounded-md items-center space-x-2 hidden md:block cursor-pointer"
-              onClick={() => setIsHistoryOpen(true)}
-            >
-              <div className="flex items-center space-x-2">
+              <div
+                className="bg-white text-sky-700 px-4 py-2 rounded-lg shadow-md items-center space-x-2 cursor-pointer hover:shadow-lg transition-all flex"
+                onClick={() => setIsHistoryOpen(true)}
+              >
                 <History className="w-5 h-5" />
                 <span>Order History</span>
               </div>
             </div>
-
-            <PasswordChange />
           </div>
         </header>
 

@@ -30,7 +30,7 @@ const Sidebar = ({
     <aside
       className={`bg-white w-64 p-5 fixed h-full transition-transform transform ${
         isOpen ? "translate-x-0" : "-translate-x-64"
-      } md:translate-x-0 shadow-lg flex flex-col`}
+      } md:translate-x-0 shadow-lg flex flex-col z-50`}
       style={{
         backgroundImage: `url(${bgImage})`,
         backgroundSize: "contain",
@@ -127,16 +127,6 @@ const Sidebar = ({
 
             <hr className="my-10" />
             <TransactionsModal />
-            {/* Audit Log Button - always visible for admin */}
-            {/* <li
-              className={`flex items-center space-x-3 p-2 rounded-md cursor-pointer ${
-                showAuditLog ? "bg-blue-500 text-white" : "hover:bg-gray-200 text-gray-700"
-              }`}
-              onClick={() => setShowAuditLog(true)}
-            >
-              <History className="w-5 h-5" />
-              <span>Audit Log</span>
-            </li> */}
             <hr className="my-10" />
             <div onClick={() => setIsOpen(false)}>
               <UploadExcel onUploadSuccess={onUploadSuccess} />
@@ -147,18 +137,6 @@ const Sidebar = ({
             <div onClick={() => setIsOpen(false)}>
               <PasteOrders onUploadSuccess={onUploadSuccess} />
             </div>
-
-            {/* Daily Sales */}
-            {/* <li
-              className="flex items-center space-x-3 p-2 rounded-md hover:bg-gray-200 cursor-pointer text-green-600"
-              onClick={() => {
-                setDailySalesOpen(true);
-                setIsOpen(false);
-              }}
-            >
-              <History className="w-5 h-5" />
-              <span>Daily Sales</span>
-            </li> */}
 
             {/* Profile */}
             <li
@@ -183,33 +161,6 @@ const Sidebar = ({
           </ul>
         </nav>
       </div>
-
-      {/* Audit Log Modal */}
-      {/* <Dialog open={showAuditLog} onClose={() => setShowAuditLog(false)} className="fixed inset-0 z-50 flex items-center justify-center">
-        <div className="fixed inset-0 bg-black bg-opacity-40" aria-hidden="true" />
-        <div className="relative bg-white rounded-lg shadow-lg w-[95vw] md:w-[70vw] max-h-[90vh] overflow-y-auto p-4">
-          <Dialog.Title className="text-xl font-bold mb-2">Audit Log</Dialog.Title>
-          <button onClick={() => setShowAuditLog(false)} className="absolute top-2 right-4 text-gray-500 hover:text-red-500 text-lg">&times;</button>
-          <AuditLog />
-        </div>
-      </Dialog> */}
-
-      {/* <div className="mb-[100px] p-3 bg-gray-100 rounded-lg text-center">
-        <p className="text-xs text-gray-500">Sponsored Ad</p>
-        <video
-          className="mt-2 rounded-lg w-full hover:opacity-80 transition-opacity duration-300"
-          controls
-          autoPlay
-          loop
-          muted
-        >
-          <source
-            src="https://www.w3schools.com/html/mov_bbb.mp4"
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-      </div> */}
     </aside>
   );
 };

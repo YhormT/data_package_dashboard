@@ -513,9 +513,9 @@ const Shop = () => {
 
       {/* Payment Modal */}
       {showPaymentModal && selectedProduct && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-200 animate-in fade-in zoom-in duration-300">
-            <div className={`relative bg-gradient-to-r ${selectedProductGradient} p-8`}>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl max-w-md w-full overflow-hidden border border-gray-200 animate-in fade-in zoom-in duration-300 my-auto">
+            <div className={`relative bg-gradient-to-r ${selectedProductGradient} p-4 sm:p-8`}>
               <div className="absolute inset-0 bg-black/20" />
               <div className="relative">
                 <div className="flex items-center gap-2 mb-2">
@@ -535,7 +535,7 @@ const Shop = () => {
               </div>
             </div>
             
-            <div className="p-8">
+            <div className="p-4 sm:p-8">
               <div className="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-200">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Amount to Pay</span>
@@ -617,13 +617,27 @@ const Shop = () => {
               {/* Step 2: Waiting for payment */}
               {paymentStep === 'waiting' && (
                 <>
-                  <div className="mb-6 text-center">
-                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-5 mb-4">
-                      <p className="text-amber-400 font-medium">Payment page opened</p>
-                      <p className="text-amber-400/70 text-sm mt-1">Complete your payment there, then return here.</p>
+                  <div className="mb-4">
+                    <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 mb-4">
+                      <p className="text-amber-600 font-medium text-center">Payment page opened</p>
+                      <p className="text-amber-500 text-sm mt-1 text-center">Complete your payment there, then return here.</p>
                     </div>
-                    <p className="text-gray-600 text-sm">
-                      After completing payment, click the button below to verify.
+                    
+                    {/* Payment Instructions */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-4">
+                      <p className="text-blue-800 font-semibold text-sm mb-2">⏰ If alert is not shown after 40 seconds:</p>
+                      <ol className="text-blue-700 text-xs sm:text-sm space-y-1.5 list-decimal list-inside">
+                        <li>Dial <span className="font-bold bg-blue-100 px-1.5 py-0.5 rounded">*170#</span></li>
+                        <li>Select option <span className="font-bold">6</span> - My Wallet</li>
+                        <li>Select option <span className="font-bold">3</span> - My Approvals</li>
+                        <li>Select option <span className="font-bold">1</span> - My Approvals</li>
+                        <li>Enter your <span className="font-bold">PIN code</span> to see all approvals</li>
+                        <li>Select the option from <span className="font-bold">Paystack</span></li>
+                      </ol>
+                    </div>
+                    
+                    <p className="text-gray-600 text-xs sm:text-sm text-center">
+                      After completing payment, click below to verify.
                     </p>
                   </div>
 
@@ -631,7 +645,7 @@ const Shop = () => {
                     <button
                       onClick={verifyPayment}
                       disabled={isProcessingPayment}
-                      className={`w-full bg-gradient-to-r ${selectedProductGradient} text-white py-4 rounded-xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:shadow-lg`}
+                      className={`w-full bg-gradient-to-r ${selectedProductGradient} text-white py-3 sm:py-4 rounded-xl font-bold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 hover:shadow-lg text-sm sm:text-base`}
                     >
                       {isProcessingPayment ? (
                         <>
@@ -649,7 +663,7 @@ const Shop = () => {
                         setPaymentMessage('');
                       }}
                       disabled={isProcessingPayment}
-                      className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-4 rounded-xl font-semibold transition-all border border-gray-200"
+                      className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 sm:py-4 rounded-xl font-semibold transition-all border border-gray-200 text-sm sm:text-base"
                     >
                       Cancel
                     </button>

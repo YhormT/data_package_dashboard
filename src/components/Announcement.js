@@ -161,10 +161,10 @@ const Announcement = ({ onAnnouncementSaved }) => {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         disabled={loading}
-                        maxLength={200}
+                        maxLength={500}
                       />
                       <div className="flex justify-end text-xs text-gray-400 mt-1">
-                        <span>{title.length}/200</span>
+                        <span>{title.length}/500</span>
                       </div>
                     </div>
 
@@ -179,14 +179,14 @@ const Announcement = ({ onAnnouncementSaved }) => {
                                    transition-all duration-200 disabled:bg-gray-50 disabled:opacity-50
                                    placeholder-gray-400 text-sm sm:text-base"
                         placeholder="Write your announcement message..."
-                        rows={3}
+                        rows={6}
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         disabled={loading}
-                        maxLength={1000}
+                        maxLength={10000}
                       />
                       <div className="flex justify-end text-xs text-gray-400 mt-1">
-                        <span>{message.length}/1000</span>
+                        <span>{message.length}/10000</span>
                       </div>
                     </div>
 
