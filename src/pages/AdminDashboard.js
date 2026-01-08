@@ -488,7 +488,7 @@ const filteredOrders = useMemo(() => {
   // For tracking user activity
   const [lastActivity, setLastActivity] = useState(Date.now());
   const inactivityTimeout = useRef(null);
-  const INACTIVE_TIMEOUT = 300000;
+  const INACTIVE_TIMEOUT = 2700000; // 45 minutes
 
   const logoutAdmin = useCallback(async () => {
     try {

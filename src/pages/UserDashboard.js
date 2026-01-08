@@ -52,7 +52,7 @@ const UserDashboard = () => {
   // For tracking user activity
   const [lastActivity, setLastActivity] = useState(Date.now());
   const inactivityTimeout = useRef(null);
-  const INACTIVE_TIMEOUT = 300000;
+  const INACTIVE_TIMEOUT = 2700000; // 45 minutes
 
   const logoutUser = useCallback(async () => {
     try {
@@ -789,7 +789,7 @@ const handleCategorySelect = (category) => {
   const [dailySalesOpen, setDailySalesOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Sidebar
         isOpen={isOpen}
         setIsOpen={setIsOpen}
@@ -801,99 +801,82 @@ const handleCategorySelect = (category) => {
       />
 
       <div className="flex-1 flex flex-col ml-0 md:ml-64">
-        <header className="bg-gradient-to-r from-sky-600 to-sky-700 shadow-md p-3 md:p-4">
-          {/* Mobile Header - Top Row */}
-          <div className="flex items-center justify-between md:hidden mb-2">
-            <button 
-              className="p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors" 
-              onClick={() => setIsOpen(true)}
-            >
-              <Menu className="w-5 h-5 text-white" />
-            </button>
-            <p className="text-sm font-semibold text-white uppercase truncate max-w-[120px]">
-              {loanBalance?.name}
-            </p>
-            <div className="flex items-center space-x-2">
-              <AgentNotifications />
-              <div
-                className="relative cursor-pointer p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingCart className="w-5 h-5 text-white" />
-                {cart.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cart.length}
-                  </span>
-                )}
+        {/* Modern Header */}
+        <header className="bg-white/80 backdrop-blur-lg border-b border-slate-200 sticky top-0 z-30">
+          {/* Mobile Header */}
+          <div className="md:hidden p-4">
+            <div className="flex items-center justify-between mb-3">
+              <button className="p-2.5 rounded-xl bg-slate-900 text-white shadow-lg hover:bg-slate-800 transition-all" onClick={() => setIsOpen(true)}>
+                <Menu className="w-5 h-5" />
+              </button>
+              <div className="flex items-center gap-2">
+                <AgentNotifications />
+                <button className="relative p-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-lg hover:shadow-xl transition-all" onClick={() => setIsCartOpen(true)}>
+                  <ShoppingCart className="w-5 h-5" />
+                  {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse">{cart.length}</span>}
+                </button>
               </div>
             </div>
-          </div>
-          
-          {/* Mobile Header - Bottom Row */}
-          <div className="flex items-center justify-between md:hidden">
-            <div
-              className="bg-white/20 text-white text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition-colors"
-              onClick={() => setTopUp(true)}
-            >
-              Top Up
+            <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl p-4 shadow-xl mb-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs text-slate-400 mb-1">Wallet Balance</p>
+                  <p className="text-2xl font-bold text-white">GHS {parseFloat(Math.abs(loanBalance?.loanBalance || 0)).toFixed(2)}</p>
+                  {loanBalance?.hasLoan && <p className="text-xs text-red-400 mt-1 animate-pulse">Loan: GHS {parseFloat(loanBalance?.adminLoanBalance || 0).toFixed(2)}</p>}
+                </div>
+                <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white text-sm font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all" onClick={() => setTopUp(true)}>Top Up</button>
+              </div>
             </div>
-            <div
-              className="bg-white/20 text-white text-sm font-medium px-3 py-1.5 rounded-lg cursor-pointer hover:bg-white/30 transition-colors flex items-center space-x-1"
-              onClick={() => setIsHistoryOpen(true)}
-            >
-              <History className="w-4 h-4" />
-              <span>History</span>
+            <div className="flex gap-2">
+              <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all" onClick={() => setIsHistoryOpen(true)}>
+                <History className="w-4 h-4" /><span className="text-sm">History</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Tablet Header */}
+          <div className="hidden md:flex lg:hidden p-4 items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="bg-gradient-to-r from-slate-900 to-slate-800 rounded-xl px-4 py-2">
+                <p className="text-xs text-slate-400">Balance</p>
+                <p className="text-lg font-bold text-white">GHS {parseFloat(Math.abs(loanBalance?.loanBalance || 0)).toFixed(2)}</p>
+              </div>
+              {loanBalance?.hasLoan && <div className="text-sm text-red-500 font-medium animate-pulse">Loan: GHS {parseFloat(loanBalance?.adminLoanBalance || 0).toFixed(2)}</div>}
+            </div>
+            <div className="flex items-center gap-3">
+              <AgentNotifications />
+              <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all" onClick={() => setTopUp(true)}>Top Up</button>
+              <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all" onClick={() => setIsHistoryOpen(true)}><History className="w-4 h-4" /><span>History</span></button>
+              <button className="relative p-2.5 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-md hover:shadow-lg transition-all" onClick={() => setIsCartOpen(true)}>
+                <ShoppingCart className="w-5 h-5" />
+                {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">{cart.length}</span>}
+              </button>
             </div>
           </div>
 
           {/* Desktop Header */}
-          <div className="hidden md:flex items-center justify-between">
-            <p className="text-lg font-semibold text-white uppercase whitespace-nowrap">
-              <span>WELCOME</span> {loanBalance?.name}
-            </p>
-            <div className="flex items-center space-x-4">
-              {loanBalance?.hasLoan && (
-                <div className="text-sm text-red-200 animate-pulse">
-                  <span>Loan Balance: GHS {loanBalance?.adminLoanBalance}</span>
-                </div>
-              )}
+          <div className="hidden lg:flex p-4 items-center justify-between">
+            <div className="flex items-center gap-6">
+              <div>
+                <p className="text-sm text-slate-500">Welcome back,</p>
+                <h1 className="text-xl font-bold text-slate-900">{loanBalance?.name || 'User'}</h1>
+              </div>
+              {loanBalance?.hasLoan && <div className="px-3 py-1.5 bg-red-50 border border-red-200 rounded-lg"><p className="text-sm text-red-600 font-medium animate-pulse">Loan Balance: GHS {parseFloat(loanBalance?.adminLoanBalance || 0).toFixed(2)}</p></div>}
+            </div>
+            <div className="flex items-center gap-4">
               <AgentNotifications />
-              <div
-                className="bg-white text-sky-700 font-semibold px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer"
-                onClick={() => setTopUp(true)}
-              >
-                Top Up
-              </div>
-
-              <div className="bg-white p-2 rounded-lg shadow-md flex items-center space-x-2 cursor-pointer transition-all duration-300 hover:shadow-lg">
-                <h2 className="text-sm font-semibold text-gray-700 uppercase">
-                  Wallet:
-                </h2>
-                <div className="text-xl font-bold text-sky-700 whitespace-nowrap">
-                  GHS {parseFloat(Math.abs(loanBalance?.loanBalance)).toFixed(2)}
+              <div className="flex items-center gap-3 bg-gradient-to-r from-slate-900 to-slate-800 rounded-2xl px-5 py-3 shadow-lg">
+                <div>
+                  <p className="text-xs text-slate-400">Wallet Balance</p>
+                  <p className="text-xl font-bold text-white">GHS {parseFloat(Math.abs(loanBalance?.loanBalance || 0)).toFixed(2)}</p>
                 </div>
+                <button className="px-4 py-2 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-semibold rounded-xl shadow-md hover:shadow-lg hover:scale-105 transition-all" onClick={() => setTopUp(true)}>Top Up</button>
               </div>
-
-              {/* Shopping Cart */}
-              <div
-                className="relative cursor-pointer p-2 rounded-lg bg-white/20 hover:bg-white/30 transition-colors"
-                onClick={() => setIsCartOpen(true)}
-              >
-                <ShoppingCart className="w-6 h-6 text-white" />
-                {cart.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                    {cart.length}
-                  </span>
-                )}
-              </div>
-
-              <div
-                className="bg-white text-sky-700 px-4 py-2 rounded-lg shadow-md items-center space-x-2 cursor-pointer hover:shadow-lg transition-all flex"
-                onClick={() => setIsHistoryOpen(true)}
-              >
-                <History className="w-5 h-5" />
-                <span>Order History</span>
-              </div>
+              <button className="flex items-center gap-2 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl transition-all" onClick={() => setIsHistoryOpen(true)}><History className="w-5 h-5" /><span>Order History</span></button>
+              <button className="relative p-3 rounded-xl bg-gradient-to-r from-sky-500 to-sky-600 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all" onClick={() => setIsCartOpen(true)}>
+                <ShoppingCart className="w-6 h-6" />
+                {cart.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full w-6 h-6 flex items-center justify-center animate-bounce">{cart.length}</span>}
+              </button>
             </div>
           </div>
         </header>
@@ -904,251 +887,206 @@ const handleCategorySelect = (category) => {
           orderHistory={orderHistory}
         />
         {loading ? (
-          <div
-            className="flex justify-center items-center min-h-screen"
-            style={{
-              backgroundImage: `url(${bgImageMain})`, // Replace with your actual asset path
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundAttachment: "fixed",
-            }}
-          >
-            <svg
-              className="animate-spin h-10 w-10 text-blue-500"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v8z"
-              ></path>
-            </svg>
+          <div className="flex-1 flex justify-center items-center bg-gradient-to-br from-slate-50 to-slate-100">
+            <div className="flex flex-col items-center gap-4">
+              <div className="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-slate-600 font-medium">Loading products...</p>
+            </div>
           </div>
         ) : (
-          <main
-            className="p-6 bg-gray-100 min-h-screen"
-            style={{
-              backgroundImage: `url(${bgImageMain})`, // Replace with your actual asset path
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              backgroundRepeat: "no-repeat",
-              backgroundAttachment: "fixed",
-            }}
-          >
-            <div className="md:hidden block text-center flex items-center justify-between">
-              <div>
-                <span>WALLET : </span>{" "}
-                <span className="text-2xl text-center font-bold text-blue-600 mt-2 whitespace-nowrap">
-                  GHS{" "}
-                  {parseFloat(Math.abs(loanBalance?.loanBalance)).toFixed(2)}
-                </span>
-              </div>
-              <div>
-                {loanBalance?.hasLoan && (
-                  <div className="text-sm font-extrabold text-red-500 mt-2 animate-pulse ">
-                    Loan: GHS{" "}
-                    {parseFloat(loanBalance?.adminLoanBalance).toFixed(2)}
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <h2 className="text-2xl font-semibold mt-6 text-center text-gray-800">
-              {selectedCategory
-                ? `${selectedCategory} PRODUCTS`
-                : "AVAILABLE PRODUCTS"}
-            </h2>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6">
-              {filteredProducts1?.map((product) => (
-                <div
-                  key={product.id}
-                  // className=" border p-6 rounded-xl shadow-lg bg-white hover:shadow-2xl transition-shadow duration-300"
-                  className={`border p-6 rounded-xl shadow-lg hover:shadow-2xl transition-shadow duration-300 bg-cover bg-center 
-                    ${
-                      product.name.includes("MTN")
-                        ? "bg-[url('https://img.freepik.com/premium-vector/trendy-abstract-background-design-with-yellow-background-used-texture-design-bright-poster_293525-2997.jpg')]"
-                        : product.name === "TELECEL"
-                        ? "bg-[url('https://cdn.vectorstock.com/i/500p/37/28/abstract-background-design-modern-red-and-gold-vector-49733728.jpg')]"
-                        : product.name === "AIRTEL TIGO"
-                        ? "bg-[url('https://t4.ftcdn.net/jpg/00/72/07/17/360_F_72071785_iWP4jgsalJFR1YdiumPMboDHHOZhA3Wi.jpg')]"
-                        : "bg-white"
-                    }
-                  `}
-                  // whileHover={{ scale: 1.05 }}
-                  // whileTap={{ scale: 0.95 }}
-                >
-                  <h3 className="text-lg font-bold text-gray-100">
-                    {product.name}
-                  </h3>
-                  <h3 className="text-lg font-bold text-gray-100">
-                    {product.description}
-                  </h3>
-                  <p className="text-gray-100 mt-2 text-sm">
-                    Price: GHS {product.price}
+          <main className="flex-1 overflow-y-auto bg-gradient-to-br from-slate-50 to-slate-100 p-4 md:p-6 lg:p-8">
+            {/* Page Header */}
+            <div className="mb-6 md:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl md:text-3xl font-bold text-slate-900">
+                    {selectedCategory ? `${selectedCategory} Products` : "Available Products"}
+                  </h2>
+                  <p className="text-slate-500 mt-1">
+                    {filteredProducts1?.length || 0} products available
                   </p>
-
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Enter mobile number"
-                      value={mobileNumbers[product.id] || ""}
-                      onChange={(e) =>
-                        handleMobileNumberChange(product.id, e.target.value)
-                      }
-                      className={`mt-2 w-full p-2 border ${
-                        error[product.id] ? "border-red-500" : "border-gray-300"
-                      } rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                    />
-                    {error[product.id] && (
-                      <div className="flex items-center space-x-2">
-                        <span className="text-white">
-                          <MessageCircleWarning />{" "}
-                        </span>
-                        <p className="text-[10px] text-white font-semibold">
-                          {error[product.id]}
-                        </p>
-                      </div>
-                    )}
-                  </>
-
-                  <motion.button
-                    onClick={() => addToCart(product.id)}
-                    className={`mt-4 text-white px-6 py-2 rounded-lg w-full transition-colors duration-300 ${
-                      loanBalance?.loanBalance === 0 || product.stock === 0
-                        ? "bg-gray-400 cursor-not-allowed"
-                        : "bg-blue-500 hover:bg-blue-600"
-                    }`}
-                    whileHover={{
-                      scale:
-                        loanBalance?.loanBalance > 0 && product.stock > 0
-                          ? 1.1
-                          : 1,
-                    }}
-                    whileTap={{
-                      scale:
-                        loanBalance?.loanBalance > 0 && product.stock > 0
-                          ? 0.9
-                          : 1,
-                    }}
-                    disabled={
-                      loanBalance?.loanBalance === 0 || product.stock === 0
-                    }
-                  >
-                    {loanBalance?.loanBalance === 0
-                      ? "Insufficient Balance"
-                      : product.stock === 0
-                      ? "Out of Stock"
-                      : "Add to Cart"}
-                  </motion.button>
                 </div>
-              ))}
+                
+                {/* Category Pills - Mobile */}
+                <div className="flex flex-wrap gap-2 md:hidden">
+                  {["All", "MTN", "TELECEL", "AIRTEL TIGO"].map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => handleCategorySelect(cat === "All" ? null : cat)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
+                        (cat === "All" && selectedCategory === null) || selectedCategory === cat
+                          ? cat === "MTN" ? "bg-yellow-500 text-white" : cat === "TELECEL" ? "bg-red-500 text-white" : cat === "AIRTEL TIGO" ? "bg-blue-500 text-white" : "bg-sky-500 text-white"
+                          : "bg-white text-slate-600 border border-slate-200"
+                      }`}
+                    >
+                      {cat === "AIRTEL TIGO" ? "AirtelTigo" : cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
+
+            {/* Product Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+              {filteredProducts1?.map((product) => {
+                const isMTN = product.name.includes("MTN");
+                const isTelecel = product.name.includes("TELECEL");
+                const isAirtelTigo = product.name.includes("AIRTEL TIGO");
+                
+                const cardGradient = isMTN
+                  ? "from-yellow-400 via-yellow-500 to-yellow-600"
+                  : isTelecel
+                  ? "from-red-500 via-red-600 to-red-700"
+                  : isAirtelTigo
+                  ? "from-blue-500 via-blue-600 to-blue-700"
+                  : "from-sky-500 via-sky-600 to-sky-700";
+
+                const buttonColor = isMTN
+                  ? "bg-yellow-600 hover:bg-yellow-700"
+                  : isTelecel
+                  ? "bg-red-700 hover:bg-red-800"
+                  : isAirtelTigo
+                  ? "bg-blue-700 hover:bg-blue-800"
+                  : "bg-sky-700 hover:bg-sky-800";
+
+                return (
+                  <motion.div
+                    key={product.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className={`relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-gradient-to-br ${cardGradient}`}
+                  >
+                    <div className="p-4 md:p-5">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1">
+                          <span className="inline-block px-2 py-1 bg-white/20 backdrop-blur-sm rounded-lg text-xs font-medium text-white mb-2">
+                            {product.name}
+                          </span>
+                          <h3 className="text-xl md:text-2xl font-bold text-white">{product.description}</h3>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-baseline gap-1 mb-4">
+                        <span className="text-sm text-white/70">GHS</span>
+                        <span className="text-2xl md:text-3xl font-bold text-white">{product.price}</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <input
+                          type="tel"
+                          placeholder="Enter mobile number"
+                          value={mobileNumbers[product.id] || ""}
+                          onChange={(e) => handleMobileNumberChange(product.id, e.target.value)}
+                          className={`w-full px-4 py-3 bg-white/90 backdrop-blur-sm border-2 ${
+                            error[product.id] ? "border-red-400" : "border-transparent"
+                          } rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none transition-all`}
+                          maxLength={10}
+                        />
+                        {error[product.id] && (
+                          <div className="flex items-center gap-2 px-2">
+                            <MessageCircleWarning className="w-4 h-4 text-white" />
+                            <p className="text-xs text-white font-medium">{error[product.id]}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      <motion.button
+                        onClick={() => addToCart(product.id)}
+                        className={`mt-4 w-full py-3 px-4 rounded-xl font-semibold text-white transition-all duration-300 ${
+                          loanBalance?.loanBalance === 0 || product.stock === 0
+                            ? "bg-white/20 cursor-not-allowed"
+                            : `${buttonColor} shadow-lg hover:shadow-xl`
+                        }`}
+                        whileHover={{ scale: loanBalance?.loanBalance > 0 && product.stock > 0 ? 1.02 : 1 }}
+                        whileTap={{ scale: loanBalance?.loanBalance > 0 && product.stock > 0 ? 0.98 : 1 }}
+                        disabled={loanBalance?.loanBalance === 0 || product.stock === 0}
+                      >
+                        {loanBalance?.loanBalance === 0 ? "Insufficient Balance" : product.stock === 0 ? "Out of Stock" : "Add to Cart"}
+                      </motion.button>
+                    </div>
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
+                    <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-black/10 rounded-full blur-2xl"></div>
+                  </motion.div>
+                );
+              })}
+            </div>
+
+            {/* Empty State */}
+            {(!filteredProducts1 || filteredProducts1.length === 0) && (
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mb-4">
+                  <ShoppingCart className="w-12 h-12 text-slate-400" />
+                </div>
+                <h3 className="text-xl font-semibold text-slate-700 mb-2">No Products Found</h3>
+                <p className="text-slate-500">Try selecting a different category</p>
+              </div>
+            )}
           </main>
         )}
       </div>
 
-      <Dialog
-        open={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30"
-      >
-        <div className="bg-white p-6 rounded shadow-lg w-full max-w-md mx-2 sm:w-96 relative">
-          {/* Close Button */}
-          <button
-            className="absolute top-2 right-2 text-gray-500 hover:text-gray-700"
-            onClick={() => setIsCartOpen(false)}
-          >
-            <X className="w-5 h-5" />
-          </button>
-
-          {/* Cart Title */}
-          <h2 className="text-xl font-semibold mb-4">Shopping Cart</h2>
-
-          {/* Scrollable Cart Items */}
-          <ul className="divide-y divide-gray-200 max-h-[70vh] overflow-y-auto">
-            {cart.length > 0 ? (
-              cart.map((item, index) => (
-                <li
-                  key={index}
-                  className="py-3 flex justify-between items-center"
-                >
-                  {/* Product Details */}
+      {/* Modern Cart Modal */}
+      <Dialog open={isCartOpen} onClose={() => setIsCartOpen(false)} className="relative z-50">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm" aria-hidden="true" />
+        <div className="fixed inset-0 flex items-center justify-center p-4">
+          <Dialog.Panel className="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+            <div className="bg-gradient-to-r from-sky-500 to-sky-600 p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-white/10 rounded-xl"><ShoppingCart className="w-6 h-6 text-white" /></div>
                   <div>
-                    <h3 className="text-lg font-semibold">
-                      {item.product.name}
-                    </h3>
-                    <p className="text-gray-600">{item.mobileNumber}</p>
-                    <p className="text-gray-600">{item.product.description}</p>
-                    <span className="font-semibold">
-                      GHS{item.product.price}
-                    </span>
+                    <h2 className="text-xl font-bold text-white">Shopping Cart</h2>
+                    <p className="text-sm text-sky-100">{cart.length} item{cart.length !== 1 ? 's' : ''}</p>
                   </div>
-
-                  {/* Delete Button */}
-                  <button
-                    className="text-red-500 hover:text-red-700 transition duration-300"
-                    onClick={() => removeFromCart(item.id)}
-                  >
-                    <Trash className="w-5 h-5" />
-                  </button>
-                </li>
-              ))
-            ) : (
-              <li className="py-3 text-gray-600">Your cart is empty.</li>
-            )}
-          </ul>
-
-          {/* Total Amount */}
-          {cart.length > 0 && (
-            <div className="flex justify-between items-center mt-4 border-t pt-4">
-              <span className="text-lg font-semibold">Total Amount:</span>
-              <span className="text-lg font-bold">
-                GHS
-                {cart.reduce(
-                  (total, item) => total + item.product.price * item.quantity,
-                  0
-                )}
-              </span>
+                </div>
+                <button className="p-2 hover:bg-white/10 rounded-xl transition-colors" onClick={() => setIsCartOpen(false)}><X className="w-6 h-6 text-white" /></button>
+              </div>
             </div>
-          )}
-
-          {/* Action Buttons */}
-          <div className="flex justify-between items-center mt-4">
-            <button
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-300"
-              onClick={clearCart}
-              disabled={cart.length === 0}
-            >
-              Clear All
-            </button>
-            <button
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition-colors duration-300"
-              disabled={isSubmitting || cart.length === 0}
-              onClick={submitCart}
-            >
-              {isSubmitting ? "Submitting..." : "Submit Cart"}
-            </button>
-          </div>
+            <div className="max-h-[50vh] overflow-y-auto p-4">
+              {cart.length > 0 ? (
+                <div className="space-y-3">
+                  {cart.map((item, index) => (
+                    <motion.div key={index} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl hover:bg-slate-100 transition-colors">
+                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${item.product.name.includes("MTN") ? "bg-yellow-100" : item.product.name.includes("TELECEL") ? "bg-red-100" : item.product.name.includes("AIRTEL") ? "bg-blue-100" : "bg-sky-100"}`}>
+                        <span className="text-lg font-bold">{item.product.name.includes("MTN") ? "M" : item.product.name.includes("TELECEL") ? "T" : item.product.name.includes("AIRTEL") ? "A" : "U"}</span>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-semibold text-slate-900 truncate">{item.product.description}</h3>
+                        <p className="text-sm text-slate-500">{item.mobileNumber}</p>
+                        <p className="text-sm font-medium text-slate-700">GHS {item.product.price}</p>
+                      </div>
+                      <button className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors" onClick={() => removeFromCart(item.id)}><Trash className="w-5 h-5" /></button>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center mb-4"><ShoppingCart className="w-10 h-10 text-slate-400" /></div>
+                  <h3 className="text-lg font-semibold text-slate-700 mb-1">Your cart is empty</h3>
+                  <p className="text-sm text-slate-500">Add some products to get started</p>
+                </div>
+              )}
+            </div>
+            {cart.length > 0 && (
+              <div className="border-t border-slate-200 p-6 bg-slate-50">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-slate-600">Total Amount</span>
+                  <span className="text-2xl font-bold text-slate-900">GHS {cart.reduce((total, item) => total + item.product.price * (item.quantity || 1), 0).toFixed(2)}</span>
+                </div>
+                <div className="flex gap-3">
+                  <button className="flex-1 px-4 py-3 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-xl transition-colors disabled:opacity-50" onClick={clearCart} disabled={cart.length === 0}>Clear All</button>
+                  <button className="flex-1 px-4 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed" disabled={isSubmitting || cart.length === 0} onClick={submitCart}>
+                    {isSubmitting ? <span className="flex items-center justify-center gap-2"><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>Processing...</span> : "Submit Order"}
+                  </button>
+                </div>
+              </div>
+            )}
+          </Dialog.Panel>
         </div>
       </Dialog>
 
-      <Dialog
-        open={topUp}
-        onClose={() => setTopUp(false)}
-        className="relative z-50"
-      >
+      <Dialog open={topUp} onClose={() => setTopUp(false)} className="relative z-50">
         <TopUp setTopUp={setTopUp} />
       </Dialog>
     </div>

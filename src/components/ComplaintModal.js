@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import BASE_URL from "../endpoints/endpoints";
 import { Dialog, Transition } from "@headlessui/react";
-import { MessageSquareWarning, X, Send, Loader2, Phone, FileText, MessageCircle } from "lucide-react";
+import { MessageSquareWarning, X, Send, Loader2, Phone, FileText, MessageCircle, Calendar, Clock } from "lucide-react";
 import Swal from "sweetalert2";
 
 const ComplaintModal = ({ isOpen, onClose }) => {
@@ -11,6 +11,19 @@ const ComplaintModal = ({ isOpen, onClose }) => {
   const [orderId, setOrderId] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [complaintDate, setComplaintDate] = useState("");
+  const [complaintTime, setComplaintTime] = useState("");
+
+  // Set current date and time when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      const now = new Date();
+      const dateStr = now.toISOString().split('T')[0];
+      const timeStr = now.toTimeString().slice(0, 5);
+      setComplaintDate(dateStr);
+      setComplaintTime(timeStr);
+    }
+  }, [isOpen]);
 
   const handleSubmit = async () => {
     if (!mobileNumber.trim() || !message.trim()) {
@@ -42,11 +55,16 @@ const ComplaintModal = ({ isOpen, onClose }) => {
 
     setLoading(true);
     try {
+      // Combine date and time into a full timestamp
+      const complaintDateTime = new Date(`${complaintDate}T${complaintTime}:00`).toISOString();
+      
       await axios.post(`${BASE_URL}/api/complaints`, {
         mobileNumber,
         whatsappNumber: whatsappNumber || null,
         orderId: orderId || null,
         message,
+        complaintDate: complaintDateTime,
+        complaintTime: complaintTime,
       });
 
       Swal.fire({
@@ -168,6 +186,39 @@ const ComplaintModal = ({ isOpen, onClose }) => {
                       onChange={(e) => setOrderId(e.target.value)}
                       disabled={loading}
                     />
+                  </div>
+
+                  {/* Date and Time Row */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Date Input */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Calendar className="w-4 h-4" />
+                        Date
+                      </label>
+                      <input
+                        type="date"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:opacity-50"
+                        value={complaintDate}
+                        onChange={(e) => setComplaintDate(e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
+
+                    {/* Time Input */}
+                    <div>
+                      <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <Clock className="w-4 h-4" />
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent transition-all duration-200 disabled:bg-gray-50 disabled:opacity-50"
+                        value={complaintTime}
+                        onChange={(e) => setComplaintTime(e.target.value)}
+                        disabled={loading}
+                      />
+                    </div>
                   </div>
 
                   {/* Complaint Message */}

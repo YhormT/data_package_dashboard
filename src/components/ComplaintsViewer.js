@@ -14,7 +14,8 @@ import {
   Loader2,
   RefreshCw,
   Trash2,
-  MessageCircle
+  MessageCircle,
+  Calendar
 } from "lucide-react";
 import Swal from "sweetalert2";
 
@@ -306,13 +307,43 @@ const ComplaintsViewer = () => {
                           >
                             <div className="flex items-start justify-between">
                               <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-2">
+                                <div className="flex flex-wrap items-center gap-3 mb-2">
                                   <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(complaint.status)}`}>
                                     {getStatusIcon(complaint.status)}
                                     {complaint.status}
                                   </span>
-                                  <span className="text-xs text-gray-500">
-                                    {new Date(complaint.createdAt).toLocaleString()}
+                                  {/* Display complaint date and time prominently */}
+                                  <div className="flex items-center gap-1 text-xs bg-gray-100 px-2 py-1 rounded-lg">
+                                    <Calendar className="w-3 h-3 text-gray-500" />
+                                    <span className="text-gray-600 font-medium">
+                                      {complaint.complaintDate 
+                                        ? new Date(complaint.complaintDate).toLocaleDateString('en-GB', { 
+                                            day: '2-digit', 
+                                            month: 'short', 
+                                            year: 'numeric' 
+                                          })
+                                        : new Date(complaint.createdAt).toLocaleDateString('en-GB', { 
+                                            day: '2-digit', 
+                                            month: 'short', 
+                                            year: 'numeric' 
+                                          })
+                                      }
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1 text-xs bg-gray-100 px-2 py-1 rounded-lg">
+                                    <Clock className="w-3 h-3 text-gray-500" />
+                                    <span className="text-gray-600 font-medium">
+                                      {complaint.complaintTime 
+                                        ? complaint.complaintTime
+                                        : new Date(complaint.createdAt).toLocaleTimeString('en-GB', { 
+                                            hour: '2-digit', 
+                                            minute: '2-digit' 
+                                          })
+                                      }
+                                    </span>
+                                  </div>
+                                  <span className="text-xs text-gray-400">
+                                    Submitted: {new Date(complaint.createdAt).toLocaleString()}
                                   </span>
                                 </div>
                                 
