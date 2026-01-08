@@ -194,7 +194,7 @@ const ComplaintModal = ({ isOpen, onClose }) => {
                     <div>
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                         <Calendar className="w-4 h-4" />
-                        Date
+                        Date of Order
                       </label>
                       <input
                         type="date"
@@ -209,7 +209,7 @@ const ComplaintModal = ({ isOpen, onClose }) => {
                     <div>
                       <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
                         <Clock className="w-4 h-4" />
-                        Time
+                        Time of Order
                       </label>
                       <input
                         type="time"
