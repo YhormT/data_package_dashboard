@@ -15,7 +15,7 @@ const ComplaintModal = ({ isOpen, onClose }) => {
   const [complaintTime, setComplaintTime] = useState("");
 
   // Set current date and time when modal opens
-  useEffect(() => {
+ /*  useEffect(() => {
     if (isOpen) {
       const now = new Date();
       const dateStr = now.toISOString().split('T')[0];
@@ -23,7 +23,7 @@ const ComplaintModal = ({ isOpen, onClose }) => {
       setComplaintDate(dateStr);
       setComplaintTime(timeStr);
     }
-  }, [isOpen]);
+  }, [isOpen]); */
 
   const handleSubmit = async () => {
     if (!mobileNumber.trim() || !message.trim()) {
