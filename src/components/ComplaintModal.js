@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
 import BASE_URL from "../endpoints/endpoints";
 import { Dialog, Transition } from "@headlessui/react";
@@ -14,16 +14,6 @@ const ComplaintModal = ({ isOpen, onClose }) => {
   const [complaintDate, setComplaintDate] = useState("");
   const [complaintTime, setComplaintTime] = useState("");
 
-  // Set current date and time when modal opens
- /*  useEffect(() => {
-    if (isOpen) {
-      const now = new Date();
-      const dateStr = now.toISOString().split('T')[0];
-      const timeStr = now.toTimeString().slice(0, 5);
-      setComplaintDate(dateStr);
-      setComplaintTime(timeStr);
-    }
-  }, [isOpen]); */
 
   const handleSubmit = async () => {
     if (!mobileNumber.trim() || !message.trim()) {
@@ -55,17 +45,16 @@ const ComplaintModal = ({ isOpen, onClose }) => {
 
     setLoading(true);
     try {
-      // Combine date and time into a full timestamp
-      const complaintDateTime = new Date(`${complaintDate}T${complaintTime}:00`).toISOString();
-      
-      await axios.post(`${BASE_URL}/api/complaints`, {
+      const payload = {
         mobileNumber,
         whatsappNumber: whatsappNumber || null,
         orderId: orderId || null,
         message,
-        complaintDate: complaintDateTime,
-        complaintTime: complaintTime,
-      });
+        complaintDate: (complaintDate && complaintTime) ? new Date(`${complaintDate}T${complaintTime}:00`).toISOString() : null,
+        complaintTime: complaintTime || null,
+      };
+      
+      await axios.post(`${BASE_URL}/api/complaints`, payload);
 
       Swal.fire({
         icon: "success",
@@ -77,6 +66,8 @@ const ComplaintModal = ({ isOpen, onClose }) => {
       setWhatsappNumber("");
       setOrderId("");
       setMessage("");
+      setComplaintDate("");
+      setComplaintTime("");
       onClose();
     } catch (err) {
       Swal.fire({
