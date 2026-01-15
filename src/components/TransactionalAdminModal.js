@@ -418,7 +418,7 @@ const TransactionalAdminModal = () => {
 
 
   // Fetch ALL transactions at once and store them (skip cache for auto-refresh)
-  const fetchTransactions = useCallback(async (skipCache = false) => {
+  const fetchTransactions = useCallback(async (skipCache = false, silent = false) => {
     const cacheKey = 'all_transactions';
     
     // Check cache first (unless skipCache is true for auto-refresh)
@@ -430,7 +430,10 @@ const TransactionalAdminModal = () => {
     }
     
     try {
-      setLoading(true);
+      // Only show loading state if not silent refresh
+      if (!silent) {
+        setLoading(true);
+      }
       // Fetch all data with high limit
       const response = await axios.get(`${BASE_URL}/api/transactions?limit=999999`);
       if (response.data.success) {
@@ -444,14 +447,19 @@ const TransactionalAdminModal = () => {
     } catch (error) {
       console.error("Error fetching transactions:", error);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [dataCache]);
 
   // Search transactions across entire database
-  const searchTransactions = useCallback(async (searchQuery, filters = {}) => {
+  const searchTransactions = useCallback(async (searchQuery, filters = {}, silent = false) => {
     try {
-      setLoading(true);
+      // Only show loading state if not silent refresh
+      if (!silent) {
+        setLoading(true);
+      }
       const params = new URLSearchParams();
       
       if (searchQuery) params.append('search', searchQuery);
@@ -470,7 +478,9 @@ const TransactionalAdminModal = () => {
     } catch (error) {
       console.error("Error searching transactions:", error);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -491,8 +501,11 @@ const TransactionalAdminModal = () => {
   }, [debouncedSearch, typeFilter, amountFilter, startDate, endDate, searchTransactions, fetchTransactions]);
 
   // Fetch shop orders
-  const fetchShopOrders = useCallback(async () => {
-    setShopOrdersLoading(true);
+  const fetchShopOrders = useCallback(async (silent = false) => {
+    // Only show loading state if not silent refresh
+    if (!silent) {
+      setShopOrdersLoading(true);
+    }
     try {
       const response = await axios.get(`${BASE_URL}/api/shop/orders`);
       if (response.data.success) {
@@ -502,7 +515,9 @@ const TransactionalAdminModal = () => {
       console.error('Error fetching shop orders:', error);
       setShopOrders([]);
     } finally {
-      setShopOrdersLoading(false);
+      if (!silent) {
+        setShopOrdersLoading(false);
+      }
     }
   }, []);
 
@@ -513,24 +528,25 @@ const TransactionalAdminModal = () => {
     }
   }, [isOpen, activeTab, fetchShopOrders]);
 
-  // Auto-refresh every 2 seconds
+  // Auto-refresh every 2 seconds (silent mode - no loading indicators)
   useEffect(() => {
     if (!isOpen) return;
 
     const intervalId = setInterval(() => {
       if (activeTab === 'shopOrders') {
-        fetchShopOrders();
+        // Silent refresh for shop orders
+        fetchShopOrders(true);
       } else if (debouncedSearch.trim()) {
-        // Refresh search results
+        // Silent refresh for search results
         searchTransactions(debouncedSearch, {
           typeFilter,
           amountFilter: amountFilter !== 'all' ? amountFilter : null,
           startDate,
           endDate
-        });
+        }, true);
       } else {
-        // Refresh all transactions (skip cache to get fresh data)
-        fetchTransactions(true);
+        // Silent refresh for all transactions (skip cache to get fresh data)
+        fetchTransactions(true, true);
       }
     }, 2000);
 
