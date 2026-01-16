@@ -603,8 +603,8 @@ const TotalRequestsComponent = () => {
     let downloadType = ""; // Track what type of orders we're downloading
 
     if (hasStatusFilter) {
-      // If a specific status is filtered, export only those orders
-      itemsToExport = filteredOrders.filter(
+      // If a specific status is filtered, export ONLY orders with that exact status
+      itemsToExport = paginatedItems.filter(
         (item) => item.order?.items?.[0]?.status === selectedStatusMain
       );
       
@@ -618,8 +618,15 @@ const TotalRequestsComponent = () => {
         ].filter(Boolean);
       }
     } else {
-      // If no status filter, first check for pending orders
-      const pendingItems = filteredOrders.filter(
+      // If no status filter, exclude cancelled orders and prioritize pending
+      const nonCancelledItems = paginatedItems.filter(
+        (item) => {
+          const status = item.order?.items?.[0]?.status;
+          return status !== "Cancelled" && status !== "Canceled";
+        }
+      );
+      
+      const pendingItems = nonCancelledItems.filter(
         (item) => item.order?.items?.[0]?.status === "Pending"
       );
       
@@ -632,18 +639,29 @@ const TotalRequestsComponent = () => {
           ...new Set(pendingItems.map((item) => item.order?.id)),
         ].filter(Boolean);
       } else {
-        // If no pending orders, download completed orders
-        const completedItems = filteredOrders.filter(
-          (item) => item.order?.items?.[0]?.status === "Completed"
+        // If no pending orders, download processing orders
+        const processingItems = nonCancelledItems.filter(
+          (item) => item.order?.items?.[0]?.status === "Processing"
         );
         
-        if (completedItems.length > 0) {
-          itemsToExport = completedItems;
-          downloadType = "completed";
-          statusUpdateNeeded = false; // Don't update status for completed orders
+        if (processingItems.length > 0) {
+          itemsToExport = processingItems;
+          downloadType = "processing";
+          statusUpdateNeeded = false;
         } else {
-          // If neither pending nor completed orders exist, show error
-          itemsToExport = [];
+          // If no processing orders, download completed orders
+          const completedItems = nonCancelledItems.filter(
+            (item) => item.order?.items?.[0]?.status === "Completed"
+          );
+          
+          if (completedItems.length > 0) {
+            itemsToExport = completedItems;
+            downloadType = "completed";
+            statusUpdateNeeded = false;
+          } else {
+            // If no orders exist, show error
+            itemsToExport = [];
+          }
         }
       }
     }

@@ -333,7 +333,7 @@ const AdminBalanceSheet = memo(({ balanceData }) => (
 
 // Memoized Stats Cards Component
 const StatsCards = memo(({ stats }) => (
-  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+  <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
     <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
       <div className="text-sm text-blue-800">Total Transactions</div>
       <div className="font-bold text-lg">{stats.totalTransactions}</div>
@@ -349,6 +349,10 @@ const StatsCards = memo(({ stats }) => (
     <div className="bg-purple-50 p-3 rounded-lg border border-purple-200">
       <div className="text-sm text-purple-800">Net Balance Change</div>
       <div className="font-bold text-lg">{formatAmount(stats.netBalance)}</div>
+    </div>
+    <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+      <div className="text-sm text-orange-800">Total GB Data</div>
+      <div className="font-bold text-lg">{stats.totalGBData} GB</div>
     </div>
   </div>
 ));
@@ -823,9 +827,55 @@ const TransactionalAdminModal = () => {
       data.previousBalance = Array.from(latestByUser.values())
         .reduce((sum, tx) => sum + (tx.balance || 0), 0);
     }
-
     return data;
   }, [adminBalanceApiData, filteredTransactions, allTransactions, debouncedSearch, typeFilter, amountFilter, startDate, endDate]);
+
+  // Helper function to extract GB from description
+  const extractGBFromDescription = (description) => {
+    if (!description) return 0;
+    const match = description.match(/(\d+(?:\.\d+)?)\s*GB/i);
+    return match ? parseFloat(match[1]) : 0;
+  };
+
+  // Helper function to extract order ID from transaction reference
+  const extractOrderIdFromReference = (reference) => {
+    if (!reference) return null;
+    const match = reference.match(/order:(\d+)/i);
+    return match ? parseInt(match[1]) : null;
+  };
+
+  // State to store order data for GB calculation
+  const [orderDataForGB, setOrderDataForGB] = useState({});
+
+  // Fetch order data for GB calculation when transactions change
+  useEffect(() => {
+    const fetchOrderDataForGB = async () => {
+      const orderTransactions = filteredTransactions.filter(tx => tx.type === 'ORDER' && tx.reference);
+      const orderIds = [...new Set(orderTransactions.map(tx => extractOrderIdFromReference(tx.reference)).filter(Boolean))];
+      
+      if (orderIds.length === 0) {
+        setOrderDataForGB({});
+        return;
+      }
+
+      try {
+        // Fetch order data from the backend
+        const response = await axios.post(`${BASE_URL}/order/admin/orders-by-ids`, { orderIds });
+        if (response.data.success) {
+          const ordersMap = {};
+          response.data.orders.forEach(order => {
+            ordersMap[order.id] = order;
+          });
+          setOrderDataForGB(ordersMap);
+        }
+      } catch (error) {
+        console.error('Error fetching order data for GB calculation:', error);
+        setOrderDataForGB({});
+      }
+    };
+
+    fetchOrderDataForGB();
+  }, [filteredTransactions]);
 
   // Statistics calculation using ALL filtered data
   const stats = useMemo(() => {
@@ -834,17 +884,32 @@ const TransactionalAdminModal = () => {
     
     if (!transactionsToUse.length) return {
       totalTransactions: 0, totalCredits: 0, 
-      totalDebits: 0, netBalance: 0
+      totalDebits: 0, netBalance: 0, totalGBData: 0
     };
 
     let totalCredits = 0;
     let totalDebits = 0;
+    let totalGBData = 0;
 
     transactionsToUse.forEach((tx) => {
       if (tx.amount > 0) {
         totalCredits += tx.amount;
       } else {
         totalDebits += tx.amount;
+      }
+      
+      // Extract GB data from ORDER transactions using actual order data
+      if (tx.type === 'ORDER' && tx.reference) {
+        const orderId = extractOrderIdFromReference(tx.reference);
+        if (orderId && orderDataForGB[orderId]) {
+          const order = orderDataForGB[orderId];
+          // Sum GB from all completed items in the order
+          order.items?.forEach(item => {
+            if (item.status === 'Completed' && item.product?.description) {
+              totalGBData += extractGBFromDescription(item.product.description);
+            }
+          });
+        }
       }
     });
 
@@ -853,8 +918,9 @@ const TransactionalAdminModal = () => {
       totalCredits,
       totalDebits,
       netBalance: totalCredits + totalDebits,
+      totalGBData: totalGBData.toFixed(2),
     };
-  }, [filteredTransactions, transactions, debouncedSearch, typeFilter, amountFilter, startDate, endDate]);
+  }, [filteredTransactions, transactions, debouncedSearch, typeFilter, amountFilter, startDate, endDate, orderDataForGB]);
 
   // Handle stats card clicks using ALL filtered data
   const handleStatsClick = useCallback((type, title) => {
@@ -1361,14 +1427,23 @@ const TransactionalAdminModal = () => {
                               return matchCustomer && matchPhone && matchProduct && matchStatus && matchDate;
                             });
                             const totalShopOrdersAmount = filteredShopOrders.reduce((sum, order) => sum + (order.amount || 0), 0);
+                            
+                            // Calculate total GB data for completed shop orders only
+                            const totalShopGBData = filteredShopOrders
+                              .filter(order => order.status?.toLowerCase() === 'completed')
+                              .reduce((sum, order) => {
+                                // Extract GB from the description field (e.g., "10GB", "1GB")
+                                const gbMatch = order.description?.match(/(\d+(?:\.\d+)?)\s*GB/i);
+                                return sum + (gbMatch ? parseFloat(gbMatch[1]) : 0);
+                              }, 0);
+                            
                             const totalShopOrdersPages = Math.ceil(filteredShopOrders.length / shopOrdersPerPage);
                             const paginatedShopOrders = filteredShopOrders.slice((shopOrdersPage - 1) * shopOrdersPerPage, shopOrdersPage * shopOrdersPerPage);
                             
-
                             return (
                               <>
                                 {/* Summary Cards */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                   <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
                                     <div className="text-sm text-blue-800 font-medium">Total Orders</div>
                                     <div className="text-2xl font-bold text-blue-600">{filteredShopOrders.length}</div>
@@ -1376,6 +1451,10 @@ const TransactionalAdminModal = () => {
                                   <div className="bg-green-50 p-4 rounded-lg border border-green-200">
                                     <div className="text-sm text-green-800 font-medium">Total Amount</div>
                                     <div className="text-2xl font-bold text-green-600">GH₵ {totalShopOrdersAmount.toLocaleString('en-GH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                  </div>
+                                  <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                                    <div className="text-sm text-orange-800 font-medium">Total GB Data (Completed)</div>
+                                    <div className="text-2xl font-bold text-orange-600">{totalShopGBData.toFixed(2)} GB</div>
                                   </div>
                                 </div>
 

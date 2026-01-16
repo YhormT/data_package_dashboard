@@ -40,6 +40,15 @@ const OrderHistory = ({ isHistoryOpen, setIsHistoryOpen, orderHistory }) => {
       return total + (isNaN(amount) ? 0 : amount);
     }, 0);
 
+  // Calculate total GB data for completed orders only
+  const totalGBData = finalFilteredItems
+    .filter(item => item.status === 'Completed')
+    .reduce((total, item) => {
+      const description = item.product?.description || '';
+      const gbMatch = description.match(/(\d+(?:\.\d+)?)\s*GB/i);
+      return total + (gbMatch ? parseFloat(gbMatch[1]) : 0);
+    }, 0);
+
   return (
     <Dialog
       open={isHistoryOpen}
@@ -51,8 +60,8 @@ const OrderHistory = ({ isHistoryOpen, setIsHistoryOpen, orderHistory }) => {
           <Dialog.Title className="text-lg font-semibold">
             <div className="flex justify-between items-center">
               <span>Order History</span>
-              <span>
-                No. Orders: {dailyOrderCount} || Ord Amnt: Ghs: {totalFilteredAmount.toFixed(2)}
+              <span className="text-sm">
+                No. Orders: {dailyOrderCount} || GB Data: {totalGBData.toFixed(2)} GB || Ord Amnt: Ghs: {totalFilteredAmount.toFixed(2)}
               </span>
             </div>
           </Dialog.Title>
