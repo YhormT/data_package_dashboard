@@ -604,7 +604,7 @@ const TotalRequestsComponent = () => {
 
     if (hasStatusFilter) {
       // If a specific status is filtered, export ONLY orders with that exact status
-      itemsToExport = paginatedItems.filter(
+      itemsToExport = filteredOrders.filter(
         (item) => item.order?.items?.[0]?.status === selectedStatusMain
       );
       
@@ -619,7 +619,7 @@ const TotalRequestsComponent = () => {
       }
     } else {
       // If no status filter, exclude cancelled orders and prioritize pending
-      const nonCancelledItems = paginatedItems.filter(
+      const nonCancelledItems = filteredOrders.filter(
         (item) => {
           const status = item.order?.items?.[0]?.status;
           return status !== "Cancelled" && status !== "Canceled";
